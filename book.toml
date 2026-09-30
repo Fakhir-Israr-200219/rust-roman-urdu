@@ -1,0 +1,13 @@
+[book]
+title = "The Rust Programming Language - Roman Urdu"
+authors = ["Fakhir Israr"]
+language = "en"
+
+[output.html]
+git-repository-url = "https://github.com/Fakhir-Israr-200219/rust-roman-urdu"
+
+[output.html.search]
+use-boolean-and = true
+
+[rust]
+edition = "2024"
