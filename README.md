@@ -30,19 +30,9 @@ Build hone ke baad output `book` directory mein milega.
 
 Book ko local browser mein dekhne ke liye `book/index.html` open karein.
 
-### Windows — PowerShell
+### Development
 
-```powershell
-Start-Process "firefox.exe" .\book\index.html
-```
-
-ya:
-
-```powershell
-Start-Process "chrome.exe" .\book\index.html
-```
-
-Aap development ke dauran ye command bhi use kar sakte hain:
+Development ke dauran:
 
 ```bash
 mdbook serve
@@ -62,7 +52,12 @@ Agar aap is Roman Urdu translation mein contribute karna chahte hain, to reposit
 
 Rust Book ke official translation efforts ke baare mein mazeed maloomat ke liye [Translations] label dekhein.
 
+Is Roman Urdu translation ko Rust Book ke official translation tracking issue mein bhi register kiya gaya hai:
+
+[Roman Urdu Translation — Rust Book Issue #4828]
+
 [Translations]: https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations
+[Roman Urdu Translation — Rust Book Issue #4828]: https://github.com/rust-lang/book/issues/4828
 
 ## Translation
 
