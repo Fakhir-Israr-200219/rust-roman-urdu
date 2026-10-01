@@ -1,31 +1,22 @@
 ## Hello, World!
 
-Now that you’ve installed Rust, it’s time to write your first Rust program.
-It’s traditional when learning a new language to write a little program that
-prints the text `Hello, world!` to the screen, so we’ll do the same here!
+Ab jab aap Rust install kar chuke hain, to ab waqt hai ke aap apna pehla Rust program likhein.
+Nayi language seekhte waqt riwayati tor par ek chhota sa program likha jata hai jo screen par `Hello, world!` text print karta hai, is liye hum yahan bhi aisa hi karenge!
 
-> Note: This book assumes basic familiarity with the command line. Rust makes
-> no specific demands about your editing or tooling or where your code lives, so
-> if you prefer to use an IDE instead of the command line, feel free to use your
-> favorite IDE. Many IDEs now have some degree of Rust support; check the IDE’s
-> documentation for details. The Rust team has been focusing on enabling great
-> IDE support via `rust-analyzer`. See [Appendix D][devtools]<!-- ignore -->
-> for more details.
+> Note: Ye kitab assume karti hai ke aapko command line se basic familiarity hai. Rust aapke editing ya tooling ke hawale se koi khaas requirement nahi rakhta aur na hi is baat ki ke aapka code kahan maujood hai, is liye agar aap command line ke bajaye IDE use karna pasand karte hain, to bejhijak apna favorite IDE use karein. Aaj kal bohat se IDEs mein Rust ke liye kisi na kisi level ki support mojood hai; details ke liye IDE ki documentation dekhein. Rust team `rust-analyzer` ke zariye behtareen IDE support enable karne par focus kar rahi hai. Mazeed details ke liye [Appendix D][devtools]<!-- ignore --> dekhein.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="creating-a-project-directory"></a>
+
 
 ### Project Directory Setup
 
-You’ll start by making a directory to store your Rust code. It doesn’t matter
-to Rust where your code lives, but for the exercises and projects in this book,
-we suggest making a _projects_ directory in your home directory and keeping all
-your projects there.
+Aap sab se pehle ek directory banayenge jahan aap apna Rust code rakhenge. Rust ke liye is baat se koi farq nahi padta ke aapka code kahan maujood hai, lekin is kitab ki exercises aur projects ke liye hum suggest karte hain ke aap apni home directory mein ek *projects* directory banayein aur apne tamam projects ko usi mein rakhein.
 
-Open a terminal and enter the following commands to make a _projects_ directory
-and a directory for the “Hello, world!” project within the _projects_ directory.
+Ek terminal open karein aur *projects* directory aur *projects* directory ke andar “Hello, world!” project ke liye ek directory banane ke liye following commands enter karein.
 
-For Linux, macOS, and PowerShell on Windows, enter this:
+Linux, macOS, aur Windows par PowerShell ke liye ye enter karein:
 
 ```console
 $ mkdir ~/projects
@@ -34,7 +25,7 @@ $ mkdir hello_world
 $ cd hello_world
 ```
 
-For Windows CMD, enter this:
+Windows CMD ke liye ye enter karein:
 
 ```cmd
 > mkdir "%USERPROFILE%\projects"
@@ -44,18 +35,16 @@ For Windows CMD, enter this:
 ```
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="writing-and-running-a-rust-program"></a>
 
 ### Rust Program Basics
 
-Next, make a new source file and call it _main.rs_. Rust files always end with
-the _.rs_ extension. If you’re using more than one word in your filename, the
-convention is to use an underscore to separate them. For example, use
-_hello_world.rs_ rather than _helloworld.rs_.
+Ab ek nayi source file banayein aur uska naam *main.rs* rakhein. Rust files hamesha *.rs* extension par khatam hoti hain. Agar aapki filename mein ek se zyada words hain, to convention ye hai ke unhein separate karne ke liye underscore use kiya jaye. Misal ke taur par, *helloworld.rs* ke bajaye *hello_world.rs* use karein.
 
-Now open the _main.rs_ file you just created and enter the code in Listing 1-1.
+Ab jo *main.rs* file aap ne banayi hai, use open karein aur Listing 1-1 mein diya gaya code enter karein.
 
-<Listing number="1-1" file-name="main.rs" caption="A program that prints `Hello, world!`">
+<Listing number="1-1" file-name="main.rs" caption="Ek program jo `Hello, world!` print karta hai">
 
 ```rust
 fn main() {
@@ -65,9 +54,7 @@ fn main() {
 
 </Listing>
 
-Save the file and go back to your terminal window in the
-_~/projects/hello_world_ directory. On Linux or macOS, enter the following
-commands to compile and run the file:
+File save karein aur apni terminal window mein *~/projects/hello_world* directory par wapas jayein. Linux ya macOS par file ko compile aur run karne ke liye following commands enter karein:
 
 ```console
 $ rustc main.rs
@@ -75,7 +62,7 @@ $ ./main
 Hello, world!
 ```
 
-On Windows, enter the command `.\main` instead of `./main`:
+Windows par `./main` ke bajaye `.\main` command enter karein:
 
 ```powershell
 > rustc main.rs
@@ -83,13 +70,9 @@ On Windows, enter the command `.\main` instead of `./main`:
 Hello, world!
 ```
 
-Regardless of your operating system, the string `Hello, world!` should print to
-the terminal. If you don’t see this output, refer back to the
-[“Troubleshooting”][troubleshooting]<!-- ignore --> part of the Installation
-section for ways to get help.
+Aapka operating system chahe koi bhi ho, string `Hello, world!` terminal mein print honi chahiye. Agar aapko ye output nazar nahi aata, to help hasil karne ke tareeqon ke liye Installation section ke [“Troubleshooting”][troubleshooting]<!-- ignore --> part ki taraf wapas jayein.
 
-If `Hello, world!` did print, congratulations! You’ve officially written a Rust
-program. That makes you a Rust programmer—welcome!
+Agar `Hello, world!` print ho gaya, to mubarak ho! Aap ne officially ek Rust program likh liya hai. Is ka matlab hai ke ab aap Rust programmer hain—khush aamdeed!
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -97,8 +80,7 @@ program. That makes you a Rust programmer—welcome!
 
 ### The Anatomy of a Rust Program
 
-Let’s review this “Hello, world!” program in detail. Here’s the first piece of
-the puzzle:
+Aaiye is “Hello, world!” program ko detail mein review karte hain. Puzzle ka pehla hissa ye hai:
 
 ```rust
 fn main() {
@@ -106,75 +88,50 @@ fn main() {
 }
 ```
 
-These lines define a function named `main`. The `main` function is special: It
-is always the first code that runs in every executable Rust program. Here, the
-first line declares a function named `main` that has no parameters and returns
-nothing. If there were parameters, they would go inside the parentheses (`()`).
+Ye lines `main` naam ka ek function define karti hain. `main` function khaas hai: Har executable Rust program mein hamesha sab se pehle isi ka code run hota hai. Yahan pehli line `main` naam ka ek function declare karti hai jiske koi parameters nahi hain aur jo kuch return nahi karta. Agar parameters hote, to woh parentheses (`()`) ke andar diye jate.
 
-The function body is wrapped in `{}`. Rust requires curly brackets around all
-function bodies. It’s good style to place the opening curly bracket on the same
-line as the function declaration, adding one space in between.
+Function body ko `{}` ke andar rakha jata hai. Rust tamam function bodies ke gird curly brackets ko lazmi rakhta hai. Opening curly bracket ko function declaration wali hi line par rakhna aur darmiyan mein ek space dena achhi style hai.
 
-> Note: If you want to stick to a standard style across Rust projects, you can
-> use an automatic formatter tool called `rustfmt` to format your code in a
-> particular style (more on `rustfmt` in
-> [Appendix D][devtools]<!-- ignore -->). The Rust team has included this tool
-> with the standard Rust distribution, as `rustc` is, so it should already be
-> installed on your computer!
+> Note: Agar aap Rust projects mein ek standard style follow karna chahte hain, to apne code ko ek khaas style mein format karne ke liye `rustfmt` naam ka automatic formatter tool use kar sakte hain (`rustfmt` ke baare mein mazeed [Appendix D][devtools]<!-- ignore --> mein). Rust team ne is tool ko standard Rust distribution mein `rustc` ki tarah shamil kiya hai, is liye ye aapke computer par pehle se installed hona chahiye!
 
-The body of the `main` function holds the following code:
+`main` function ki body mein following code hai:
 
 ```rust
 println!("Hello, world!");
 ```
 
-This line does all the work in this little program: It prints text to the
-screen. There are three important details to notice here.
+Ye line is chhote se program ka tamam kaam karti hai: Ye screen par text print karti hai. Yahan teen important details hain jin par gaur karna chahiye.
 
-First, `println!` calls a Rust macro. If it had called a function instead, it
-would be entered as `println` (without the `!`). Rust macros are a way to write
-code that generates code to extend Rust syntax, and we’ll discuss them in more
-detail in [Chapter 20][ch20-macros]<!-- ignore -->. For now, you just need to
-know that using a `!` means that you’re calling a macro instead of a normal
-function and that macros don’t always follow the same rules as functions.
+Pehli baat, `println!` ek Rust macro ko call karta hai. Agar ye ek function ko call karta, to ise `println` ke taur par likha jata (`!` ke baghair). Rust macros aisa code likhne ka tareeqa hain jo Rust syntax ko extend karne ke liye code generate karta hai, aur hum [Chapter 20][ch20-macros]<!-- ignore --> mein in par mazeed detail se baat karenge. Filhaal aapko sirf itna maloom hona chahiye ke `!` use karne ka matlab hai ke aap ek normal function ke bajaye macro ko call kar rahe hain, aur macros hamesha functions jaise same rules follow nahi karte.
 
-Second, you see the `"Hello, world!"` string. We pass this string as an argument
-to `println!`, and the string is printed to the screen.
+Doosri baat, aap `"Hello, world!"` string dekh rahe hain. Hum is string ko `println!` ke argument ke taur par pass karte hain, aur string screen par print ho jati hai.
 
-Third, we end the line with a semicolon (`;`), which indicates that this
-expression is over, and the next one is ready to begin. Most lines of Rust code
-end with a semicolon.
+Teesri baat, hum line ko semicolon (`;`) par khatam karte hain, jo indicate karta hai ke ye expression khatam ho gaya hai aur agla expression shuru hone ke liye tayyar hai. Rust code ki zyada tar lines semicolon par khatam hoti hain.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="compiling-and-running-are-separate-steps"></a>
 
 ### Compilation and Execution
 
-You’ve just run a newly created program, so let’s examine each step in the
-process.
+Aap ne abhi ek naya banaya hua program run kiya hai, to aaiye process ke har step ko examine karte hain.
 
-Before running a Rust program, you must compile it using the Rust compiler by
-entering the `rustc` command and passing it the name of your source file, like
-this:
+Rust program run karne se pehle, aapko Rust compiler ka use karke ise compile karna hota hai. Is ke liye `rustc` command enter karein aur usay apni source file ka naam dein, jaise:
 
 ```console
 $ rustc main.rs
 ```
 
-If you have a C or C++ background, you’ll notice that this is similar to `gcc`
-or `clang`. After compiling successfully, Rust outputs a binary executable.
+Agar aapka background C ya C++ mein hai, to aap notice karenge ke ye `gcc` ya `clang` ke jaisa hai. Successfully compile hone ke baad, Rust ek binary executable output karta hai.
 
-On Linux, macOS, and PowerShell on Windows, you can see the executable by
-entering the `ls` command in your shell:
+Linux, macOS, aur Windows par PowerShell mein, aap apni shell mein `ls` command enter karke executable dekh sakte hain:
 
 ```console
 $ ls
 main  main.rs
 ```
 
-On Linux and macOS, you’ll see two files. With PowerShell on Windows, you’ll
-see the same three files that you would see using CMD. With CMD on Windows, you
-would enter the following:
+Linux aur macOS par aapko do files nazar aayengi. Windows par PowerShell use karte hue, aapko wohi teen files nazar aayengi jo CMD use karte hue nazar aati hain. Windows par CMD ke saath aap following enter karenge:
 
 ```cmd
 > dir /B %= the /B option says to only show the file names =%
@@ -183,32 +140,19 @@ main.pdb
 main.rs
 ```
 
-This shows the source code file with the _.rs_ extension, the executable file
-(_main.exe_ on Windows, but _main_ on all other platforms), and, when using
-Windows, a file containing debugging information with the _.pdb_ extension.
-From here, you run the _main_ or _main.exe_ file, like this:
+Ye source code file ko *.rs* extension ke saath, executable file ko (*main.exe* Windows par, lekin baqi tamam platforms par *main*), aur Windows use karte waqt *.pdb* extension wali debugging information contain karne wali file ko show karta hai. Yahan se aap *main* ya *main.exe* file ko is tarah run karte hain:
 
 ```console
 $ ./main # or .\main on Windows
 ```
 
-If your _main.rs_ is your “Hello, world!” program, this line prints `Hello,
-world!` to your terminal.
+Agar aapka *main.rs* aapka “Hello, world!” program hai, to ye line aapke terminal mein `Hello, world!` print karegi.
 
-If you’re more familiar with a dynamic language, such as Ruby, Python, or
-JavaScript, you might not be used to compiling and running a program as
-separate steps. Rust is an _ahead-of-time compiled_ language, meaning you can
-compile a program and give the executable to someone else, and they can run it
-even without having Rust installed. If you give someone a _.rb_, _.py_, or
-_.js_ file, they need to have a Ruby, Python, or JavaScript implementation
-installed (respectively). But in those languages, you only need one command to
-compile and run your program. Everything is a trade-off in language design.
+Agar aap dynamic language, jaise Ruby, Python, ya JavaScript se zyada waqif hain, to shayad aap program ko compile aur run karne ko separate steps ke taur par karne ke aadi na hon. Rust ek *ahead-of-time compiled* language hai, jis ka matlab hai ke aap ek program ko compile karke uska executable kisi doosre shakhs ko de sakte hain, aur woh Rust install kiye baghair bhi ise run kar sakta hai. Agar aap kisi ko *.rb*, *.py*, ya *.js* file dein, to unhein respectively Ruby, Python, ya JavaScript ki implementation installed honi zaroori hai. Lekin un languages mein aapko apne program ko compile aur run karne ke liye sirf ek command ki zaroorat hoti hai. Language design mein har cheez ek trade-off hoti hai.
 
-Just compiling with `rustc` is fine for simple programs, but as your project
-grows, you’ll want to manage all the options and make it easy to share your
-code. Next, we’ll introduce you to the Cargo tool, which will help you write
-real-world Rust programs.
+Simple programs ke liye sirf `rustc` se compile karna theek hai, lekin jaise jaise aapka project bara hota jata hai, aap tamam options ko manage karna aur apne code ko share karna aasaan banana chahenge. Ab hum aapko Cargo tool se introduce karenge, jo aapko real-world Rust programs likhne mein madad karega.
 
 [troubleshooting]: ch01-01-installation.html#troubleshooting
 [devtools]: appendix-04-useful-development-tools.html
 [ch20-macros]: ch20-05-macros.html
+

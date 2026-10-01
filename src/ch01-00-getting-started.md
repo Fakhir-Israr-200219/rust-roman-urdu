@@ -1,8 +1,8 @@
-# Getting Started
+# Shuruat Karte Hain
 
-Let’s start your Rust journey! There’s a lot to learn, but every journey starts
-somewhere. In this chapter, we’ll discuss:
+Aaiye aapka Rust ka safar shuru karte hain! Seekhne ke liye bohat kuch hai, lekin har safar kahin na kahin se shuru hota hai. Is chapter mein hum discuss karenge:
 
-- Installing Rust on Linux, macOS, and Windows
-- Writing a program that prints `Hello, world!`
-- Using `cargo`, Rust’s package manager and build system
+* Linux, macOS, aur Windows par Rust install karna
+* Ek aisa program likhna jo `Hello, world!` print kare
+* `cargo`, Rust ke package manager aur build system ko use karna
+
