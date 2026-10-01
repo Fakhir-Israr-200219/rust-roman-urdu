@@ -1,47 +1,15 @@
 # Foreword
 
-The Rust programming language has come a long way in a few short years, from
-its creation and incubation by a small and nascent community of enthusiasts, to
-becoming one of the most loved and in-demand programming languages in the
-world. Looking back, it was inevitable that the power and promise of Rust would
-turn heads and gain a foothold in systems programming. What was not inevitable
-was the global growth in interest and innovation that permeated through open
-source communities and catalyzed wide-scale adoption across industries.
+Rust programming language ne chand hi chhote arsay mein bohat lamba safar tay kiya hai. Ek chhoti aur nayi ubharne wali enthusiasts ki community ke banane aur uski parwarish se lekar, duniya ki sab se zyada pasand ki jane wali aur demand mein rehne wali programming languages mein se ek banne tak. Peechay mud kar dekhein to ye lagbhag tay tha ke Rust ki quwwat aur uske potential ki taraf logon ki tawajjo zaroor jati aur systems programming mein usay apni jagah milti. Jo cheez tay nahi thi, woh ye thi ke duniya bhar mein is mein itni dilchaspi aur innovation paida hogi jo open source communities mein phailti chali gayi aur mukhtalif industries mein bade paimane par iske istemal ko mumkin banayegi.
 
-At this point in time, it is easy to point to the wonderful features that Rust
-has to offer to explain this explosion in interest and adoption. Who doesn’t
-want memory safety, *and* fast performance, *and* a friendly compiler, *and*
-great tooling, among a host of other wonderful features? The Rust language you
-see today combines years of research in systems programming with the practical
-wisdom of a vibrant and passionate community. This language was designed with
-purpose and crafted with care, offering developers a tool that makes it easier
-to write safe, fast, and reliable code.
+Is waqt, Rust mein maujood behtareen features ki taraf ishara karke is mein dilchaspi aur adoption ke is achanak izafay ko samjhana aasaan hai. Aakhir kaun memory safety, *aur* fast performance, *aur* friendly compiler, *aur* behtareen tooling nahi chahega, aur iske ilawa bhi bohat si zabardast features? Aaj jo Rust language aap dekh rahe hain, woh systems programming mein saalon ki research ko ek purjosh aur passionate community ki practical wisdom ke saath milaati hai. Ye language ek maqsad ke saath design ki gayi aur bohat ehtiyat se tayyar ki gayi, taa-ke developers ko aisa tool diya ja sake jo safe, fast, aur reliable code likhna aasaan banaye.
 
-But what makes Rust truly special is its roots in empowering you, the user, to
-achieve your goals. This is a language that wants you to succeed, and the
-principle of empowerment runs through the core of the community that builds,
-maintains, and advocates for this language. Since the previous edition of this
-definitive text, Rust has further developed into a truly global and trusted
-language. The Rust Project is now robustly supported by the Rust Foundation,
-which also invests in key initiatives to ensure that Rust is secure, stable,
-and sustainable.
+Lekin Rust ko waqai khaas banane wali cheez iski woh bunyaad hai jo aap, yani user, ko apne goals hasil karne ke liye empower karti hai. Ye aisi language hai jo chahti hai ke aap kamyab hon, aur empowerment ka principle us community ke core mein basa hua hai jo is language ko build, maintain, aur advocate karti hai. Is definitive text ke pichlay edition ke baad se Rust mazeed develop hokar ek waqai global aur trusted language ban chuki hai. Rust Project ko ab Rust Foundation ki mazboot support hasil hai, jo key initiatives mein bhi investment karti hai taa-ke Rust secure, stable, aur sustainable rahe.
 
-This edition of *The Rust Programming Language* is a comprehensive update,
-reflecting the language’s evolution over the years and providing valuable new
-information. But it is not just a guide to syntax and libraries—it’s an
-invitation to join a community that values quality, performance, and thoughtful
-design. Whether you’re a seasoned developer looking to explore Rust for the
-first time or an experienced Rustacean looking to refine your skills, this
-edition offers something for everyone.
+*The Rust Programming Language* ka ye edition ek comprehensive update hai, jo guzarte hue saalon mein language ki evolution ko reflect karta hai aur nayi qeemti maloomat provide karta hai. Lekin ye sirf syntax aur libraries ki guide nahi hai—ye ek aisi community ka hissa banne ki dawat bhi hai jo quality, performance, aur soch samajh kar ki gayi design ko ahmiyat deti hai. Chahe aap ek experienced developer hon jo pehli baar Rust ko explore karna chahte hain, ya ek experienced Rustacean hon jo apni skills ko mazeed behtar banana chahte hain, ye edition har kisi ke liye kuch na kuch pesh karta hai.
 
-The Rust journey has been one of collaboration, learning, and iteration. The
-growth of the language and its ecosystem is a direct reflection of the vibrant,
-diverse community behind it. The contributions of thousands of developers, from
-core language designers to casual contributors, are what make Rust such a
-unique and powerful tool. By picking up this book, you’re not just learning a
-new programming language—you’re joining a movement to make software better,
-safer, and more enjoyable to work with.
+Rust ka safar collaboration, learning, aur iteration ka safar raha hai. Language aur iske ecosystem ki growth us vibrant aur diverse community ka seedha aks hai jo iske peechay hai. Hazaron developers ke contributions, core language designers se lekar casual contributors tak, woh cheez hain jo Rust ko ek itna unique aur powerful tool banati hai. Is kitab ko uthana sirf ek nayi programming language seekhna nahi hai—balki ye software ko behtar, zyada mehfooz, aur uske saath kaam karne ko zyada enjoyable banane wali ek movement ka hissa banna hai.
 
-Welcome to the Rust community!
+Rust community mein khush aamdeed!
 
-- Bec Rumbul, Executive Director of the Rust Foundation
+* Bec Rumbul, Executive Director of the Rust Foundation
