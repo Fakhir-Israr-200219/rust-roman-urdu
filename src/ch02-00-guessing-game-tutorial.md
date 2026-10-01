@@ -1,33 +1,21 @@
 # Programming a Guessing Game
 
-Let’s jump into Rust by working through a hands-on project together! This
-chapter introduces you to a few common Rust concepts by showing you how to use
-them in a real program. You’ll learn about `let`, `match`, methods, associated
-functions, external crates, and more! In the following chapters, we’ll explore
-these ideas in more detail. In this chapter, you’ll just practice the
-fundamentals.
+Aaiye ek hands-on project par mil kar kaam karte hue Rust mein dive karte hain! Ye chapter aapko kuch common Rust concepts se introduce karta hai, aur dikhata hai ke aap unhein ek real program mein kaise use kar sakte hain. Aap `let`, `match`, methods, associated functions, external crates, aur bohat kuch seekhenge! Agle chapters mein hum in ideas ko mazeed detail mein explore karenge. Is chapter mein aap sirf fundamentals ki practice karenge.
 
-We’ll implement a classic beginner programming problem: a guessing game. Here’s
-how it works: The program will generate a random integer between 1 and 100. It
-will then prompt the player to enter a guess. After a guess is entered, the
-program will indicate whether the guess is too low or too high. If the guess is
-correct, the game will print a congratulatory message and exit.
+Hum ek classic beginner programming problem implement karenge: ek guessing game. Ye is tarah kaam karega: Program 1 aur 100 ke darmiyan ek random integer generate karega. Phir ye player ko ek guess enter karne ke liye prompt karega. Guess enter hone ke baad, program batayega ke guess bohat chhota hai ya bohat bara. Agar guess correct hua, to game ek congratulatory message print karega aur exit ho jayega.
 
 ## Setting Up a New Project
 
-To set up a new project, go to the _projects_ directory that you created in
-Chapter 1 and make a new project using Cargo, like so:
+Ek naya project set up karne ke liye, Chapter 1 mein banayi gayi _projects_ directory mein jayein aur Cargo ko use karke is tarah ek naya project banayein:
 
 ```console
 $ cargo new guessing_game
 $ cd guessing_game
 ```
 
-The first command, `cargo new`, takes the name of the project (`guessing_game`)
-as the first argument. The second command changes to the new project’s
-directory.
+Pehli command, `cargo new`, project ka naam (`guessing_game`) pehle argument ke taur par leti hai. Doosri command new project ki directory mein chali jati hai.
 
-Look at the generated _Cargo.toml_ file:
+Generated _Cargo.toml_ file ko dekhein:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial
@@ -44,8 +32,7 @@ cd ../../..
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/Cargo.toml}}
 ```
 
-As you saw in Chapter 1, `cargo new` generates a “Hello, world!” program for
-you. Check out the _src/main.rs_ file:
+Jaisa ke aap ne Chapter 1 mein dekha, `cargo new` aapke liye ek “Hello, world!” program generate karta hai. _src/main.rs_ file ko dekhein:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -53,27 +40,21 @@ you. Check out the _src/main.rs_ file:
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/src/main.rs}}
 ```
 
-Now let’s compile this “Hello, world!” program and run it in the same step
-using the `cargo run` command:
+Ab aaiye is “Hello, world!” program ko compile karein aur `cargo run` command ko use karke isi step mein run karein:
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/output.txt}}
 ```
 
-The `run` command comes in handy when you need to rapidly iterate on a project,
-as we’ll do in this game, quickly testing each iteration before moving on to
-the next one.
+`run` command us waqt kaam aati hai jab aapko kisi project par rapidly iterate karna ho, jaisa ke hum is game mein karenge, aur next iteration par jane se pehle har iteration ko jaldi se test karna ho.
 
-Reopen the _src/main.rs_ file. You’ll be writing all the code in this file.
+Ab _src/main.rs_ file ko dobara open karein. Aap tamam code isi file mein likhenge.
 
 ## Processing a Guess
 
-The first part of the guessing game program will ask for user input, process
-that input, and check that the input is in the expected form. To start, we’ll
-allow the player to input a guess. Enter the code in Listing 2-1 into
-_src/main.rs_.
+Guessing game program ka pehla hissa user se input mangega, us input ko process karega, aur check karega ke input expected form mein hai ya nahi. Shuru karne ke liye, hum player ko ek guess enter karne denge. _src/main.rs_ mein Listing 2-1 ka code enter karein.
 
-<Listing number="2-1" file-name="src/main.rs" caption="Code that gets a guess from the user and prints it">
+<Listing number="2-1" file-name="src/main.rs" caption="Code jo user se guess leta hai aur use print karta hai">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:all}}
@@ -81,127 +62,75 @@ _src/main.rs_.
 
 </Listing>
 
-This code contains a lot of information, so let’s go over it line by line. To
-obtain user input and then print the result as output, we need to bring the
-`io` input/output library into scope. The `io` library comes from the standard
-library, known as `std`:
+Is code mein bohat si information hai, is liye aaiye ise line by line dekhte hain. User input hasil karne aur phir result ko output ke taur par print karne ke liye, humein `io` input/output library ko scope mein lana hoga. `io` library standard library se aati hai, jise `std` ke naam se jana jata hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:io}}
 ```
 
-By default, Rust has a set of items defined in the standard library that it
-brings into the scope of every program. This set is called the _prelude_, and
-you can see everything in it [in the standard library documentation][prelude].
+By default, Rust mein standard library mein defined items ka ek set hota hai jise woh har program ke scope mein lata hai. Is set ko _prelude_ kaha jata hai, aur aap is mein shamil tamam cheezen [standard library documentation][prelude] mein dekh sakte hain.
 
-If a type you want to use isn’t in the prelude, you have to bring that type
-into scope explicitly with a `use` statement. Using the `std::io` library
-provides you with a number of useful features, including the ability to accept
-user input.
+Agar koi type jise aap use karna chahte hain, prelude mein nahi hai, to aapko `use` statement ke zariye us type ko explicitly scope mein lana hota hai. `std::io` library ko use karne se aapko kai useful features milte hain, jin mein user input accept karne ki ability bhi shamil hai.
 
-As you saw in Chapter 1, the `main` function is the entry point into the
-program:
+Jaisa ke aap ne Chapter 1 mein dekha, `main` function program ka entry point hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:main}}
 ```
 
-The `fn` syntax declares a new function; the parentheses, `()`, indicate there
-are no parameters; and the curly bracket, `{`, starts the body of the function.
+`fn` syntax ek naya function declare karta hai; parentheses, `()`, indicate karte hain ke koi parameters nahi hain; aur curly bracket, `{`, function ki body ko start karta hai.
 
-As you also learned in Chapter 1, `println!` is a macro that prints a string to
-the screen:
+Jaisa ke aap ne Chapter 1 mein ye bhi seekha, `println!` ek macro hai jo screen par ek string print karta hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print}}
 ```
 
-This code is printing a prompt stating what the game is and requesting input
-from the user.
+Ye code ek prompt print kar raha hai jo batata hai ke game kya hai aur user se input maangta hai.
 
 ### Storing Values with Variables
 
-Next, we’ll create a _variable_ to store the user input, like this:
+Ab hum user ke input ko store karne ke liye ek _variable_ create karenge, is tarah:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:string}}
 ```
 
-Now the program is getting interesting! There’s a lot going on in this little
-line. We use the `let` statement to create the variable. Here’s another example:
+Ab program interesting ho raha hai! Is chhoti si line mein bohat kuch ho raha hai. Hum variable create karne ke liye `let` statement use karte hain. Ye ek aur example hai:
 
 ```rust,ignore
 let apples = 5;
 ```
 
-This line creates a new variable named `apples` and binds it to the value `5`.
-In Rust, variables are immutable by default, meaning once we give the variable
-a value, the value won’t change. We’ll be discussing this concept in detail in
-the [“Variables and Mutability”][variables-and-mutability]<!-- ignore -->
-section in Chapter 3. To make a variable mutable, we add `mut` before the
-variable name:
+Ye line `apples` naam ka ek naya variable create karti hai aur ise value `5` ke saath bind karti hai. Rust mein variables by default immutable hote hain, yani ek baar hum variable ko koi value de dein, to woh value change nahi hogi. Hum is concept ko Chapter 3 ke [“Variables and Mutability”][variables-and-mutability]<!-- ignore --> section mein detail se discuss karenge. Kisi variable ko mutable banane ke liye hum variable name se pehle `mut` add karte hain:
 
 ```rust,ignore
 let apples = 5; // immutable
 let mut bananas = 5; // mutable
 ```
 
-> Note: The `//` syntax starts a comment that continues until the end of the
-> line. Rust ignores everything in comments. We’ll discuss comments in more
-> detail in [Chapter 3][comments]<!-- ignore -->.
+> Note: `//` syntax ek comment start karti hai jo line ke end tak continue hota hai. Rust comments mein mojood har cheez ko ignore karta hai. Hum [Chapter 3][comments]<!-- ignore --> mein comments ke baare mein mazeed detail se discuss karenge.
 
-Returning to the guessing game program, you now know that `let mut guess` will
-introduce a mutable variable named `guess`. The equal sign (`=`) tells Rust we
-want to bind something to the variable now. On the right of the equal sign is
-the value that `guess` is bound to, which is the result of calling
-`String::new`, a function that returns a new instance of a `String`.
-[`String`][string]<!-- ignore --> is a string type provided by the standard
-library that is a growable, UTF-8 encoded bit of text.
+Guessing game program ki taraf wapas aate hue, ab aap jaante hain ke `let mut guess` `guess` naam ka ek mutable variable introduce karega. Equal sign (`=`) Rust ko batata hai ke hum ab variable ke saath kisi cheez ko bind karna chahte hain. Equal sign ke right side par woh value hai jiske saath `guess` bind hota hai, jo `String::new` ko call karne ka result hai, ek aisa function jo `String` ka ek naya instance return karta hai. [`String`][string]<!-- ignore --> ek string type hai jo standard library provide karti hai aur jo growable, UTF-8 encoded text hota hai.
 
-The `::` syntax in the `::new` line indicates that `new` is an associated
-function of the `String` type. An _associated function_ is a function that’s
-implemented on a type, in this case `String`. This `new` function creates a
-new, empty string. You’ll find a `new` function on many types because it’s a
-common name for a function that makes a new value of some kind.
+`::new` wali line mein `::` syntax indicate karti hai ke `new`, `String` type ka ek associated function hai. Ek _associated function_ woh function hota hai jo kisi type par implement kiya jata hai, is case mein `String` par. Ye `new` function ek nayi, empty string create karta hai. Aapko bohat se types par `new` function milega kyun ke ye kisi qisam ki nayi value banane wale function ke liye ek common naam hai.
 
-In full, the `let mut guess = String::new();` line has created a mutable
-variable that is currently bound to a new, empty instance of a `String`. Whew!
+Mukammal taur par, `let mut guess = String::new();` line ne ek mutable variable create kiya hai jo filhaal `String` ke ek naye, empty instance ke saath bound hai. Uff!
 
 ### Receiving User Input
 
-Recall that we included the input/output functionality from the standard
-library with `use std::io;` on the first line of the program. Now we’ll call
-the `stdin` function from the `io` module, which will allow us to handle user
-input:
+Yaad karein ke hum ne program ki pehli line mein `use std::io;` ke zariye standard library se input/output functionality include ki thi. Ab hum `io` module se `stdin` function call karenge, jo humein user input handle karne dega:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:read}}
 ```
 
-If we hadn’t imported the `io` module with `use std::io;` at the beginning of
-the program, we could still use the function by writing this function call as
-`std::io::stdin`. The `stdin` function returns an instance of
-[`std::io::Stdin`][iostdin]<!-- ignore -->, which is a type that represents a
-handle to the standard input for your terminal.
+Agar hum ne program ke shuru mein `use std::io;` ke zariye `io` module import na kiya hota, to hum phir bhi is function ko use kar sakte the, bas function call ko `std::io::stdin` ki tarah likhna hota. `stdin` function [`std::io::Stdin`][iostdin]<!-- ignore --> ka ek instance return karta hai, jo ek aisi type hai jo aapke terminal ke standard input ke handle ko represent karti hai.
 
-Next, the line `.read_line(&mut guess)` calls the [`read_line`][read_line]<!--
-ignore --> method on the standard input handle to get input from the user.
-We’re also passing `&mut guess` as the argument to `read_line` to tell it what
-string to store the user input in. The full job of `read_line` is to take
-whatever the user types into standard input and append that into a string
-(without overwriting its contents), so we therefore pass that string as an
-argument. The string argument needs to be mutable so that the method can change
-the string’s content.
+Agli line `.read_line(&mut guess)` standard input handle par [`read_line`][read_line]<!--
+ignore --> method ko call karti hai taake user se input hasil kiya ja sake. Hum `read_line` ko argument ke taur par `&mut guess` bhi pass kar rahe hain taake use bataya ja sake ke user input ko kis string mein store karna hai. `read_line` ka poora kaam ye hai ke user standard input mein jo kuch type karta hai, use le kar ek string mein append kar de (uske contents ko overwrite kiye baghair), is liye hum us string ko argument ke taur par pass karte hain. String argument ka mutable hona zaroori hai taake method string ke contents ko change kar sake.
 
-The `&` indicates that this argument is a _reference_, which gives you a way to
-let multiple parts of your code access one piece of data without needing to
-copy that data into memory multiple times. References are a complex feature,
-and one of Rust’s major advantages is how safe and easy it is to use
-references. You don’t need to know a lot of those details to finish this
-program. For now, all you need to know is that, like variables, references are
-immutable by default. Hence, you need to write `&mut guess` rather than
-`&guess` to make it mutable. (Chapter 4 will explain references more
-thoroughly.)
+`&` indicate karta hai ke ye argument ek *reference* hai, jo aapko apne code ke multiple parts ko ek hi data tak access dene ka tareeqa deta hai, baghair is data ko memory mein multiple times copy kiye. References ek complex feature hain, aur Rust ke major advantages mein se ek ye hai ke references ko use karna safe aur easy hai. Is program ko complete karne ke liye aapko in tamam details ke baare mein zyada jaanne ki zaroorat nahi hai. Filhaal aapko sirf itna maloom hona chahiye ke variables ki tarah, references bhi by default immutable hote hain. Isi liye, ise mutable banane ke liye aapko `&guess` ke bajaye `&mut guess` likhna hota hai. (Chapter 4 references ko mazeed thoroughly explain karega.)
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -209,80 +138,49 @@ thoroughly.)
 
 ### Handling Potential Failure with `Result`
 
-We’re still working on this line of code. We’re now discussing a third line of
-text, but note that it’s still part of a single logical line of code. The next
-part is this method:
+Hum abhi bhi isi code ki line par kaam kar rahe hain. Ab hum text ki teesri line discuss kar rahe hain, lekin note karein ke ye abhi bhi code ki ek hi logical line ka hissa hai. Agla part ye method hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:expect}}
 ```
 
-We could have written this code as:
+Hum is code ko is tarah bhi likh sakte the:
 
 ```rust,ignore
 io::stdin().read_line(&mut guess).expect("Failed to read line");
 ```
 
-However, one long line is difficult to read, so it’s best to divide it. It’s
-often wise to introduce a newline and other whitespace to help break up long
-lines when you call a method with the `.method_name()` syntax. Now let’s
-discuss what this line does.
+Lekin ek lambi line ko read karna mushkil hota hai, is liye ise divide karna behtar hai. Jab aap `.method_name()` syntax ke zariye kisi method ko call karte hain, to lambi lines ko break up karne ke liye newline aur doosri whitespace introduce karna aksar behtar hota hai. Ab aaiye discuss karte hain ke ye line kya karti hai.
 
-As mentioned earlier, `read_line` puts whatever the user enters into the string
-we pass to it, but it also returns a `Result` value. [`Result`][result]<!--
-ignore --> is an [_enumeration_][enums]<!-- ignore -->, often called an _enum_,
-which is a type that can be in one of multiple possible states. We call each
-possible state a _variant_.
+Jaisa ke pehle mention kiya gaya, `read_line` user jo kuch enter karta hai use us string mein daal deta hai jo hum use pass karte hain, lekin ye ek `Result` value bhi return karta hai. [`Result`][result]<!--
+ignore --> ek [*enumeration*][enums]<!-- ignore --> hai, jise aksar *enum* kaha jata hai, jo ek aisi type hai jo multiple possible states mein se kisi ek state mein ho sakti hai. Hum har possible state ko ek *variant* kehte hain.
 
-[Chapter 6][enums]<!-- ignore --> will cover enums in more detail. The purpose
-of these `Result` types is to encode error-handling information.
+[Chapter 6][enums]<!-- ignore --> mein enums ko mazeed detail mein cover kiya jayega. In `Result` types ka maqsad error-handling ki information ko encode karna hai.
 
-`Result`’s variants are `Ok` and `Err`. The `Ok` variant indicates the
-operation was successful, and it contains the successfully generated value.
-The `Err` variant means the operation failed, and it contains information
-about how or why the operation failed.
+`Result` ke variants `Ok` aur `Err` hain. `Ok` variant indicate karta hai ke operation successful tha, aur is mein successfully generated value hoti hai. `Err` variant ka matlab hai ke operation fail ho gaya, aur is mein information hoti hai ke operation kis tarah ya kyun fail hua.
 
-Values of the `Result` type, like values of any type, have methods defined on
-them. An instance of `Result` has an [`expect` method][expect]<!-- ignore -->
-that you can call. If this instance of `Result` is an `Err` value, `expect`
-will cause the program to crash and display the message that you passed as an
-argument to `expect`. If the `read_line` method returns an `Err`, it would
-likely be the result of an error coming from the underlying operating system.
-If this instance of `Result` is an `Ok` value, `expect` will take the return
-value that `Ok` is holding and return just that value to you so that you can
-use it. In this case, that value is the number of bytes in the user’s input.
+`Result` type ki values, doosri tamam types ki values ki tarah, un par defined methods rakhti hain. `Result` ka ek instance [`expect method`][expect]<!-- ignore --> rakhta hai jise aap call kar sakte hain. Agar ye `Result` instance ek `Err` value hai, to `expect` program ko crash kar dega aur woh message display karega jo aap ne `expect` ko argument ke taur par pass kiya tha. Agar `read_line` method ek `Err` return karti hai, to ye mumkin hai ke ye underlying operating system se aane wali kisi error ka result ho. Agar ye `Result` instance ek `Ok` value hai, to `expect` woh return value le lega jo `Ok` ke andar hai aur sirf woh value aapko return karega taake aap use kar saken. Is case mein, woh value user ke input mein bytes ki tadaad hai.
 
-If you don’t call `expect`, the program will compile, but you’ll get a warning:
+Agar aap `expect` call nahi karte, to program compile ho jayega, lekin aapko ek warning milegi:
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-02-without-expect/output.txt}}
 ```
 
-Rust warns that you haven’t used the `Result` value returned from `read_line`,
-indicating that the program hasn’t handled a possible error.
+Rust warning deta hai ke aap ne `read_line` se return hone wali `Result` value ko use nahi kiya, jo indicate karta hai ke program ne possible error ko handle nahi kiya.
 
-The right way to suppress the warning is to actually write error-handling code,
-but in our case we just want to crash this program when a problem occurs, so we
-can use `expect`. You’ll learn about recovering from errors in [Chapter
-9][recover]<!-- ignore -->.
+Warning ko suppress karne ka sahi tareeqa ye hai ke asal mein error-handling code likha jaye, lekin hamare case mein hum sirf ye chahte hain ke jab koi problem ho to ye program crash ho jaye, is liye hum `expect` use kar sakte hain. Errors se recover karne ke baare mein aap [Chapter
+9][recover]<!-- ignore --> mein seekhenge.
 
 ### Printing Values with `println!` Placeholders
 
-Aside from the closing curly bracket, there’s only one more line to discuss in
-the code so far:
+Closing curly bracket ke ilawa, ab tak ke code mein sirf ek aur line discuss karni baqi hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print_guess}}
 ```
 
-This line prints the string that now contains the user’s input. The `{}` set of
-curly brackets is a placeholder: Think of `{}` as little crab pincers that hold
-a value in place. When printing the value of a variable, the variable name can
-go inside the curly brackets. When printing the result of evaluating an
-expression, place empty curly brackets in the format string, then follow the
-format string with a comma-separated list of expressions to print in each empty
-curly bracket placeholder in the same order. Printing a variable and the result
-of an expression in one call to `println!` would look like this:
+Ye line us string ko print karti hai jisme ab user ka input mojood hai. `{}` curly brackets ka set ek placeholder hai: `{}` ko chhote crab pincers samjhein jo kisi value ko apni jagah par hold karte hain. Jab kisi variable ki value print karni ho, to variable ka naam curly brackets ke andar rakha ja sakta hai. Jab kisi expression ko evaluate karne ka result print karna ho, to format string mein empty curly brackets rakhein, phir format string ke baad comma-separated expressions ki list dein, jo isi order mein har empty curly bracket placeholder mein print ki jayengi. Ek hi `println!` call mein variable aur kisi expression ka result print karna is tarah hoga:
 
 ```rust
 let x = 5;
@@ -291,11 +189,11 @@ let y = 10;
 println!("x = {x} and y + 2 = {}", y + 2);
 ```
 
-This code would print `x = 5 and y + 2 = 12`.
+Ye code `x = 5 and y + 2 = 12` print karega.
 
 ### Testing the First Part
 
-Let’s test the first part of the guessing game. Run it using `cargo run`:
+Aaiye guessing game ke pehle part ko test karte hain. Ise `cargo run` ke zariye run karein:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-01/
@@ -314,34 +212,23 @@ Please input your guess.
 You guessed: 6
 ```
 
-At this point, the first part of the game is done: We’re getting input from the
-keyboard and then printing it.
+Is point par game ka pehla part complete ho gaya hai: Hum keyboard se input le rahe hain aur phir use print kar rahe hain.
+
 
 ## Generating a Secret Number
 
-Next, we need to generate a secret number that the user will try to guess. The
-secret number should be different every time so that the game is fun to play
-more than once. We’ll use a random number between 1 and 100 so that the game
-isn’t too difficult. Rust doesn’t yet include random number functionality in
-its standard library. However, the Rust team does provide a [`rand`
-crate][randcrate] with said functionality.
+Ab humein ek secret number generate karna hai jise user guess karne ki koshish karega. Secret number har baar different hona chahiye taake game ko ek se zyada baar khelna mazedar rahe. Hum 1 aur 100 ke darmiyan ek random number use karenge taake game bohat mushkil na ho. Rust ki standard library mein abhi random number generate karne ki functionality shamil nahi hai. Lekin, Rust team [`rand` crate][randcrate] provide karti hai jisme ye functionality mojood hai.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="using-a-crate-to-get-more-functionality"></a>
+
 
 ### Increasing Functionality with a Crate
 
-Remember that a crate is a collection of Rust source code files. The project
-we’ve been building is a binary crate, which is an executable. The `rand` crate
-is a library crate, which contains code that is intended to be used in other
-programs and can’t be executed on its own.
+Yaad rakhein ke crate Rust source code files ka ek collection hota hai. Jo project hum build kar rahe hain woh ek binary crate hai, yani ek executable. `rand` crate ek library crate hai, jisme aisa code hota hai jo doosre programs mein use kiye jane ke liye hota hai aur ise apne taur par execute nahi kiya ja sakta.
 
-Cargo’s coordination of external crates is where Cargo really shines. Before we
-can write code that uses `rand`, we need to modify the _Cargo.toml_ file to
-include the `rand` crate as a dependency. Open that file now and add the
-following line to the bottom, beneath the `[dependencies]` section header that
-Cargo created for you. Be sure to specify `rand` exactly as we have here, with
-this version number, or the code examples in this tutorial may not work:
+External crates ko Cargo jis tarah coordinate karta hai, wahi woh jagah hai jahan Cargo waqai apni strength dikhata hai. Is se pehle ke hum `rand` ko use karne wala code likh saken, humein *Cargo.toml* file ko modify karke `rand` crate ko dependency ke taur par include karna hoga. Ab woh file open karein aur Cargo ki taraf se aapke liye banaye gaye `[dependencies]` section header ke neeche, bottom mein following line add karein. `rand` ko bilkul isi tarah specify karna zaroori hai, isi version number ke saath, warna is tutorial ke code examples kaam nahi kar sakte:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -357,24 +244,12 @@ this version number, or the code examples in this tutorial may not work:
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-02/Cargo.toml:8:}}
 ```
 
-In the _Cargo.toml_ file, everything that follows a header is part of that
-section that continues until another section starts. In `[dependencies]`, you
-tell Cargo which external crates your project depends on and which versions of
-those crates you require. In this case, we specify the `rand` crate with the
-semantic version specifier `0.10.1`. Cargo understands [Semantic
-Versioning][semver]<!-- ignore --> (sometimes called _SemVer_), which is a
-standard for writing version numbers. The specifier `0.10.1` is actually
-shorthand for `^0.10.1`, which means any version that is at least 0.10.1 but
-below 0.11.0.
+*Cargo.toml* file mein, kisi header ke baad aane wali har cheez us section ka hissa hoti hai, jo tab tak continue hota hai jab tak koi doosra section start na ho. `[dependencies]` mein aap Cargo ko batate hain ke aapka project kin external crates par depend karta hai aur aapko un crates ke kaun se versions chahiye. Is case mein, hum `rand` crate ko semantic version specifier `0.10.1` ke saath specify karte hain. Cargo [Semantic
+Versioning][semver]<!-- ignore --> ko samajhta hai (jise kabhi kabhi *SemVer* bhi kaha jata hai), jo version numbers likhne ka ek standard hai. Specifier `0.10.1` asal mein `^0.10.1` ka shorthand hai, jis ka matlab hai koi bhi version jo kam az kam 0.10.1 ho lekin 0.11.0 se neeche ho.
 
-Cargo considers these versions to have public APIs compatible with version
-0.10.1, and this specification ensures that you’ll get the latest patch release
-that will still compile with the code in this chapter. Any version 0.11.0 or
-greater is not guaranteed to have the same API as what the following examples
-use.
+Cargo in versions ko version 0.10.1 ke saath public APIs ke hawale se compatible samajhta hai, aur ye specification ensure karti hai ke aapko latest patch release mile jo is chapter ke code ke saath phir bhi compile ho. Version 0.11.0 ya us se greater kisi bhi version ke baare mein ye guarantee nahi hai ke us ka API wohi hoga jo following examples use karte hain.
 
-Now, without changing any of the code, let’s build the project, as shown in
-Listing 2-2.
+Ab, kisi bhi code ko change kiye baghair, aaiye project ko build karte hain, jaisa ke Listing 2-2 mein dikhaya gaya hai.
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -404,30 +279,15 @@ $ cargo build
 
 </Listing>
 
-You may see different version numbers (but they will all be compatible with the
-code, thanks to SemVer!) and different lines (depending on the operating
-system), and the lines may be in a different order.
+Aapko different version numbers nazar aa sakte hain (lekin SemVer ki wajah se woh sab code ke saath compatible honge!) aur different lines bhi nazar aa sakti hain (jo operating system par depend karti hain), aur lines ka order bhi different ho sakta hai.
 
-When we include an external dependency, Cargo fetches the latest versions of
-everything that dependency needs from the _registry_, which is a copy of data
-from [Crates.io][cratesio]. Crates.io is where people in the Rust ecosystem
-post their open source Rust projects for others to use.
+Jab hum koi external dependency include karte hain, Cargo us dependency ko jis cheez ki zaroorat hoti hai us ke latest versions ko *registry* se fetch karta hai, jo [Crates.io][cratesio] ke data ki ek copy hai. Crates.io woh jagah hai jahan Rust ecosystem ke log apne open source Rust projects doosron ke use ke liye post karte hain.
 
-After updating the registry, Cargo checks the `[dependencies]` section and
-downloads any crates listed that aren’t already downloaded. In this case,
-although we only listed `rand` as a dependency, Cargo also grabbed other crates
-that `rand` depends on to work. After downloading the crates, Rust compiles
-them and then compiles the project with the dependencies available.
+Registry update karne ke baad, Cargo `[dependencies]` section ko check karta hai aur un tamam listed crates ko download karta hai jo abhi tak download nahi hue. Is case mein, hum ne sirf `rand` ko dependency ke taur par list kiya, lekin Cargo ne doosre crates bhi download kiye jin par `rand` kaam karne ke liye depend karta hai. Crates download karne ke baad, Rust unhein compile karta hai aur phir available dependencies ke saath project ko compile karta hai.
 
-If you immediately run `cargo build` again without making any changes, you
-won’t get any output aside from the `Finished` line. Cargo knows it has already
-downloaded and compiled the dependencies, and you haven’t changed anything
-about them in your _Cargo.toml_ file. Cargo also knows that you haven’t changed
-anything about your code, so it doesn’t recompile that either. With nothing to
-do, it simply exits.
+Agar aap foran dobara `cargo build` run karein aur koi change na karein, to aapko `Finished` line ke ilawa koi output nahi milega. Cargo jaanta hai ke us ne dependencies ko pehle hi download aur compile kar liya hai, aur aap ne apni *Cargo.toml* file mein unke baare mein kuch change nahi kiya. Cargo ye bhi jaanta hai ke aap ne apne code mein koi change nahi kiya, is liye woh use dobara compile nahi karta. Kuch karne ko na hone ki wajah se, woh simply exit ho jata hai.
 
-If you open the _src/main.rs_ file, make a trivial change, and then save it and
-build again, you’ll only see two lines of output:
+Agar aap *src/main.rs* file open karein, ek chhoti si change karein, phir use save karke dobara build karein, to aapko sirf do lines ka output nazar aayega:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -440,43 +300,22 @@ $ cargo build
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
 ```
 
-These lines show that Cargo only updates the build with your tiny change to the
-_src/main.rs_ file. Your dependencies haven’t changed, so Cargo knows it can
-reuse what it has already downloaded and compiled for those.
+Ye lines show karti hain ke Cargo sirf *src/main.rs* file mein aapki chhoti si change ke saath build ko update karta hai. Aapki dependencies change nahi hui hain, is liye Cargo jaanta hai ke jo kuch us ne pehle hi download aur compile kiya hai, woh dobara use kiya ja sakta hai.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="ensuring-reproducible-builds-with-the-cargo-lock-file"></a>
 
 #### Ensuring Reproducible Builds
 
-Cargo has a mechanism that ensures that you can rebuild the same artifact every
-time you or anyone else builds your code: Cargo will use only the versions of
-the dependencies you specified until you indicate otherwise. For example, say
-that next week version 0.10.2 of the `rand` crate comes out, and that version
-contains an important bug fix, but it also contains a regression that will
-break your code. To handle this, Rust creates the _Cargo.lock_ file the first
-time you run `cargo build`, so we now have this in the _guessing_game_
-directory.
+Cargo ke paas ek aisa mechanism hai jo ye ensure karta hai ke jab bhi aap ya koi aur aapke code ko build kare, to aap har baar wahi artifact dobara build kar saken: Cargo sirf unhi dependency versions ko use karega jinhein aap ne specify kiya hai, jab tak aap khud kuch aur indicate na karein. Misal ke taur par, maan lein ke aglay haftay `rand` crate ka version 0.10.2 release hota hai, aur is version mein ek important bug fix hai, lekin saath hi ek regression bhi hai jo aapke code ko break kar dega. Is situation ko handle karne ke liye, Rust pehli baar `cargo build` run karte waqt *Cargo.lock* file create karta hai, is liye ab hamare paas *guessing_game* directory mein ye file mojood hai.
 
-When you build a project for the first time, Cargo figures out all the versions
-of the dependencies that fit the criteria and then writes them to the
-_Cargo.lock_ file. When you build your project in the future, Cargo will see
-that the _Cargo.lock_ file exists and will use the versions specified there
-rather than doing all the work of figuring out versions again. This lets you
-have a reproducible build automatically. In other words, your project will
-remain at 0.10.1 until you explicitly upgrade, thanks to the _Cargo.lock_ file.
-Because the _Cargo.lock_ file is important for reproducible builds, it’s often
-checked into source control with the rest of the code in your project.
+Jab aap pehli baar project build karte hain, Cargo dependencies ke un tamam versions ka pata lagata hai jo criteria par poore utarte hain aur phir unhein *Cargo.lock* file mein likh deta hai. Jab aap future mein apna project build karenge, Cargo dekhega ke *Cargo.lock* file mojood hai aur versions ka dobara pata lagane ka tamam kaam karne ke bajaye us mein specify kiye gaye versions ko use karega. Is se aapke paas automatically ek reproducible build hota hai. Doosre alfaaz mein, *Cargo.lock* file ki wajah se aapka project 0.10.1 par hi rahega jab tak aap khud explicitly upgrade nahi karte. Kyun ke *Cargo.lock* file reproducible builds ke liye important hai, is liye ise aksar aapke project ke baqi code ke saath source control mein bhi check kiya jata hai.
+
 
 #### Updating a Crate to Get a New Version
 
-When you _do_ want to update a crate, Cargo provides the command `update`,
-which will ignore the _Cargo.lock_ file and figure out all the latest versions
-that fit your specifications in _Cargo.toml_. Cargo will then write those
-versions to the _Cargo.lock_ file. Otherwise, by default, Cargo will only look
-for versions greater than 0.10.1 and less than 0.11.0. If the `rand` crate has
-released the two new versions 0.10.2 and 0.999.0, you would see the following if
-you ran `cargo update`:
+Jab aap *waqai* kisi crate ko update karna chahein, to Cargo `update` command provide karta hai, jo *Cargo.lock* file ko ignore karega aur *Cargo.toml* mein aapki specifications ke mutabiq tamam latest versions ka pata lagayega. Phir Cargo un versions ko *Cargo.lock* file mein likh dega. Is ke ilawa, by default, Cargo sirf un versions ko dekhega jo 0.10.1 se greater aur 0.11.0 se less hon. Agar `rand` crate ne do naye versions 0.10.2 aur 0.999.0 release kiye hon, to agar aap `cargo update` run karein to aapko following output nazar aayega:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -491,34 +330,24 @@ $ cargo update
     Updating rand v0.10.1 -> v0.10.2 (available: v0.999.0)
 ```
 
-Cargo ignores the 0.999.0 release. At this point, you would also notice a
-change in your _Cargo.lock_ file noting that the version of the `rand` crate
-you are now using is 0.10.2. To use `rand` version 0.999.0 or any version in the
-0.999._x_ series, you’d have to update the _Cargo.toml_ file to look like this
-instead (don’t actually make this change because the following examples assume
-you’re using `rand` 0.10):
+Cargo 0.999.0 release ko ignore karta hai. Is point par, aap apni *Cargo.lock* file mein bhi ek change notice karenge, jo indicate karta hai ke ab aap `rand` crate ka version 0.10.2 use kar rahe hain. `rand` version 0.999.0 ya 0.999.*x* series ka koi bhi version use karne ke liye, aapko *Cargo.toml* file ko is tarah update karna hoga (asal mein ye change na karein kyun ke following examples assume karte hain ke aap `rand` 0.10 use kar rahe hain):
 
 ```toml
 [dependencies]
 rand = "0.999.0"
 ```
 
-The next time you run `cargo build`, Cargo will update the registry of crates
-available and reevaluate your `rand` requirements according to the new version
-you have specified.
+Agli baar jab aap `cargo build` run karenge, Cargo available crates ki registry ko update karega aur aapki specify ki hui nayi version ke mutabiq aapki `rand` requirements ka dobara jaiza lega.
 
-There’s a lot more to say about [Cargo][doccargo]<!-- ignore --> and [its
-ecosystem][doccratesio]<!-- ignore -->, which we’ll discuss in Chapter 14, but
-for now, that’s all you need to know. Cargo makes it very easy to reuse
-libraries, so Rustaceans are able to write smaller projects that are assembled
-from a number of packages.
+[Cargo][doccargo]<!-- ignore --> aur [its
+ecosystem][doccratesio]<!-- ignore --> ke baare mein kehne ko bohat kuch aur hai, jise hum Chapter 14 mein discuss karenge, lekin filhaal aapko itna hi jaanne ki zaroorat hai. Cargo libraries ko reuse karna bohat aasaan bana deta hai, is liye Rustaceans aise chhote projects likh sakte hain jo multiple packages se mil kar assemble kiye jate hain.
+
 
 ### Generating a Random Number
 
-Let’s start using `rand` to generate a number to guess. The next step is to
-update _src/main.rs_, as shown in Listing 2-3.
+Aaiye `rand` ko use karke woh number generate karna shuru karte hain jise guess kiya jayega. Agla step *src/main.rs* ko update karna hai, jaisa ke Listing 2-3 mein dikhaya gaya hai.
 
-<Listing number="2-3" file-name="src/main.rs" caption="Adding code to generate a random number">
+<Listing number="2-3" file-name="src/main.rs" caption="Random number generate karne ke liye code add karna">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-03/src/main.rs:all}}
@@ -526,36 +355,16 @@ update _src/main.rs_, as shown in Listing 2-3.
 
 </Listing>
 
-First, we add the line `use rand::prelude::*;`. The `prelude` module contains
-the most commonly used parts of the `rand` crate, and `use` makes those items
-available in our program's scope.
+Sab se pehle, hum line `use rand::prelude::*;` add karte hain. `prelude` module mein `rand` crate ke sab se zyada commonly used parts shamil hote hain, aur `use` un items ko hamare program ke scope mein available kar deta hai.
 
-Next, we’re adding two lines in the middle. In the first line, we call the
-`rand::rng` function that gives us the particular random number generator we’re
-going to use: one that is local to the current thread of execution and is
-seeded by the operating system. Then, we call the `random_range` method on the
-random number generator. This method is defined by the `RngExt` trait that is
-part of the `rand::prelude` module that we brought into scope with the `use
-rand::prelude::*;` statement. The `random_range` method takes a range
-expression as an argument and generates a random number in the range. The kind
-of range expression we’re using here takes the form `start..=end` and is
-inclusive on the lower and upper bounds, so we need to specify `1..=100` to
-request a number between 1 and 100.
+Is ke baad, hum darmiyan mein do lines add kar rahe hain. Pehli line mein, hum `rand::rng` function call karte hain jo humein woh particular random number generator deta hai jise hum use karne wale hain: ek aisa generator jo current thread of execution ke liye local hota hai aur operating system ke zariye seeded hota hai. Phir, hum random number generator par `random_range` method call karte hain. Ye method `RngExt` trait ke zariye define kiya gaya hai jo `rand::prelude` module ka hissa hai, jise hum `use
+rand::prelude::*;` statement ke zariye scope mein laaye hain. `random_range` method ek range expression ko argument ke taur par leti hai aur us range mein ek random number generate karti hai. Yahan hum jis qisam ka range expression use kar rahe hain woh `start..=end` ki form mein hota hai aur lower aur upper dono bounds ko include karta hai, is liye humein 1 aur 100 ke darmiyan number mangne ke liye `1..=100` specify karna hoga.
 
-> Note: You won’t just know what to bring into scope and which methods and
-> functions to call from a crate, so each crate has documentation with
-> instructions for using it. Another neat feature of Cargo is that running the
-> `cargo doc --open` command will build documentation provided by all your
-> dependencies locally and open it in your browser. If you’re interested in
-> other functionality in the `rand` crate, for example, run `cargo doc --open`
-> and click `rand` in the sidebar on the left.
+> Note: Aap khud se ye nahi jaan sakenge ke kisi crate se kya cheez scope mein lani hai aur kaun se methods aur functions call karne hain, is liye har crate ke saath uske use karne ki instructions wali documentation hoti hai. Cargo ka ek aur neat feature ye hai ke `cargo doc --open` command run karne se aapki tamam dependencies ki provide ki hui documentation locally build ho jayegi aur browser mein open ho jayegi. Agar aap `rand` crate ki doosri functionality mein interested hain, to misal ke taur par `cargo doc --open` run karein aur left side par sidebar mein `rand` par click karein.
 
-The second new line prints the secret number. This is useful while we’re
-developing the program to be able to test it, but we’ll delete it from the
-final version. It’s not much of a game if the program prints the answer as soon
-as it starts!
+Doosri nayi line secret number ko print karti hai. Program develop karte waqt ye useful hai kyun ke is se hum ise test kar sakte hain, lekin final version mein hum ise delete kar denge. Agar program start hote hi answer print kar de to ye zyada game nahi rahega!
 
-Try running the program a few times:
+Program ko kuch baar run karke dekhein:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-03/
@@ -586,19 +395,14 @@ Please input your guess.
 You guessed: 5
 ```
 
-You should get different random numbers, and they should all be numbers between
-1 and 100. If you get warnings, they are safe to ignore. If you get errors,
-please check that you have `rand = "0.10.1"` in your *Cargo.toml* as future
-versions of `rand` may have a different API, but any version in the `0.10`
-series should work with the code in this chapter.
+Aapko different random numbers milne chahiye, aur woh tamam 1 aur 100 ke darmiyan hone chahiye. Agar aapko warnings milti hain, to unhein ignore karna safe hai. Agar aapko errors milte hain, to check karein ke aapke *Cargo.toml* mein `rand = "0.10.1"` mojood hai, kyun ke `rand` ke future versions ka API different ho sakta hai, lekin `0.10` series ka koi bhi version is chapter ke code ke saath kaam karna chahiye.
+
 
 ## Comparing the Guess to the Secret Number
 
-Now that we have user input and a random number, we can compare them. That step
-is shown in Listing 2-4. Note that this code won’t compile just yet, as we will
-explain.
+Ab jab hamare paas user input aur ek random number hai, to hum in dono ka comparison kar sakte hain. Ye step Listing 2-4 mein dikhaya gaya hai. Note karein ke ye code abhi compile nahi hoga, jaisa ke hum explain karenge.
 
-<Listing number="2-4" file-name="src/main.rs" caption="Handling the possible return values of comparing two numbers">
+<Listing number="2-4" file-name="src/main.rs" caption="Do numbers ko compare karne ke possible return values ko handle karne wala code">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-04/src/main.rs:here}}
@@ -606,44 +410,17 @@ explain.
 
 </Listing>
 
-First, we add another `use` statement, bringing a type called
-`std::cmp::Ordering` into scope from the standard library. The `Ordering` type
-is another enum and has the variants `Less`, `Greater`, and `Equal`. These are
-the three outcomes that are possible when you compare two values.
+Sab se pehle, hum ek aur `use` statement add karte hain, jo standard library se `std::cmp::Ordering` naam ki type ko scope mein lata hai. `Ordering` type bhi ek enum hai aur iske variants `Less`, `Greater`, aur `Equal` hain. Ye teen possible outcomes hain jo do values ko compare karne par hasil ho sakte hain.
 
-Then, we add five new lines at the bottom that use the `Ordering` type. The
-`cmp` method compares two values and can be called on anything that can be
-compared. It takes a reference to whatever you want to compare with: Here, it’s
-comparing `guess` to `secret_number`. Then, it returns a variant of the
-`Ordering` enum we brought into scope with the `use` statement. We use a
-[`match`][match]<!-- ignore --> expression to decide what to do next based on
-which variant of `Ordering` was returned from the call to `cmp` with the values
-in `guess` and `secret_number`.
+Phir, hum bottom par paanch nayi lines add karte hain jo `Ordering` type ko use karti hain. `cmp` method do values ko compare karta hai aur ise kisi bhi aisi cheez par call kiya ja sakta hai jise compare kiya ja sakta ho. Ye us cheez ka reference leta hai jiske saath aap compare karna chahte hain: yahan ye `guess` ko `secret_number` ke saath compare kar raha hai. Phir, ye `Ordering` enum ka ek variant return karta hai jise hum `use` statement ke zariye scope mein laaye hain. Hum ek [`match`][match]<!-- ignore --> expression use karte hain taake `guess` aur `secret_number` ki values ke saath `cmp` call se jo `Ordering` variant return hua hai, uski bunyaad par decide kar saken ke agay kya karna hai.
 
-A `match` expression is made up of _arms_. An arm consists of a _pattern_ to
-match against, and the code that should be run if the value given to `match`
-fits that arm’s pattern. Rust takes the value given to `match` and looks
-through each arm’s pattern in turn. Patterns and the `match` construct are
-powerful Rust features: They let you express a variety of situations your code
-might encounter, and they make sure you handle them all. These features will be
-covered in detail in Chapter 6 and Chapter 19, respectively.
+Ek `match` expression *arms* se mil kar banta hai. Ek arm mein ek *pattern* hota hai jiske saath match karna hota hai, aur woh code hota hai jo us waqt run hona chahiye jab `match` ko di gayi value us arm ke pattern ke saath match kare. Rust `match` ko di gayi value leta hai aur baari baari har arm ke pattern ko check karta hai. Patterns aur `match` construct Rust ke powerful features hain: Ye aapko mukhtalif situations express karne dete hain jin ka aapka code saamna kar sakta hai, aur ye ensure karte hain ke aap un tamam situations ko handle karein. In features ko Chapter 6 aur Chapter 19 mein respectively detail se cover kiya jayega.
 
-Let’s walk through an example with the `match` expression we use here. Say that
-the user has guessed 50 and the randomly generated secret number this time is
-38.
+Aaiye yahan use kiye gaye `match` expression ke saath ek example ko step by step dekhte hain. Maan lein ke user ne 50 guess kiya hai aur is baar randomly generated secret number 38 hai.
 
-When the code compares 50 to 38, the `cmp` method will return
-`Ordering::Greater` because 50 is greater than 38. The `match` expression gets
-the `Ordering::Greater` value and starts checking each arm’s pattern. It looks
-at the first arm’s pattern, `Ordering::Less`, and sees that the value
-`Ordering::Greater` does not match `Ordering::Less`, so it ignores the code in
-that arm and moves to the next arm. The next arm’s pattern is
-`Ordering::Greater`, which _does_ match `Ordering::Greater`! The associated
-code in that arm will execute and print `Too big!` to the screen. The `match`
-expression ends after the first successful match, so it won’t look at the last
-arm in this scenario.
+Jab code 50 ko 38 ke saath compare karta hai, to `cmp` method `Ordering::Greater` return karega kyun ke 50, 38 se greater hai. `match` expression ko `Ordering::Greater` value milti hai aur woh har arm ke pattern ko check karna shuru karta hai. Ye pehle arm ke pattern, `Ordering::Less`, ko dekhta hai aur samajhta hai ke `Ordering::Greater` value `Ordering::Less` ke saath match nahi karti, is liye woh us arm ke code ko ignore karta hai aur next arm par chala jata hai. Agle arm ka pattern `Ordering::Greater` hai, jo `Ordering::Greater` ke saath *match* karta hai! Is arm ka associated code execute hoga aur screen par `Too big!` print karega. `match` expression pehle successful match ke baad khatam ho jata hai, is liye is situation mein woh last arm ko check nahi karega.
 
-However, the code in Listing 2-4 won’t compile yet. Let’s try it:
+Lekin Listing 2-4 ka code abhi compile nahi hoga. Aaiye ise try karte hain:
 
 <!--
 The error numbers in this output should be that of the code **WITHOUT** the
@@ -654,20 +431,9 @@ anchor or snip comments
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-04/output.txt}}
 ```
 
-The core of the error states that there are _mismatched types_. Rust has a
-strong, static type system. However, it also has type inference. When we wrote
-`let mut guess = String::new()`, Rust was able to infer that `guess` should be
-a `String` and didn’t make us write the type. The `secret_number`, on the other
-hand, is a number type. A few of Rust’s number types can have a value between 1
-and 100: `i32`, a 32-bit number; `u32`, an unsigned 32-bit number; `i64`, a
-64-bit number; as well as others. Unless otherwise specified, Rust defaults to
-an `i32`, which is the type of `secret_number` unless you add type information
-elsewhere that would cause Rust to infer a different numerical type. The reason
-for the error is that Rust cannot compare a string and a number type.
+Error ka core ye hai ke *mismatched types* hain. Rust ke paas ek strong, static type system hai. Lekin is mein type inference bhi hai. Jab hum ne `let mut guess = String::new()` likha, to Rust ye infer kar saka ke `guess` ek `String` hona chahiye aur humein type likhne ki zaroorat nahi padi. Doosri taraf, `secret_number` ek number type hai. Rust ki kuch number types 1 aur 100 ke darmiyan value rakh sakti hain: `i32`, jo 32-bit number hai; `u32`, jo unsigned 32-bit number hai; `i64`, jo 64-bit number hai; aur doosri types bhi. Agar otherwise specify na kiya jaye, to Rust default taur par `i32` use karta hai, jo `secret_number` ki type hai jab tak aap kahin aur type information add na karein jo Rust ko koi different numerical type infer karne par majboor kare. Error ki wajah ye hai ke Rust ek string aur number type ko compare nahi kar sakta.
 
-Ultimately, we want to convert the `String` the program reads as input into a
-number type so that we can compare it numerically to the secret number. We do
-so by adding this line to the `main` function body:
+Aakhir mein, hum `String` ko, jo program input ke taur par read karta hai, ek number type mein convert karna chahte hain taake hum uska secret number ke saath numerical comparison kar saken. Hum `main` function ki body mein ye line add karke aisa karte hain:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -675,59 +441,24 @@ so by adding this line to the `main` function body:
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-03-convert-string-to-number/src/main.rs:here}}
 ```
 
-The line is:
+Line ye hai:
 
 ```rust,ignore
 let guess: u32 = guess.trim().parse().expect("Please type a number!");
 ```
 
-We create a variable named `guess`. But wait, doesn’t the program already have
-a variable named `guess`? It does, but helpfully Rust allows us to shadow the
-previous value of `guess` with a new one. _Shadowing_ lets us reuse the `guess`
-variable name rather than forcing us to create two unique variables, such as
-`guess_str` and `guess`, for example. We’ll cover this in more detail in
-[Chapter 3][shadowing]<!-- ignore -->, but for now, know that this feature is
-often used when you want to convert a value from one type to another type.
+Hum `guess` naam ka ek variable create karte hain. Lekin rukiye, kya program mein pehle se `guess` naam ka variable nahi hai? Hai, lekin Rust humein pichli `guess` value ko ek nayi value ke saath shadow karne ki ijazat deta hai. *Shadowing* humein `guess` variable name ko dobara use karne deta hai, bajaye is ke ke hum do unique variables create karne par majboor hon, jaise `guess_str` aur `guess`, misal ke taur par. Hum isay [Chapter 3][shadowing]<!-- ignore --> mein mazeed detail se cover karenge, lekin filhaal itna jaan lein ke ye feature aksar us waqt use hota hai jab aap kisi value ko ek type se doosri type mein convert karna chahte hain.
 
-We bind this new variable to the expression `guess.trim().parse()`. The `guess`
-in the expression refers to the original `guess` variable that contained the
-input as a string. The `trim` method on a `String` instance will eliminate any
-whitespace at the beginning and end, which we must do before we can convert the
-string to a `u32`, which can only contain numerical data. The user must press
-<kbd>enter</kbd> to satisfy `read_line` and input their guess, which adds a
-newline character to the string. For example, if the user types <kbd>5</kbd> and
-presses <kbd>enter</kbd>, `guess` looks like this: `5\n`. The `\n` represents
-“newline.” (On Windows, pressing <kbd>enter</kbd> results in a carriage return
-and a newline, `\r\n`.) The `trim` method eliminates `\n` or `\r\n`, resulting
-in just `5`.
+Hum is naye variable ko expression `guess.trim().parse()` ke saath bind karte hain. Expression mein `guess` original `guess` variable ko refer karta hai jisme input string ke taur par mojood tha. `String` instance par `trim` method shuru aur aakhir mein mojood kisi bhi whitespace ko eliminate kar deta hai, jo humein string ko `u32` mein convert karne se pehle karna zaroori hai, kyun ke `u32` mein sirf numerical data ho sakta hai. User ko apna guess input karne ke liye <kbd>enter</kbd> press karna zaroori hai taake `read_line` satisfy ho, aur is se string mein ek newline character add ho jata hai. Misal ke taur par, agar user <kbd>5</kbd> type karke <kbd>enter</kbd> press karta hai, to `guess` is tarah nazar aata hai: `5\n`. `\n` “newline” ko represent karta hai. (Windows par, <kbd>enter</kbd> press karne se carriage return aur newline, `\r\n`, result hota hai.) `trim` method `\n` ya `\r\n` ko eliminate kar deta hai, jis ka result sirf `5` hota hai.
 
-The [`parse` method on strings][parse]<!-- ignore --> converts a string to
-another type. Here, we use it to convert from a string to a number. We need to
-tell Rust the exact number type we want by using `let guess: u32`. The colon
-(`:`) after `guess` tells Rust we’ll annotate the variable’s type. Rust has a
-few built-in number types; the `u32` seen here is an unsigned, 32-bit integer.
-It’s a good default choice for a small positive number. You’ll learn about
-other number types in [Chapter 3][integers]<!-- ignore -->.
+Strings par [`parse method`][parse]<!-- ignore --> ek string ko kisi doosri type mein convert karta hai. Yahan, hum ise string ko number mein convert karne ke liye use karte hain. Humein `let guess: u32` use karke Rust ko exact number type batani hoti hai jo hum chahte hain. `guess` ke baad colon (`:`) Rust ko batata hai ke hum variable ki type annotate karenge. Rust mein kuch built-in number types hain; yahan nazar aane wala `u32` ek unsigned, 32-bit integer hai. Chhoti positive number ke liye ye ek achha default choice hai. Aap [Chapter 3][integers]<!-- ignore --> mein doosri number types ke baare mein seekhenge.
 
-Additionally, the `u32` annotation in this example program and the comparison
-with `secret_number` means Rust will infer that `secret_number` should be a
-`u32` as well. So, now the comparison will be between two values of the same
-type!
+Is ke ilawa, is example program mein `u32` annotation aur `secret_number` ke saath comparison ka matlab hai ke Rust infer kar lega ke `secret_number` bhi `u32` hona chahiye. To ab comparison ek hi type ki do values ke darmiyan hoga!
 
-The `parse` method will only work on characters that can logically be converted
-into numbers and so can easily cause errors. If, for example, the string
-contained `A👍%`, there would be no way to convert that to a number. Because it
-might fail, the `parse` method returns a `Result` type, much as the `read_line`
-method does (discussed earlier in [“Handling Potential Failure with
-`Result`”](#handling-potential-failure-with-result)<!-- ignore -->). We’ll treat
-this `Result` the same way by using the `expect` method again. If `parse`
-returns an `Err` `Result` variant because it couldn’t create a number from the
-string, the `expect` call will crash the game and print the message we give it.
-If `parse` can successfully convert the string to a number, it will return the
-`Ok` variant of `Result`, and `expect` will return the number that we want from
-the `Ok` value.
+`parse` method sirf un characters par kaam karega jinhein logically numbers mein convert kiya ja sakta hai aur is liye ye aasani se errors cause kar sakta hai. Misal ke taur par, agar string mein `A👍%` hota, to use number mein convert karne ka koi tareeqa nahi hota. Kyun ke ye fail ho sakta hai, `parse` method ek `Result` type return karta hai, bilkul `read_line` method ki tarah, jise pehle [“Handling Potential Failure with
+`Result`”](#handling-potential-failure-with-result)<!-- ignore --> mein discuss kiya gaya tha. Hum is `Result` ko bhi `expect` method use karke usi tarah handle karenge. Agar `parse` ek `Err` `Result` variant return karta hai kyun ke woh string se number create nahi kar saka, to `expect` call game ko crash kar dega aur woh message print karega jo hum ne use diya hai. Agar `parse` string ko successfully number mein convert kar sakta hai, to ye `Result` ka `Ok` variant return karega, aur `expect` `Ok` value se woh number return karega jo humein chahiye.
 
-Let’s run the program now:
+Ab aaiye program ko run karte hain:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-03-convert-string-to-number/
@@ -749,18 +480,14 @@ You guessed: 76
 Too big!
 ```
 
-Nice! Even though spaces were added before the guess, the program still figured
-out that the user guessed 76. Run the program a few times to verify the
-different behavior with different kinds of input: Guess the number correctly,
-guess a number that is too high, and guess a number that is too low.
+Nice! Guess se pehle spaces add hone ke bawajood, program ne phir bhi sahi tarah figure out kar liya ke user ne 76 guess kiya tha. Different kinds of input ke saath different behavior verify karne ke liye program ko kuch baar run karein: Number ko correctly guess karein, aisa number guess karein jo bohat high ho, aur aisa number guess karein jo bohat low ho.
 
-We have most of the game working now, but the user can make only one guess.
-Let’s change that by adding a loop!
+Ab game ka zyada tar hissa kaam kar raha hai, lekin user sirf ek guess kar sakta hai. Aaiye ek loop add karke isay change karte hain!
+
 
 ## Allowing Multiple Guesses with Looping
 
-The `loop` keyword creates an infinite loop. We’ll add a loop to give users
-more chances at guessing the number:
+`loop` keyword ek infinite loop create karta hai. Hum users ko number guess karne ke mazeed chances dene ke liye ek loop add karenge:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -768,17 +495,9 @@ more chances at guessing the number:
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-04-looping/src/main.rs:here}}
 ```
 
-As you can see, we’ve moved everything from the guess input prompt onward into
-a loop. Be sure to indent the lines inside the loop another four spaces each
-and run the program again. The program will now ask for another guess forever,
-which actually introduces a new problem. It doesn’t seem like the user can quit!
+Jaisa ke aap dekh sakte hain, hum ne guess input prompt se onward sab kuch ek loop ke andar move kar diya hai. Loop ke andar wali lines ko mazeed chaar spaces se indent karna zaroori hai aur phir program ko dobara run karein. Ab program hamesha ek aur guess maangta rahega, jo asal mein ek naya problem introduce karta hai. Aisa lagta hai ke user quit hi nahi kar sakta!
 
-The user could always interrupt the program by using the keyboard shortcut
-<kbd>ctrl</kbd>-<kbd>C</kbd>. But there’s another way to escape this insatiable
-monster, as mentioned in the `parse` discussion in [“Comparing the Guess to the
-Secret Number”](#comparing-the-guess-to-the-secret-number)<!-- ignore -->: If
-the user enters a non-number answer, the program will crash. We can take
-advantage of that to allow the user to quit, as shown here:
+User keyboard shortcut <kbd>ctrl</kbd>-<kbd>C</kbd> use karke hamesha program ko interrupt kar sakta hai. Lekin is insatiable monster se bachne ka ek aur tareeqa hai, jaisa ke [“Comparing the Guess to the Secret Number”](#comparing-the-guess-to-the-secret-number)<!-- ignore --> mein `parse` ki discussion ke dauran mention kiya gaya tha: Agar user non-number answer enter kare, to program crash ho jayega. Hum is cheez ka faida utha kar user ko quit karne ki permission de sakte hain, jaisa ke yahan dikhaya gaya hai:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-04-looping/
@@ -817,13 +536,12 @@ Please type a number!: ParseIntError { kind: InvalidDigit }
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-Typing `quit` will quit the game, but as you’ll notice, so will entering any
-other non-number input. This is suboptimal, to say the least; we want the game
-to also stop when the correct number is guessed.
+`quit` type karne se game quit ho jayega, lekin jaisa ke aap notice karenge, kisi bhi doosre non-number input ko enter karne se bhi aisa hi hoga. Kam az kam kehne ke liye, ye ideal nahi hai; hum chahte hain ke jab correct number guess ho jaye to game bhi ruk jaye.
+
 
 ### Quitting After a Correct Guess
 
-Let’s program the game to quit when the user wins by adding a `break` statement:
+Aaiye `break` statement add karke game ko is tarah program karte hain ke user ke jeetne par game quit ho jaye:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -831,18 +549,13 @@ Let’s program the game to quit when the user wins by adding a `break` statemen
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-05-quitting/src/main.rs:here}}
 ```
 
-Adding the `break` line after `You win!` makes the program exit the loop when
-the user guesses the secret number correctly. Exiting the loop also means
-exiting the program, because the loop is the last part of `main`.
+`You win!` ke baad `break` line add karne se, jab user secret number ko sahi guess karta hai to program loop se exit kar jata hai. Loop se exit karne ka matlab program se exit karna bhi hai, kyun ke loop `main` ka aakhri hissa hai.
 
 ### Handling Invalid Input
 
-To further refine the game’s behavior, rather than crashing the program when
-the user inputs a non-number, let’s make the game ignore a non-number so that
-the user can continue guessing. We can do that by altering the line where
-`guess` is converted from a `String` to a `u32`, as shown in Listing 2-5.
+Game ke behavior ko mazeed refine karne ke liye, jab user non-number input enter kare to program ko crash karne ke bajaye, aaiye game ko non-number ko ignore karne dein taa-ke user guessing jaari rakh sake. Hum ye us line ko alter karke kar sakte hain jahan `guess` ko `String` se `u32` mein convert kiya jata hai, jaisa ke Listing 2-5 mein dikhaya gaya hai.
 
-<Listing number="2-5" file-name="src/main.rs" caption="Ignoring a non-number guess and asking for another guess instead of crashing the program">
+<Listing number="2-5" file-name="src/main.rs" caption="Non-number guess ko ignore karna aur program ko crash karne ke bajaye doosra guess maangna">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-05/src/main.rs:here}}
@@ -850,29 +563,13 @@ the user can continue guessing. We can do that by altering the line where
 
 </Listing>
 
-We switch from an `expect` call to a `match` expression to move from crashing
-on an error to handling the error. Remember that `parse` returns a `Result`
-type and `Result` is an enum that has the variants `Ok` and `Err`. We’re using
-a `match` expression here, as we did with the `Ordering` result of the `cmp`
-method.
+Hum `expect` call se `match` expression par switch karte hain taa-ke error par crash karne ke bajaye error ko handle kiya ja sake. Yaad rakhein ke `parse` ek `Result` type return karta hai aur `Result` ek enum hai jisme `Ok` aur `Err` variants hote hain. Hum yahan `match` expression use kar rahe hain, bilkul usi tarah jaise hum ne `cmp` method ke `Ordering` result ke saath kiya tha.
 
-If `parse` is able to successfully turn the string into a number, it will
-return an `Ok` value that contains the resultant number. That `Ok` value will
-match the first arm’s pattern, and the `match` expression will just return the
-`num` value that `parse` produced and put inside the `Ok` value. That number
-will end up right where we want it in the new `guess` variable we’re creating.
+Agar `parse` string ko successfully number mein convert kar sake, to ye ek `Ok` value return karega jisme resultant number hoga. Ye `Ok` value pehle arm ke pattern se match karegi, aur `match` expression sirf woh `num` value return karega jo `parse` ne produce ki aur `Ok` value ke andar rakhi. Woh number seedha us jagah aa jayega jahan humein chahiye, yani naye `guess` variable mein jo hum create kar rahe hain.
 
-If `parse` is _not_ able to turn the string into a number, it will return an
-`Err` value that contains more information about the error. The `Err` value
-does not match the `Ok(num)` pattern in the first `match` arm, but it does
-match the `Err(_)` pattern in the second arm. The underscore, `_`, is a
-catch-all value; in this example, we’re saying we want to match all `Err`
-values, no matter what information they have inside them. So, the program will
-execute the second arm’s code, `continue`, which tells the program to go to the
-next iteration of the `loop` and ask for another guess. So, effectively, the
-program ignores all errors that `parse` might encounter!
+Agar `parse` string ko number mein convert *nahi* kar sakta, to ye ek `Err` value return karega jisme error ke baare mein mazeed information hogi. `Err` value pehle `match` arm ke `Ok(num)` pattern se match nahi karti, lekin doosre arm ke `Err(_)` pattern se match karti hai. Underscore, `_`, ek catch-all value hai; is example mein hum keh rahe hain ke hum tamam `Err` values se match karna chahte hain, chahe unke andar koi bhi information ho. Is liye program doosre arm ka code, `continue`, execute karega, jo program ko `loop` ki next iteration par jane aur doosra guess maangne ke liye kehta hai. Is tarah, effectively, program un tamam errors ko ignore kar deta hai jin ka `parse` ko saamna ho sakta hai!
 
-Now everything in the program should work as expected. Let’s try it:
+Ab program mein sab kuch expected tareeqe se kaam karna chahiye. Aaiye ise try karte hain:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-05/
@@ -906,12 +603,9 @@ You guessed: 61
 You win!
 ```
 
-Awesome! With one tiny final tweak, we will finish the guessing game. Recall
-that the program is still printing the secret number. That worked well for
-testing, but it ruins the game. Let’s delete the `println!` that outputs the
-secret number. Listing 2-6 shows the final code.
+Awesome! Sirf ek chhoti si final tweak ke saath hum guessing game complete kar denge. Yaad karein ke program abhi bhi secret number print kar raha hai. Testing ke liye ye achha tha, lekin is se game ka maza kharab ho jata hai. Aaiye secret number output karne wale `println!` ko delete kar dein. Listing 2-6 final code dikhati hai.
 
-<Listing number="2-6" file-name="src/main.rs" caption="Complete guessing game code">
+<Listing number="2-6" file-name="src/main.rs" caption="Mukammal guessing game ka code">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-06/src/main.rs}}
@@ -919,17 +613,11 @@ secret number. Listing 2-6 shows the final code.
 
 </Listing>
 
-At this point, you’ve successfully built the guessing game. Congratulations!
+Is point par, aap ne successfully guessing game build kar liya hai. Mubarak ho!
 
 ## Summary
 
-This project was a hands-on way to introduce you to many new Rust concepts:
-`let`, `match`, functions, the use of external crates, and more. In the next
-few chapters, you’ll learn about these concepts in more detail. Chapter 3
-covers concepts that most programming languages have, such as variables, data
-types, and functions, and shows how to use them in Rust. Chapter 4 explores
-ownership, a feature that makes Rust different from other languages. Chapter 5
-discusses structs and method syntax, and Chapter 6 explains how enums work.
+Ye project ek hands-on tareeqa tha jis ke zariye aapko Rust ke bohat se naye concepts se introduce kiya gaya: `let`, `match`, functions, external crates ka use, aur bohat kuch. Agle kuch chapters mein aap in concepts ke baare mein mazeed detail se seekhenge. Chapter 3 un concepts ko cover karta hai jo zyada tar programming languages mein mojood hote hain, jaise variables, data types, aur functions, aur dikhata hai ke inhein Rust mein kaise use kiya jata hai. Chapter 4 ownership ko explore karta hai, jo ek aisa feature hai jo Rust ko doosri languages se different banata hai. Chapter 5 structs aur method syntax par baat karta hai, aur Chapter 6 explain karta hai ke enums kaise kaam karte hain.
 
 [prelude]: ../std/prelude/index.html
 [variables-and-mutability]: ch03-01-variables-and-mutability.html#variables-and-mutability
@@ -950,3 +638,4 @@ discusses structs and method syntax, and Chapter 6 explains how enums work.
 [shadowing]: ch03-01-variables-and-mutability.html#shadowing
 [parse]: ../std/primitive.str.html#method.parse
 [integers]: ch03-02-data-types.html#integer-types
+
