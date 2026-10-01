@@ -1,19 +1,14 @@
 ## Comments
 
-All programmers strive to make their code easy to understand, but sometimes
-extra explanation is warranted. In these cases, programmers leave _comments_ in
-their source code that the compiler will ignore but that people reading the
-source code may find useful.
+Tamam programmers apne code ko samajhne mein aasaan banane ki koshish karte hain, lekin kabhi kabhi extra explanation dena zaroori hota hai. In situations mein, programmers apne source code mein *comments* likhte hain jinhein compiler ignore karta hai, lekin jo log source code parh rahe hote hain unke liye useful ho sakte hain.
 
-Here’s a simple comment:
+Yahan ek simple comment hai:
 
 ```rust
 // hello, world
 ```
 
-In Rust, the idiomatic comment style starts a comment with two slashes, and the
-comment continues until the end of the line. For comments that extend beyond a
-single line, you’ll need to include `//` on each line, like this:
+Rust mein idiomatic comment style do slashes se comment start karti hai, aur comment line ke end tak continue hota hai. Aise comments jo ek single line se zyada extend hon, unke liye aapko har line par `//` include karna hoga, is tarah:
 
 ```rust
 // So we're doing something complicated here, long enough that we need
@@ -21,7 +16,7 @@ single line, you’ll need to include `//` on each line, like this:
 // explain what's going on.
 ```
 
-Comments can also be placed at the end of lines containing code:
+Comments ko code wali lines ke end par bhi place kiya ja sakta hai:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -29,8 +24,7 @@ Comments can also be placed at the end of lines containing code:
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-24-comments-end-of-line/src/main.rs}}
 ```
 
-But you’ll more often see them used in this format, with the comment on a
-separate line above the code it’s annotating:
+Lekin zyada tar aap unhein is format mein dekhenge, jahan comment us code ke upar ek separate line par hota hai jis ke baare mein woh explanation de raha hota hai:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -38,8 +32,6 @@ separate line above the code it’s annotating:
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-25-comments-above-line/src/main.rs}}
 ```
 
-Rust also has another kind of comment, documentation comments, which we’ll
-discuss in the [“Publishing a Crate to Crates.io”][publishing]<!-- ignore -->
-section of Chapter 14.
+Rust mein ek aur qisam ka comment bhi hota hai, documentation comments, jinhein hum Chapter 14 ke [“Publishing a Crate to Crates.io”][publishing]<!-- ignore --> section mein discuss karenge.
 
 [publishing]: ch14-02-publishing-to-crates-io.html
