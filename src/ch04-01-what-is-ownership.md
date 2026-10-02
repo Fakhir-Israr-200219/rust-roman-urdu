@@ -1,120 +1,49 @@
 ## What Is Ownership?
 
-_Ownership_ is a set of rules that govern how a Rust program manages memory.
-All programs have to manage the way they use a computer’s memory while running.
-Some languages have garbage collection that regularly looks for no-longer-used
-memory as the program runs; in other languages, the programmer must explicitly
-allocate and free the memory. Rust uses a third approach: Memory is managed
-through a system of ownership with a set of rules that the compiler checks. If
-any of the rules are violated, the program won’t compile. None of the features
-of ownership will slow down your program while it’s running.
+*Ownership* rules ka ek set hai jo ye govern karta hai ke Rust program memory ko kaise manage karta hai. Tamam programs ko ye manage karna hota hai ke run hote waqt woh computer ki memory ko kis tarah use karte hain. Kuch languages mein garbage collection hoti hai jo program run hone ke dauran regularly aisi memory ko dhoondti hai jo ab use nahi ho rahi hoti; doosri languages mein programmer ko memory ko explicitly allocate aur free karna padta hai. Rust teesra approach use karta hai: Memory ko ownership ke ek system ke zariye manage kiya jata hai jisme rules ka ek set hota hai jinhein compiler check karta hai. Agar in mein se koi bhi rule violate ho, to program compile nahi hoga. Ownership ki koi bhi feature aapke program ko run hote waqt slow nahi karegi.
 
-Because ownership is a new concept for many programmers, it does take some time
-to get used to. The good news is that the more experienced you become with Rust
-and the rules of the ownership system, the easier you’ll find it to naturally
-develop code that is safe and efficient. Keep at it!
+Kyun ke ownership bohat se programmers ke liye ek naya concept hai, is liye ise samajhne aur iska aadhi hone mein kuch waqt lagta hai. Achhi baat ye hai ke jaise jaise aap Rust aur ownership system ke rules ke saath zyada experienced hote jayenge, aapke liye naturally aisa code develop karna aasaan hota jayega jo safe aur efficient ho. Laga rehne dein!
 
-When you understand ownership, you’ll have a solid foundation for understanding
-the features that make Rust unique. In this chapter, you’ll learn ownership by
-working through some examples that focus on a very common data structure:
-strings.
+Jab aap ownership ko samajh lenge, to aapke paas un features ko samajhne ke liye ek solid foundation hoga jo Rust ko unique banate hain. Is chapter mein, aap kuch examples ke zariye ownership seekhenge jo ek bohat common data structure: strings, par focus karte hain.
 
 > ### The Stack and the Heap
 >
-> Many programming languages don’t require you to think about the stack and the
-> heap very often. But in a systems programming language like Rust, whether a
-> value is on the stack or the heap affects how the language behaves and why
-> you have to make certain decisions. Parts of ownership will be described in
-> relation to the stack and the heap later in this chapter, so here is a brief
-> explanation in preparation.
+> Bohat si programming languages mein aapko stack aur heap ke baare mein bohat zyada sochne ki zaroorat nahi padti. Lekin Rust jaisi systems programming language mein, koi value stack par hai ya heap par, is baat ka asar is par padta hai ke language kaise behave karti hai aur aapko kuch khaas decisions kyun lene padte hain. Ownership ke kuch parts ko baad mein is chapter mein stack aur heap ke hawale se describe kiya jayega, is liye tayyari ke taur par yahan ek mukhtasar explanation di ja rahi hai.
 >
-> Both the stack and the heap are parts of memory available to your code to use
-> at runtime, but they are structured in different ways. The stack stores
-> values in the order it gets them and removes the values in the opposite
-> order. This is referred to as _last in, first out (LIFO)_. Think of a stack of
-> plates: When you add more plates, you put them on top of the pile, and when
-> you need a plate, you take one off the top. Adding or removing plates from
-> the middle or bottom wouldn’t work as well! Adding data is called _pushing
-> onto the stack_, and removing data is called _popping off the stack_. All
-> data stored on the stack must have a known, fixed size. Data with an unknown
-> size at compile time or a size that might change must be stored on the heap
-> instead.
+> Stack aur heap dono memory ke woh hisse hain jo runtime par aapke code ke use ke liye available hote hain, lekin dono mukhtalif tareeqon se structured hote hain. Stack values ko us order mein store karta hai jis order mein woh usay milti hain aur values ko us ke ulat order mein remove karta hai. Isay *last in, first out (LIFO)* kaha jata hai. Plates ke ek stack ka tasawwur karein: Jab aap mazeed plates add karte hain, to unhein pile ke upar rakhte hain, aur jab aapko ek plate chahiye hoti hai, to aap upar se ek plate uthate hain. Darmiyan ya neeche se plates add ya remove karna itna effective nahi hoga! Data add karne ko *pushing onto the stack* kaha jata hai, aur data remove karne ko *popping off the stack* kaha jata hai. Stack par store hone wale tamam data ka size known aur fixed hona zaroori hai. Aisa data jis ka size compile time par unknown ho ya jis ka size change ho sakta ho, usay is ke bajaye heap par store karna zaroori hai.
 >
-> The heap is less organized: When you put data on the heap, you request a
-> certain amount of space. The memory allocator finds an empty spot in the heap
-> that is big enough, marks it as being in use, and returns a _pointer_, which
-> is the address of that location. This process is called _allocating on the
-> heap_ and is sometimes abbreviated as just _allocating_ (pushing values onto
-> the stack is not considered allocating). Because the pointer to the heap is a
-> known, fixed size, you can store the pointer on the stack, but when you want
-> the actual data, you must follow the pointer. Think of being seated at a
-> restaurant. When you enter, you state the number of people in your group, and
-> the host finds an empty table that fits everyone and leads you there. If
-> someone in your group comes late, they can ask where you’ve been seated to
-> find you.
+> Heap kam organized hota hai: Jab aap heap par data rakhte hain, to aap ek khaas amount of space request karte hain. Memory allocator heap mein ek aisi khaali jagah dhoondta hai jo kaafi badi ho, use in use mark karta hai, aur ek *pointer* return karta hai, jo us location ka address hota hai. Is process ko *allocating on the heap* kaha jata hai aur kabhi kabhi sirf *allocating* keh kar mukhtasar kiya jata hai (values ko stack par push karna allocating nahi mana jata). Kyun ke heap ka pointer ek known, fixed size rakhta hai, aap pointer ko stack par store kar sakte hain, lekin jab aap actual data chahte hain, to aapko pointer ko follow karna hota hai. Kisi restaurant mein baithe hone ka tasawwur karein. Jab aap enter karte hain, to aap apne group mein logon ki tadaad batate hain, aur host ek aisi khaali table dhoondta hai jo sab ke liye munasib ho aur aapko wahan le jata hai. Agar aapke group mein se koi der se aaye, to woh pooch sakta hai ke aap kahan baithe hain taa-ke woh aapko dhoond sake.
 >
-> Pushing to the stack is faster than allocating on the heap because the
-> allocator never has to search for a place to store new data; that location is
-> always at the top of the stack. Comparatively, allocating space on the heap
-> requires more work because the allocator must first find a big enough space
-> to hold the data and then perform bookkeeping to prepare for the next
-> allocation.
+> Stack par push karna heap par allocate karne se zyada fast hota hai kyun ke allocator ko new data store karne ke liye koi jagah search nahi karni padti; woh location hamesha stack ke top par hoti hai. Is ke muqable mein, heap par space allocate karne mein zyada kaam hota hai kyun ke allocator ko pehle data rakhne ke liye kaafi badi space dhoondni hoti hai aur phir next allocation ke liye tayari karne ke liye bookkeeping karni hoti hai.
 >
-> Accessing data in the heap is generally slower than accessing data on the
-> stack because you have to follow a pointer to get there. Contemporary
-> processors are faster if they jump around less in memory. Continuing the
-> analogy, consider a server at a restaurant taking orders from many tables.
-> It’s most efficient to get all the orders at one table before moving on to
-> the next table. Taking an order from table A, then an order from table B,
-> then one from A again, and then one from B again would be a much slower
-> process. By the same token, a processor can usually do its job better if it
-> works on data that’s close to other data (as it is on the stack) rather than
-> farther away (as it can be on the heap).
+> Heap mein data access karna aam tor par stack par data access karne se slow hota hai kyun ke wahan tak pohanchne ke liye aapko ek pointer follow karna padta hai. Contemporary processors us waqt zyada fast hote hain jab unhein memory mein kam idhar-udhar jump karna pade. Isi analogy ko aage barhate hue, ek restaurant mein kai tables se orders lene wale server ka tasawwur karein. Sab se efficient ye hai ke ek table ke tamam orders lene ke baad agli table ki taraf jaya jaye. Table A se ek order lena, phir table B se ek order lena, phir dobara A se aur phir dobara B se order lena kaafi slow process hoga. Isi tarah, processor aam tor par apna kaam behtar tareeqe se kar sakta hai agar woh aise data par kaam kare jo doosre data ke qareeb ho (jaise stack par hota hai) bajaye is ke ke woh data door ho (jaise heap par ho sakta hai).
 >
-> When your code calls a function, the values passed into the function
-> (including, potentially, pointers to data on the heap) and the function’s
-> local variables get pushed onto the stack. When the function is over, those
-> values get popped off the stack.
+> Jab aapka code kisi function ko call karta hai, to function mein pass ki jane wali values (jin mein, mumkin hai, heap par data ke pointers bhi shamil hon) aur function ke local variables stack par push ho jate hain. Jab function khatam hota hai, to woh values stack se pop ho jati hain.
 >
-> Keeping track of what parts of code are using what data on the heap,
-> minimizing the amount of duplicate data on the heap, and cleaning up unused
-> data on the heap so that you don’t run out of space are all problems that
-> ownership addresses. Once you understand ownership, you won’t need to think
-> about the stack and the heap very often. But knowing that the main purpose of
-> ownership is to manage heap data can help explain why it works the way it
-> does.
+> Ye track rakhna ke code ke kaun se parts heap par mojood kis data ko use kar rahe hain, heap par duplicate data ki amount ko minimum rakhna, aur heap par unused data ko clean up karna taa-ke aapke paas space khatam na ho jaye, ye sab woh problems hain jinhein ownership address karti hai. Jab aap ownership ko samajh lenge, to aapko stack aur heap ke baare mein bohat zyada sochne ki zaroorat nahi padegi. Lekin ye jaanna ke ownership ka main purpose heap data ko manage karna hai, ye samajhne mein madad kar sakta hai ke ownership jis tarah kaam karti hai, us tarah kyun karti hai.
+
 
 ### Ownership Rules
 
-First, let’s take a look at the ownership rules. Keep these rules in mind as we
-work through the examples that illustrate them:
+Sab se pehle, aaiye ownership ke rules par nazar daalte hain. In rules ko zehan mein rakhein jab hum un examples ke zariye kaam karenge jo inhein illustrate karte hain:
 
-- Each value in Rust has an _owner_.
-- There can only be one owner at a time.
-- When the owner goes out of scope, the value will be dropped.
+* Rust mein har value ka ek *owner* hota hai.
+* Ek waqt mein sirf ek owner ho sakta hai.
+* Jab owner scope se bahar chala jata hai, to value drop kar di jati hai.
 
 ### Variable Scope
 
-Now that we’re past basic Rust syntax, we won’t include all the `fn main() {`
-code in the examples, so if you’re following along, make sure to put the
-following examples inside a `main` function manually. As a result, our examples
-will be a bit more concise, letting us focus on the actual details rather than
-boilerplate code.
+Ab jab hum basic Rust syntax se aage nikal chuke hain, hum examples mein tamam `fn main() {` code include nahi karenge, is liye agar aap hamare saath follow kar rahe hain, to ye ensure karein ke following examples ko manually ek `main` function ke andar rakhein. Is ka result ye hai ke hamare examples thore zyada concise honge, aur humein boilerplate code ke bajaye asal details par focus karne ka mauqa milega.
 
-As a first example of ownership, we’ll look at the scope of some variables. A
-_scope_ is the range within a program for which an item is valid. Take the
-following variable:
+Ownership ki pehli example ke taur par, hum kuch variables ke scope ko dekhenge. Ek *scope* program ke andar woh range hai jahan tak koi item valid hota hai. Following variable ko dekhein:
 
 ```rust
 let s = "hello";
 ```
 
-The variable `s` refers to a string literal, where the value of the string is
-hardcoded into the text of our program. The variable is valid from the point at
-which it’s declared until the end of the current scope. Listing 4-1 shows a
-program with comments annotating where the variable `s` would be valid.
+Variable `s` ek string literal ko refer karta hai, jahan string ki value hamare program ke text mein hardcoded hoti hai. Variable us point se valid hota hai jahan use declare kiya jata hai aur current scope ke end tak valid rehta hai. Listing 4-1 ek aisa program dikhati hai jisme comments ke zariye annotate kiya gaya hai ke variable `s` kahan valid hoga.
 
-<Listing number="4-1" caption="A variable and the scope in which it is valid">
+<Listing number="4-1" caption="Ek variable aur woh scope jisme ye valid hota hai">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-01/src/main.rs:here}}
@@ -122,127 +51,74 @@ program with comments annotating where the variable `s` would be valid.
 
 </Listing>
 
-In other words, there are two important points in time here:
+Doosre alfaaz mein, yahan waqt ke do important points hain:
 
-- When `s` comes _into_ scope, it is valid.
-- It remains valid until it goes _out of_ scope.
+* Jab `s` scope mein *aata* hai, to ye valid hota hai.
+* Ye tab tak valid rehta hai jab tak ye scope se *bahar* nahi chala jata.
 
-At this point, the relationship between scopes and when variables are valid is
-similar to that in other programming languages. Now we’ll build on top of this
-understanding by introducing the `String` type.
+Is point par, scopes aur variables ke valid hone ke darmiyan relationship doosri programming languages ke jaisa hi hai. Ab hum is understanding ko aage barhate hue `String` type introduce karenge.
+
 
 ### The `String` Type
 
-To illustrate the rules of ownership, we need a data type that is more complex
-than those we covered in the [“Data Types”][data-types]<!-- ignore --> section
-of Chapter 3. The types covered previously are of a known size, can be stored
-on the stack and popped off the stack when their scope is over, and can be
-quickly and trivially copied to make a new, independent instance if another
-part of code needs to use the same value in a different scope. But we want to
-look at data that is stored on the heap and explore how Rust knows when to
-clean up that data, and the `String` type is a great example.
+Ownership ke rules ko illustrate karne ke liye, humein ek aisi data type ki zaroorat hai jo un types se zyada complex ho jinhein hum ne Chapter 3 ke [“Data Types”][data-types]<!-- ignore --> section mein cover kiya tha. Pehle cover ki gayi types ka size known hota hai, unhein stack par store kiya ja sakta hai aur jab unka scope khatam ho jaye to stack se pop kiya ja sakta hai, aur agar code ke kisi doosre part ko kisi different scope mein wohi value use karni ho to unhein quickly aur trivially copy karke ek naya, independent instance banaya ja sakta hai. Lekin hum us data ko dekhna chahte hain jo heap par store hota hai aur ye explore karna chahte hain ke Rust kaise jaanta hai ke us data ko kab clean up karna hai, aur `String` type is ki ek behtareen example hai.
 
-We’ll concentrate on the parts of `String` that relate to ownership. These
-aspects also apply to other complex data types, whether they are provided by
-the standard library or created by you. We’ll discuss non-ownership aspects of
-`String` in [Chapter 8][ch8]<!-- ignore -->.
+Hum `String` ke un parts par focus karenge jo ownership se related hain. Ye aspects doosri complex data types par bhi apply hote hain, chahe woh standard library ki taraf se provide ki gayi hon ya aap ne khud create ki hon. `String` ke non-ownership aspects par hum [Chapter 8][ch8]<!-- ignore --> mein baat karenge.
 
-We’ve already seen string literals, where a string value is hardcoded into our
-program. String literals are convenient, but they aren’t suitable for every
-situation in which we may want to use text. One reason is that they’re
-immutable. Another is that not every string value can be known when we write
-our code: For example, what if we want to take user input and store it? It is
-for these situations that Rust has the `String` type. This type manages
-data allocated on the heap and as such is able to store an amount of text that
-is unknown to us at compile time. You can create a `String` from a string
-literal using the `from` function, like so:
+Hum string literals ko pehle hi dekh chuke hain, jahan string ki value hamare program mein hardcoded hoti hai. String literals convenient hoti hain, lekin har us situation ke liye suitable nahi hoti jahan hum text use karna chahte hon. Ek wajah ye hai ke woh immutable hoti hain. Doosri wajah ye hai ke har string value ko us waqt know nahi kiya ja sakta jab hum apna code likh rahe hote hain: Misal ke taur par, agar hum user input lena aur use store karna chahein to? Inhi situations ke liye Rust mein `String` type mojood hai. Ye type heap par allocate kiye gaye data ko manage karti hai aur is tarah aise amount of text ko store kar sakti hai jo compile time par hamare liye unknown ho. Aap `from` function ko use karke ek string literal se `String` create kar sakte hain, is tarah:
 
 ```rust
 let s = String::from("hello");
 ```
 
-The double colon `::` operator allows us to namespace this particular `from`
-function under the `String` type rather than using some sort of name like
-`string_from`. We’ll discuss this syntax more in the [“Methods”][methods]<!--
-ignore --> section of Chapter 5, and when we talk about namespacing with
-modules in [“Paths for Referring to an Item in the Module
-Tree”][paths-module-tree]<!-- ignore --> in Chapter 7.
+Double colon `::` operator humein is particular `from` function ko `String` type ke under namespace karne deta hai, bajaye is ke ke `string_from` jaisa koi name use kiya jaye. Hum is syntax par [“Methods”][methods]<!--
+ignore --> section of Chapter 5 mein mazeed baat karenge, aur Chapter 7 mein modules ke saath namespacing par [“Paths for Referring to an Item in the Module
+Tree”][paths-module-tree]<!-- ignore --> mein baat karenge.
 
-This kind of string _can_ be mutated:
+Is qisam ki string ko *mutate* kiya ja sakta hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-01-can-mutate-string/src/main.rs:here}}
 ```
 
-So, what’s the difference here? Why can `String` be mutated but literals
-cannot? The difference is in how these two types deal with memory.
+To phir yahan difference kya hai? `String` ko mutate kyun kiya ja sakta hai lekin literals ko nahi? Difference is baat mein hai ke ye dono types memory ke saath kis tarah deal karti hain.
+
 
 ### Memory and Allocation
 
-In the case of a string literal, we know the contents at compile time, so the
-text is hardcoded directly into the final executable. This is why string
-literals are fast and efficient. But these properties only come from the string
-literal’s immutability. Unfortunately, we can’t put a blob of memory into the
-binary for each piece of text whose size is unknown at compile time and whose
-size might change while running the program.
+String literal ke case mein, hum compile time par contents jaante hain, is liye text ko final executable mein directly hardcode kar diya jata hai. Isi wajah se string literals fast aur efficient hoti hain. Lekin ye properties sirf string literal ki immutability ki wajah se hoti hain. Badqismati se, hum har us text ke liye binary mein memory ka ek bara block nahi rakh sakte jis ka size compile time par unknown ho aur jo program run hone ke dauran change bhi ho sakta ho.
 
-With the `String` type, in order to support a mutable, growable piece of text,
-we need to allocate an amount of memory on the heap, unknown at compile time,
-to hold the contents. This means:
+`String` type ke saath, mutable aur growable text ko support karne ke liye humein heap par ek aisi amount of memory allocate karni hoti hai jo compile time par unknown hoti hai, taa-ke us mein contents ko hold kiya ja sake. Is ka matlab hai:
 
-- The memory must be requested from the memory allocator at runtime.
-- We need a way of returning this memory to the allocator when we’re done with
-  our `String`.
+* Memory ko runtime par memory allocator se request karna zaroori hai.
+* Jab hum apni `String` ke saath kaam kar chuke hon, to humein is memory ko allocator ko wapas karne ka ek tareeqa chahiye.
 
-That first part is done by us: When we call `String::from`, its implementation
-requests the memory it needs. This is pretty much universal in programming
-languages.
+Pehla hissa hum khud karte hain: Jab hum `String::from` call karte hain, to iski implementation apni zaroorat ke mutabiq memory request karti hai. Programming languages mein ye lagbhag universal hai.
 
-However, the second part is different. In languages with a _garbage collector
-(GC)_, the GC keeps track of and cleans up memory that isn’t being used
-anymore, and we don’t need to think about it. In most languages without a GC,
-it’s our responsibility to identify when memory is no longer being used and to
-call code to explicitly free it, just as we did to request it. Doing this
-correctly has historically been a difficult programming problem. If we forget,
-we’ll waste memory. If we do it too early, we’ll have an invalid variable. If
-we do it twice, that’s a bug too. We need to pair exactly one `allocate` with
-exactly one `free`.
+Lekin doosra hissa different hai. *Garbage collector (GC)* wali languages mein, GC us memory ko track aur clean up karta hai jo ab use nahi ho rahi hoti, aur humein is ke baare mein sochne ki zaroorat nahi padti. Zyada tar un languages mein jin mein GC nahi hoti, ye hamari responsibility hoti hai ke hum identify karein ke memory kab use hona band ho gayi hai aur use explicitly free karne ke liye code call karein, bilkul usi tarah jaise hum ne use request karne ke liye kiya tha. Isay sahi tareeqe se karna historically ek mushkil programming problem raha hai. Agar hum bhool jayein, to memory waste hogi. Agar hum ise bohat jaldi kar dein, to hamare paas ek invalid variable hoga. Agar hum ise do baar karein, to woh bhi ek bug hai. Humein exactly ek `allocate` ko exactly ek `free` ke saath pair karna hota hai.
 
-Rust takes a different path: The memory is automatically returned once the
-variable that owns it goes out of scope. Here’s a version of our scope example
-from Listing 4-1 using a `String` instead of a string literal:
+Rust ek different raasta choose karta hai: Jab us variable ka scope khatam ho jata hai jo memory ka owner hai, to memory automatically return kar di jati hai. Yahan Listing 4-1 ke hamare scope example ka ek version hai jo string literal ke bajaye `String` use karta hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-02-string-scope/src/main.rs:here}}
 ```
 
-There is a natural point at which we can return the memory our `String` needs
-to the allocator: when `s` goes out of scope. When a variable goes out of
-scope, Rust calls a special function for us. This function is called
-`drop`, and it’s where the author of `String` can put
-the code to return the memory. Rust calls `drop` automatically at the closing
-curly bracket.
+Ek natural point mojood hai jahan hum apni `String` ko required memory allocator ko wapas kar sakte hain: jab `s` scope se bahar chala jata hai. Jab koi variable scope se bahar jata hai, Rust hamare liye ek special function call karta hai. Is function ko `drop` kaha jata hai, aur yahin `String` ka author memory ko wapas karne wala code rakh sakta hai. Rust closing curly bracket par automatically `drop` call karta hai.
 
-> Note: In C++, this pattern of deallocating resources at the end of an item’s
-> lifetime is sometimes called _Resource Acquisition Is Initialization (RAII)_.
-> The `drop` function in Rust will be familiar to you if you’ve used RAII
-> patterns.
+> Note: C++ mein, kisi item ki lifetime ke end par resources ko deallocate karne ke is pattern ko kabhi kabhi *Resource Acquisition Is Initialization (RAII)* kaha jata hai. Agar aap ne RAII patterns use kiye hain, to Rust ka `drop` function aapko familiar lagega.
 
-This pattern has a profound impact on the way Rust code is written. It may seem
-simple right now, but the behavior of code can be unexpected in more
-complicated situations when we want to have multiple variables use the data
-we’ve allocated on the heap. Let’s explore some of those situations now.
+Is pattern ka Rust code likhne ke tareeqe par gehra asar hai. Filhaal ye simple lag sakta hai, lekin zyada complicated situations mein, jab hum multiple variables ko heap par allocate kiye gaye data ko use karwana chahte hain, to code ka behavior unexpected ho sakta hai. Aaiye ab in mein se kuch situations ko explore karte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-move"></a>
 
+
 #### Variables and Data Interacting with Move
 
-Multiple variables can interact with the same data in different ways in Rust.
-Listing 4-2 shows an example using an integer.
+Rust mein multiple variables ek hi data ke saath mukhtalif tareeqon se interact kar sakte hain. Listing 4-2 integer ko use karte hue ek example dikhati hai.
 
-<Listing number="4-2" caption="Assigning the integer value of variable `x` to `y`">
+<Listing number="4-2" caption="Variable `x` ki integer value ko `y` ko assign karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-02/src/main.rs:here}}
@@ -250,27 +126,17 @@ Listing 4-2 shows an example using an integer.
 
 </Listing>
 
-We can probably guess what this is doing: “Bind the value `5` to `x`; then, make
-a copy of the value in `x` and bind it to `y`.” We now have two variables, `x`
-and `y`, and both equal `5`. This is indeed what is happening, because integers
-are simple values with a known, fixed size, and these two `5` values are pushed
-onto the stack.
+Hum shayad andaza laga sakte hain ke ye kya kar raha hai: “Value `5` ko `x` ke saath bind karo; phir `x` ki value ki ek copy banao aur use `y` ke saath bind karo.” Ab hamare paas do variables, `x` aur `y`, hain aur dono `5` ke barabar hain. Waqai yahi ho raha hai, kyun ke integers simple values hain jin ka size known aur fixed hota hai, aur ye dono `5` values stack par push ki jati hain.
 
-Now let’s look at the `String` version:
+Ab `String` version ko dekhte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-03-string-move/src/main.rs:here}}
 ```
 
-This looks very similar, so we might assume that the way it works would be the
-same: That is, the second line would make a copy of the value in `s1` and bind
-it to `s2`. But this isn’t quite what happens.
+Ye bohat similar lagta hai, is liye hum assume kar sakte hain ke ye bhi usi tarah kaam karega: Yani, doosri line `s1` mein mojood value ki ek copy banayegi aur use `s2` ke saath bind kar degi. Lekin asal mein aisa poori tarah nahi hota.
 
-Take a look at Figure 4-1 to see what is happening to `String` under the
-covers. A `String` is made up of three parts, shown on the left: a pointer to
-the memory that holds the contents of the string, a length, and a capacity.
-This group of data is stored on the stack. On the right is the memory on the
-heap that holds the contents.
+Figure 4-1 ko dekhein taa-ke samajh saken ke `String` ke under the covers kya ho raha hai. Ek `String` teen parts par mushtamil hoti hai, jo left par dikhaye gaye hain: memory ka ek pointer jo string ke contents ko hold karti hai, ek length, aur ek capacity. Ye data ka group stack par store hota hai. Right par heap ki woh memory hai jo contents ko hold karti hai.
 
 <img alt="Two tables: the first table contains the representation of s1 on the
 stack, consisting of its length (5), capacity (5), and a pointer to the first
@@ -278,69 +144,41 @@ value in the second table. The second table contains the representation of the
 string data on the heap, byte by byte." src="img/trpl04-01.svg" class="center"
 style="width: 50%;" />
 
-<span class="caption">Figure 4-1: The representation in memory of a `String`
-holding the value `"hello"` bound to `s1`</span>
+<span class="caption">Figure 4-1: Memory mein ek `String` ki representation jo `"hello"` value ko `s1` ke saath bound hone ki surat mein dikhati hai</span>
 
-The length is how much memory, in bytes, the contents of the `String` are
-currently using. The capacity is the total amount of memory, in bytes, that the
-`String` has received from the allocator. The difference between length and
-capacity matters, but not in this context, so for now, it’s fine to ignore the
-capacity.
+Length se murad hai ke `String` ke contents filhaal kitni memory, bytes mein, use kar rahe hain. Capacity se murad hai ke `String` ne allocator se total kitni memory, bytes mein, receive ki hai. Length aur capacity ke darmiyan difference important hai, lekin is context mein nahi, is liye filhaal capacity ko ignore karna theek hai.
 
-When we assign `s1` to `s2`, the `String` data is copied, meaning we copy the
-pointer, the length, and the capacity that are on the stack. We do not copy the
-data on the heap that the pointer refers to. In other words, the data
-representation in memory looks like Figure 4-2.
+Jab hum `s1` ko `s2` assign karte hain, to `String` data copy hota hai, yani hum stack par mojood pointer, length, aur capacity ko copy karte hain. Hum heap par mojood us data ko copy nahi karte jis ki taraf pointer refer karta hai. Doosre alfaaz mein, memory mein data ki representation Figure 4-2 jaisi nazar aati hai.
 
 <img alt="Three tables: tables s1 and s2 representing those strings on the
 stack, respectively, and both pointing to the same string data on the heap."
 src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-2: The representation in memory of the variable
-`s2` that has a copy of the pointer, length, and capacity of `s1`</span>
+<span class="caption">Figure 4-2: Variable `s2` ki memory mein representation, jisme `s1` ke pointer, length, aur capacity ki copy mojood hai</span>
 
-The representation does _not_ look like Figure 4-3, which is what memory would
-look like if Rust instead copied the heap data as well. If Rust did this, the
-operation `s2 = s1` could be very expensive in terms of runtime performance if
-the data on the heap were large.
+Representation Figure 4-3 jaisi *nahi* hoti, jo us waqt memory ki surat-e-haal hoti agar Rust heap data ko bhi copy karta. Agar Rust aisa karta, to operation `s2 = s1` runtime performance ke hawale se bohat mehnga ho sakta tha agar heap par data bohat bara hota.
 
 <img alt="Four tables: two tables representing the stack data for s1 and s2,
 and each points to its own copy of string data on the heap."
 src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-3: Another possibility for what `s2 = s1` might
-do if Rust copied the heap data as well</span>
+<span class="caption">Figure 4-3: Agar Rust heap data ko bhi copy karta to `s2 = s1` kya kar sakta tha, is ki ek aur mumkin representation</span>
 
-Earlier, we said that when a variable goes out of scope, Rust automatically
-calls the `drop` function and cleans up the heap memory for that variable. But
-Figure 4-2 shows both data pointers pointing to the same location. This is a
-problem: When `s2` and `s1` go out of scope, they will both try to free the
-same memory. This is known as a _double free_ error and is one of the memory
-safety bugs we mentioned previously. Freeing memory twice can lead to memory
-corruption, which can potentially lead to security vulnerabilities.
+Hum ne pehle kaha tha ke jab koi variable scope se bahar jata hai, Rust automatically `drop` function call karta hai aur us variable ke liye heap memory ko clean up karta hai. Lekin Figure 4-2 mein dono data pointers ek hi location ki taraf point kar rahe hain. Ye ek problem hai: Jab `s2` aur `s1` scope se bahar jayenge, to dono same memory ko free karne ki koshish karenge. Isay *double free* error kaha jata hai aur ye un memory safety bugs mein se ek hai jin ka hum ne pehle zikr kiya tha. Memory ko do baar free karna memory corruption ka sabab ban sakta hai, jo potentially security vulnerabilities tak le ja sakta hai.
 
-To ensure memory safety, after the line `let s2 = s1;`, Rust considers `s1` as
-no longer valid. Therefore, Rust doesn’t need to free anything when `s1` goes
-out of scope. Check out what happens when you try to use `s1` after `s2` is
-created; it won’t work:
+Memory safety ensure karne ke liye, line `let s2 = s1;` ke baad Rust `s1` ko no longer valid samajhta hai. Is liye, jab `s1` scope se bahar jata hai to Rust ko kuch bhi free karne ki zaroorat nahi hoti. Dekhein ke jab `s2` create hone ke baad aap `s1` ko use karne ki koshish karte hain to kya hota hai; ye kaam nahi karega:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/src/main.rs:here}}
 ```
 
-You’ll get an error like this because Rust prevents you from using the
-invalidated reference:
+Aapko is tarah ka error milega kyun ke Rust aapko invalidated reference ko use karne se rokta hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/output.txt}}
 ```
 
-If you’ve heard the terms _shallow copy_ and _deep copy_ while working with
-other languages, the concept of copying the pointer, length, and capacity
-without copying the data probably sounds like making a shallow copy. But
-because Rust also invalidates the first variable, instead of being called a
-shallow copy, it’s known as a _move_. In this example, we would say that `s1`
-was _moved_ into `s2`. So, what actually happens is shown in Figure 4-4.
+Agar aap ne doosri languages ke saath kaam karte hue *shallow copy* aur *deep copy* ki terms suni hain, to data ko copy kiye baghair pointer, length, aur capacity ko copy karne ka concept shayad aapko shallow copy jaisa lage. Lekin kyun ke Rust pehle variable ko bhi invalid kar deta hai, is liye ise shallow copy kehne ke bajaye *move* kaha jata hai. Is example mein hum kahenge ke `s1` ko `s2` mein *moved* kiya gaya. To asal mein jo hota hai woh Figure 4-4 mein dikhaya gaya hai.
 
 <img alt="Three tables: tables s1 and s2 representing those strings on the
 stack, respectively, and both pointing to the same string data on the heap.
@@ -348,121 +186,83 @@ Table s1 is grayed out because s1 is no longer valid; only s2 can be used to
 access the heap data." src="img/trpl04-04.svg" class="center" style="width:
 50%;" />
 
-<span class="caption">Figure 4-4: The representation in memory after `s1` has
-been invalidated</span>
+<span class="caption">Figure 4-4: `s1` ke invalidated hone ke baad memory mein representation</span>
 
-That solves our problem! With only `s2` valid, when it goes out of scope it
-alone will free the memory, and we’re done.
+Ye hamari problem solve kar deta hai! Sirf `s2` valid hone ki wajah se, jab ye scope se bahar jayega to sirf ye memory ko free karega, aur hamara kaam khatam.
 
-In addition, there’s a design choice that’s implied by this: Rust will never
-automatically create “deep” copies of your data. Therefore, any _automatic_
-copying can be assumed to be inexpensive in terms of runtime performance.
+Is ke ilawa, is mein ek design choice bhi implied hai: Rust aapke data ki “deep” copies kabhi automatically create nahi karega. Is liye, kisi bhi *automatic* copying ke baare mein ye assume kiya ja sakta hai ke runtime performance ke hawale se woh inexpensive hai.
+
 
 #### Scope and Assignment
 
-The inverse of this is true for the relationship between scoping, ownership, and
-memory being freed via the `drop` function as well. When you assign a completely
-new value to an existing variable, Rust will call `drop` and free the original
-value’s memory immediately. Consider this code, for example:
+Scoping, ownership, aur `drop` function ke zariye memory free hone ke darmiyan relationship ka ulta bhi true hai. Jab aap kisi existing variable ko ek bilkul nayi value assign karte hain, to Rust `drop` call karega aur original value ki memory ko foran free kar dega. Misal ke taur par, is code ko dekhein:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04b-replacement-drop/src/main.rs:here}}
 ```
 
-We initially declare a variable `s` and bind it to a `String` with the value
-`"hello"`. Then, we immediately create a new `String` with the value `"ahoy"`
-and assign it to `s`. At this point, nothing is referring to the original value
-on the heap at all. Figure 4-5 illustrates the stack and heap data now:
+Shuru mein hum ek variable `s` declare karte hain aur use `"hello"` value wali ek `String` ke saath bind karte hain. Phir hum foran `"ahoy"` value wali ek nayi `String` create karte hain aur use `s` ko assign kar dete hain. Is point par heap par mojood original value ko refer karne wala koi bhi nahi hai. Figure 4-5 stack aur heap ke data ko is waqt dikhati hai:
 
 <img alt="One table representing the string value on the stack, pointing to
 the second piece of string data (ahoy) on the heap, with the original string
 data (hello) grayed out because it cannot be accessed anymore."
 src="img/trpl04-05.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-5: The representation in memory after the initial
-value has been replaced in its entirety</span>
+<span class="caption">Figure 4-5: Jab initial value ko mukammal taur par replace kar diya gaya ho to memory mein representation</span>
 
-The original string thus immediately goes out of scope. Rust will run the `drop`
-function on it and its memory will be freed right away. When we print the value
-at the end, it will be `"ahoy, world!"`.
+Is tarah original string foran scope se bahar chali jati hai. Rust us par `drop` function run karega aur uski memory foran free kar di jayegi. Jab hum aakhir mein value print karte hain, to woh `"ahoy, world!"` hogi.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-clone"></a>
 
+
 #### Variables and Data Interacting with Clone
 
-If we _do_ want to deeply copy the heap data of the `String`, not just the
-stack data, we can use a common method called `clone`. We’ll discuss method
-syntax in Chapter 5, but because methods are a common feature in many
-programming languages, you’ve probably seen them before.
+Agar hum `String` ke heap data ko *deeply copy* karna chahte hain, sirf stack data ko nahi, to hum `clone` naam ke ek common method ko use kar sakte hain. Hum Chapter 5 mein method syntax par baat karenge, lekin kyun ke methods bohat si programming languages mein common feature hain, mumkin hai ke aap ne inhein pehle dekha ho.
 
-Here’s an example of the `clone` method in action:
+Yahan `clone` method ko action mein dekhne ki ek example hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-05-clone/src/main.rs:here}}
 ```
 
-This works just fine and explicitly produces the behavior shown in Figure 4-3,
-where the heap data _does_ get copied.
+Ye bilkul theek kaam karta hai aur explicitly Figure 4-3 mein dikhaye gaye behavior ko produce karta hai, jahan heap data *waqai* copy hota hai.
 
-When you see a call to `clone`, you know that some arbitrary code is being
-executed and that code may be expensive. It’s a visual indicator that something
-different is going on.
+Jab aap `clone` ki call dekhte hain, to aap jaante hain ke kuch arbitrary code execute ho raha hai aur ye code expensive ho sakta hai. Ye ek visual indicator hai ke kuch different ho raha hai.
+
 
 #### Stack-Only Data: Copy
 
-There’s another wrinkle we haven’t talked about yet. This code using
-integers—part of which was shown in Listing 4-2—works and is valid:
+Ek aur pehlu hai jis par hum ne abhi tak baat nahi ki. Integers ko use karne wala ye code—jis ka ek hissa Listing 4-2 mein dikhaya gaya tha—kaam karta hai aur valid hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-06-copy/src/main.rs:here}}
 ```
 
-But this code seems to contradict what we just learned: We don’t have a call to
-`clone`, but `x` is still valid and wasn’t moved into `y`.
+Lekin ye code us baat se contradict karta hua lagta hai jo hum ne abhi seekhi: Humare paas `clone` ki koi call nahi hai, lekin `x` phir bhi valid hai aur `y` mein move nahi hua.
 
-The reason is that types such as integers that have a known size at compile
-time are stored entirely on the stack, so copies of the actual values are quick
-to make. That means there’s no reason we would want to prevent `x` from being
-valid after we create the variable `y`. In other words, there’s no difference
-between deep and shallow copying here, so calling `clone` wouldn’t do anything
-different from the usual shallow copying, and we can leave it out.
+Is ki wajah ye hai ke integers jaisi types, jin ka size compile time par known hota hai, poori tarah stack par store hoti hain, is liye actual values ki copies banana fast hota hai. Is ka matlab hai ke `y` variable create karne ke baad `x` ko valid rakhne se rokne ki koi wajah nahi hai. Doosre alfaaz mein, yahan deep aur shallow copying ke darmiyan koi difference nahi hai, is liye `clone` call karne se usual shallow copying se different kuch nahi hoga aur hum ise chhor sakte hain.
 
-Rust has a special annotation called the `Copy` trait that we can place on
-types that are stored on the stack, as integers are (we’ll talk more about
-traits in [Chapter 10][traits]<!-- ignore -->). If a type implements the `Copy`
-trait, variables that use it do not move, but rather are trivially copied,
-making them still valid after assignment to another variable.
+Rust mein ek special annotation hoti hai jise `Copy` trait kaha jata hai, jo hum un types par laga sakte hain jo stack par store hoti hain, jaise integers (hum [Chapter 10][traits]<!-- ignore --> mein traits ke baare mein mazeed baat karenge). Agar koi type `Copy` trait implement karti hai, to usay use karne wale variables move nahi hote, balki trivially copy ho jate hain, jis ki wajah se kisi doosre variable ko assign kiye jane ke baad bhi woh valid rehte hain.
 
-Rust won’t let us annotate a type with `Copy` if the type, or any of its parts,
-has implemented the `Drop` trait. If the type needs something special to happen
-when the value goes out of scope and we add the `Copy` annotation to that type,
-we’ll get a compile-time error. To learn about how to add the `Copy` annotation
-to your type to implement the trait, see [“Derivable
-Traits”][derivable-traits]<!-- ignore --> in Appendix C.
+Rust humein kisi type ko `Copy` se annotate karne ki ijazat nahi deta agar woh type, ya us ka koi bhi part, `Drop` trait implement karta ho. Agar value ke scope se bahar jane par type ko kuch special karna zaroori ho aur hum us type mein `Copy` annotation add kar dein, to humein compile-time error milega. Apni type mein trait implement karne ke liye `Copy` annotation add karne ka tareeqa jaanne ke liye Appendix C mein [“Derivable
+Traits”][derivable-traits]<!-- ignore --> dekhein.
 
-So, what types implement the `Copy` trait? You can check the documentation for
-the given type to be sure, but as a general rule, any group of simple scalar
-values can implement `Copy`, and nothing that requires allocation or is some
-form of resource can implement `Copy`. Here are some of the types that
-implement `Copy`:
+To phir kaun si types `Copy` trait implement karti hain? Yaqeen karne ke liye aap di gayi type ki documentation check kar sakte hain, lekin ek general rule ke taur par, simple scalar values ka koi bhi group `Copy` implement kar sakta hai, aur koi bhi aisi cheez jo allocation require karti ho ya kisi qisam ka resource ho, `Copy` implement nahi kar sakti. Yahan kuch aisi types hain jo `Copy` implement karti hain:
 
-- All the integer types, such as `u32`.
-- The Boolean type, `bool`, with values `true` and `false`.
-- All the floating-point types, such as `f64`.
-- The character type, `char`.
-- Tuples, if they only contain types that also implement `Copy`. For example,
-  `(i32, i32)` implements `Copy`, but `(i32, String)` does not.
+* Tamam integer types, jaise `u32`.
+* Boolean type, `bool`, jis ki values `true` aur `false` hain.
+* Tamam floating-point types, jaise `f64`.
+* Character type, `char`.
+* Tuples, agar un mein sirf aisi types shamil hon jo khud bhi `Copy` implement karti hain. Misal ke taur par, `(i32, i32)` `Copy` implement karta hai, lekin `(i32, String)` nahi karta.
+
 
 ### Ownership and Functions
 
-The mechanics of passing a value to a function are similar to those when
-assigning a value to a variable. Passing a variable to a function will move or
-copy, just as assignment does. Listing 4-3 has an example with some annotations
-showing where variables go into and out of scope.
+Kisi value ko function mein pass karne ka mechanism us waqt ke mechanism jaisa hai jab kisi value ko variable ke saath assign kiya jata hai. Kisi variable ko function mein pass karna bhi assignment ki tarah usay move ya copy karega. Listing 4-3 mein kuch annotations ke saath ek example diya gaya hai jo dikhata hai ke variables kahan scope mein aate hain aur kahan scope se bahar jate hain.
 
-<Listing number="4-3" file-name="src/main.rs" caption="Functions with ownership and scope annotated">
+<Listing number="4-3" file-name="src/main.rs" caption="Ownership aur scope ke saath annotated functions">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-03/src/main.rs}}
@@ -470,18 +270,14 @@ showing where variables go into and out of scope.
 
 </Listing>
 
-If we tried to use `s` after the call to `takes_ownership`, Rust would throw a
-compile-time error. These static checks protect us from mistakes. Try adding
-code to `main` that uses `s` and `x` to see where you can use them and where
-the ownership rules prevent you from doing so.
+Agar hum `takes_ownership` ki call ke baad `s` ko use karne ki koshish karein, to Rust compile-time error throw karega. Ye static checks humein mistakes se protect karte hain. `main` mein aisa code add karke dekhein jo `s` aur `x` ko use karta ho, taa-ke aap dekh saken ke aap inhein kahan use kar sakte hain aur ownership rules aapko kahan aisa karne se rokte hain.
+
 
 ### Return Values and Scope
 
-Returning values can also transfer ownership. Listing 4-4 shows an example of a
-function that returns some value, with similar annotations as those in Listing
-4-3.
+Values return karna bhi ownership transfer kar sakta hai. Listing 4-4 ek aise function ki example dikhati hai jo kuch value return karta hai, aur is mein Listing 4-3 jaisi annotations use ki gayi hain.
 
-<Listing number="4-4" file-name="src/main.rs" caption="Transferring ownership of return values">
+<Listing number="4-4" file-name="src/main.rs" caption="Return values ki ownership transfer karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-04/src/main.rs}}
@@ -489,20 +285,13 @@ function that returns some value, with similar annotations as those in Listing
 
 </Listing>
 
-The ownership of a variable follows the same pattern every time: Assigning a
-value to another variable moves it. When a variable that includes data on the
-heap goes out of scope, the value will be cleaned up by `drop` unless ownership
-of the data has been moved to another variable.
+Har baar variable ki ownership isi pattern ko follow karti hai: Kisi value ko kisi doosre variable ke saath assign karne se woh move ho jati hai. Jab heap par data rakhne wala koi variable scope se bahar chala jata hai, to value ko `drop` ke zariye clean up kar diya jata hai, jab tak ke data ki ownership kisi doosre variable ko move na ho gayi ho.
 
-While this works, taking ownership and then returning ownership with every
-function is a bit tedious. What if we want to let a function use a value but
-not take ownership? It’s quite annoying that anything we pass in also needs to
-be passed back if we want to use it again, in addition to any data resulting
-from the body of the function that we might want to return as well.
+Halanke ye kaam karta hai, har function ke saath ownership lena aur phir ownership return karna thora tedious hai. Agar hum chahte hon ke koi function kisi value ko use kare lekin uski ownership na le, to kya karein? Ye kaafi annoying hai ke jo bhi cheez hum function mein pass karein, agar humein use dobara use karna ho to function se milne wale kisi bhi resultant data ke ilawa use bhi wapas pass karna pade, agar hum use return karna chahte hon.
 
-Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
+Rust humein tuple ko use karke multiple values return karne deta hai, jaisa ke Listing 4-5 mein dikhaya gaya hai.
 
-<Listing number="4-5" file-name="src/main.rs" caption="Returning ownership of parameters">
+<Listing number="4-5" file-name="src/main.rs" caption="Parameters ki ownership return karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-05/src/main.rs}}
@@ -510,9 +299,7 @@ Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
 
 </Listing>
 
-But this is too much ceremony and a lot of work for a concept that should be
-common. Luckily for us, Rust has a feature for using a value without
-transferring ownership: references.
+Lekin ye us concept ke liye bohat zyada ceremony aur kaafi kaam hai jo common hona chahiye. Khush qismati se, Rust ke paas ownership transfer kiye baghair kisi value ko use karne ka ek feature hai: references.
 
 [data-types]: ch03-02-data-types.html#data-types
 [ch8]: ch08-02-strings.html
@@ -520,3 +307,4 @@ transferring ownership: references.
 [derivable-traits]: appendix-03-derivable-traits.html
 [methods]: ch05-03-method-syntax.html#methods
 [paths-module-tree]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
+

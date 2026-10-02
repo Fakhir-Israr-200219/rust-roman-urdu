@@ -1,16 +1,8 @@
 ## References and Borrowing
 
-The issue with the tuple code in Listing 4-5 is that we have to return the
-`String` to the calling function so that we can still use the `String` after
-the call to `calculate_length`, because the `String` was moved into
-`calculate_length`. Instead, we can provide a reference to the `String` value.
-A reference is like a pointer in that it’s an address we can follow to access
-the data stored at that address; that data is owned by some other variable.
-Unlike a pointer, a reference is guaranteed to point to a valid value of a
-particular type for the life of that reference.
+Listing 4-5 mein tuple code ka masla ye hai ke humein `String` ko calling function ko return karna padta hai taa-ke `calculate_length` ki call ke baad bhi hum `String` ko use kar saken, kyun ke `String` ko `calculate_length` mein move kar diya gaya tha. Is ke bajaye, hum `String` value ka ek reference provide kar sakte hain. Reference ek pointer ki tarah hota hai, yani ye ek aisa address hota hai jise follow karke hum us address par stored data tak access kar sakte hain; woh data kisi doosre variable ki ownership mein hota hai. Pointer ke unlike, reference ke baare mein guarantee hoti hai ke reference ki lifetime ke dauran woh kisi particular type ki valid value ki taraf point karega.
 
-Here is how you would define and use a `calculate_length` function that has a
-reference to an object as a parameter instead of taking ownership of the value:
+Yahan bataya gaya hai ke aap `calculate_length` function ko kaise define aur use karenge, jisme value ki ownership lene ke bajaye object ka reference parameter ke taur par diya gaya hai:
 
 <Listing file-name="src/main.rs">
 
@@ -20,56 +12,37 @@ reference to an object as a parameter instead of taking ownership of the value:
 
 </Listing>
 
-First, notice that all the tuple code in the variable declaration and the
-function return value is gone. Second, note that we pass `&s1` into
-`calculate_length` and, in its definition, we take `&String` rather than
-`String`. These ampersands represent references, and they allow you to refer to
-some value without taking ownership of it. Figure 4-6 depicts this concept.
+Sab se pehle, notice karein ke variable declaration aur function return value mein tuple ka tamam code khatam ho gaya hai. Doosri baat, note karein ke hum `calculate_length` mein `&s1` pass karte hain aur iski definition mein `String` ke bajaye `&String` lete hain. Ye ampersands references ko represent karte hain, aur ye aapko kisi value ki ownership liye baghair usay refer karne dete hain. Figure 4-6 is concept ko depict karti hai.
 
 <img alt="Three tables: the table for s contains only a pointer to the table
 for s1. The table for s1 contains the stack data for s1 and points to the
 string data on the heap." src="img/trpl04-06.svg" class="center" />
 
-<span class="caption">Figure 4-6: A diagram of `&String` `s` pointing at
-`String` `s1`</span>
+<span class="caption">Figure 4-6: `&String` `s` ka `String` `s1` ki taraf point karne ka diagram</span>
 
-> Note: The opposite of referencing by using `&` is _dereferencing_, which is
-> accomplished with the dereference operator, `*`. We’ll see some uses of the
-> dereference operator in Chapter 8 and discuss details of dereferencing in
-> Chapter 15.
+> Note: `&` ko use karke referencing ka opposite *dereferencing* hai, jo dereference operator, `*`, ke zariye ki jati hai. Hum Chapter 8 mein dereference operator ke kuch uses dekhenge aur Chapter 15 mein dereferencing ki details par baat karenge.
 
-Let’s take a closer look at the function call here:
+Aaiye yahan function call ko thora aur qareeb se dekhte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-07-reference/src/main.rs:here}}
 ```
 
-The `&s1` syntax lets us create a reference that _refers_ to the value of `s1`
-but does not own it. Because the reference does not own it, the value it points
-to will not be dropped when the reference stops being used.
+`&s1` syntax humein ek aisa reference create karne deta hai jo `s1` ki value ko *refer* karta hai, lekin uski ownership nahi rakhta. Kyun ke reference ki ownership nahi hoti, is liye jis value ki taraf ye point karta hai, reference ka use khatam hone par woh drop nahi hoti.
 
-Likewise, the signature of the function uses `&` to indicate that the type of
-the parameter `s` is a reference. Let’s add some explanatory annotations:
+Isi tarah, function ki signature mein `&` indicate karta hai ke parameter `s` ki type ek reference hai. Aaiye kuch explanatory annotations add karte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-08-reference-with-annotations/src/main.rs:here}}
 ```
 
-The scope in which the variable `s` is valid is the same as any function
-parameter’s scope, but the value pointed to by the reference is not dropped
-when `s` stops being used, because `s` doesn’t have ownership. When functions
-have references as parameters instead of the actual values, we won’t need to
-return the values in order to give back ownership, because we never had
-ownership.
+Jis scope mein variable `s` valid hai, woh kisi bhi function parameter ke scope jaisa hi hai, lekin reference jis value ki taraf point karta hai woh `s` ka use khatam hone par drop nahi hoti, kyun ke `s` ke paas ownership nahi hai. Jab functions actual values ke bajaye references ko parameters ke taur par use karte hain, to ownership wapas dene ke liye humein values ko return karne ki zaroorat nahi hoti, kyun ke hamare paas kabhi ownership thi hi nahi.
 
-We call the action of creating a reference _borrowing_. As in real life, if a
-person owns something, you can borrow it from them. When you’re done, you have
-to give it back. You don’t own it.
+Reference create karne ke action ko hum *borrowing* kehte hain. Real life ki tarah, agar kisi person ke paas koi cheez owned ho, to aap us se woh cheez borrow kar sakte hain. Jab aapka kaam khatam ho jaye, to aapko woh wapas deni hoti hai. Woh cheez aapki ownership mein nahi hoti.
 
-So, what happens if we try to modify something we’re borrowing? Try the code in
-Listing 4-6. Spoiler alert: It doesn’t work!
+To phir kya hota hai agar hum kisi aisi cheez ko modify karne ki koshish karein jise hum borrow kar rahe hain? Listing 4-6 ka code try karein. Spoiler alert: Ye kaam nahi karta!
 
-<Listing number="4-6" file-name="src/main.rs" caption="Attempting to modify a borrowed value">
+<Listing number="4-6" file-name="src/main.rs" caption="Borrowed value ko modify karne ki koshish">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-06/src/main.rs}}
@@ -77,19 +50,17 @@ Listing 4-6. Spoiler alert: It doesn’t work!
 
 </Listing>
 
-Here’s the error:
+Yahan error hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/listing-04-06/output.txt}}
 ```
 
-Just as variables are immutable by default, so are references. We’re not
-allowed to modify something we have a reference to.
+Jis tarah variables by default immutable hote hain, isi tarah references bhi by default immutable hote hain. Humein us cheez ko modify karne ki ijazat nahi hoti jis ka hamare paas reference ho.
 
 ### Mutable References
 
-We can fix the code from Listing 4-6 to allow us to modify a borrowed value
-with just a few small tweaks that use, instead, a _mutable reference_:
+Hum Listing 4-6 ke code ko kuch chhoti si tabdeeliyon ke zariye theek kar sakte hain taa-ke humein borrowed value ko modify karne ki ijazat mil jaye. Is ke liye hum *mutable reference* use karenge:
 
 <Listing file-name="src/main.rs">
 
@@ -99,14 +70,9 @@ with just a few small tweaks that use, instead, a _mutable reference_:
 
 </Listing>
 
-First, we change `s` to be `mut`. Then, we create a mutable reference with
-`&mut s` where we call the `change` function and update the function signature
-to accept a mutable reference with `some_string: &mut String`. This makes it
-very clear that the `change` function will mutate the value it borrows.
+Sab se pehle, hum `s` ko `mut` kar dete hain. Phir, jahan hum `change` function ko call karte hain wahan `&mut s` ke zariye ek mutable reference create karte hain aur function signature ko update karte hain taa-ke woh mutable reference accept kare, `some_string: &mut String`. Is se ye bohat clear ho jata hai ke `change` function us value ko mutate karega jise woh borrow karta hai.
 
-Mutable references have one big restriction: If you have a mutable reference to
-a value, you can have no other references to that value. This code that
-attempts to create two mutable references to `s` will fail:
+Mutable references par ek bari restriction hai: Agar aapke paas kisi value ka mutable reference hai, to aapke paas usi value ke koi aur references nahi ho sakte. Ye code jo `s` ke do mutable references create karne ki koshish karta hai, fail ho jayega:
 
 <Listing file-name="src/main.rs">
 
@@ -116,93 +82,60 @@ attempts to create two mutable references to `s` will fail:
 
 </Listing>
 
-Here’s the error:
+Yahan error hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-10-multiple-mut-not-allowed/output.txt}}
 ```
 
-This error says that this code is invalid because we cannot borrow `s` as
-mutable more than once at a time. The first mutable borrow is in `r1` and must
-last until it’s used in the `println!`, but between the creation of that
-mutable reference and its usage, we tried to create another mutable reference
-in `r2` that borrows the same data as `r1`.
+Ye error kehta hai ke ye code invalid hai kyun ke hum `s` ko ek waqt mein ek se zyada baar mutable borrow nahi kar sakte. Pehla mutable borrow `r1` mein hai aur ye us waqt tak rehna zaroori hai jab tak ise `println!` mein use nahi kar liya jata, lekin is mutable reference ko create karne aur use karne ke darmiyan hum ne `r2` mein ek aur mutable reference create karne ki koshish ki jo `r1` ke same data ko borrow karta hai.
 
-The restriction preventing multiple mutable references to the same data at the
-same time allows for mutation but in a very controlled fashion. It’s something
-that new Rustaceans struggle with because most languages let you mutate
-whenever you’d like. The benefit of having this restriction is that Rust can
-prevent data races at compile time. A _data race_ is similar to a race
-condition and happens when these three behaviors occur:
+Ek hi waqt mein same data ke multiple mutable references ko prevent karne wali ye restriction mutation ki ijazat deti hai, lekin bohat controlled tareeqe se. Ye ek aisi cheez hai jis ke saath naye Rustaceans struggle karte hain kyun ke zyada tar languages aapko jab chahein mutation karne deti hain. Is restriction ka faida ye hai ke Rust compile time par data races ko prevent kar sakta hai. Ek *data race* race condition jaisi hoti hai aur us waqt hoti hai jab ye teen behaviors occur karein:
 
-- Two or more pointers access the same data at the same time.
-- At least one of the pointers is being used to write to the data.
-- There’s no mechanism being used to synchronize access to the data.
+* Do ya do se zyada pointers ek hi waqt mein same data ko access kar rahe hon.
+* Kam az kam ek pointer data ko write karne ke liye use ho raha ho.
+* Data tak access ko synchronize karne ke liye koi mechanism use na ho raha ho.
 
-Data races cause undefined behavior and can be difficult to diagnose and fix
-when you’re trying to track them down at runtime; Rust prevents this problem by
-refusing to compile code with data races!
+Data races undefined behavior ka sabab banti hain aur runtime par unhein track down karne ki koshish ke waqt diagnose aur fix karna mushkil ho sakta hai; Rust data races wale code ko compile karne se inkar karke is problem ko prevent karta hai!
 
-As always, we can use curly brackets to create a new scope, allowing for
-multiple mutable references, just not _simultaneous_ ones:
+Hamesha ki tarah, hum curly brackets ko use karke ek naya scope create kar sakte hain, jis se multiple mutable references ki ijazat milti hai, bas woh *simultaneous* nahi hone chahiye:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-11-muts-in-separate-scopes/src/main.rs:here}}
 ```
 
-Rust enforces a similar rule for combining mutable and immutable references.
-This code results in an error:
+Rust mutable aur immutable references ko combine karne ke liye bhi isi tarah ka rule enforce karta hai. Ye code ek error produce karta hai:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-12-immutable-and-mutable-not-allowed/src/main.rs:here}}
 ```
 
-Here’s the error:
+Yahan error hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-12-immutable-and-mutable-not-allowed/output.txt}}
 ```
 
-Whew! We _also_ cannot have a mutable reference while we have an immutable one
-to the same value.
+Uff! Humare paas ek mutable reference bhi nahi ho sakta jab tak usi value ka ek immutable reference hamare paas mojood ho.
 
-Users of an immutable reference don’t expect the value to suddenly change out
-from under them! However, multiple immutable references are allowed because no
-one who is just reading the data has the ability to affect anyone else’s
-reading of the data.
+Immutable reference ko use karne wale users ye expect nahi karte ke value achanak unke neeche se change ho jaye! Lekin multiple immutable references ki ijazat hai kyun ke jo log sirf data read kar rahe hain, un mein se kisi ke paas bhi doosre ki data reading ko affect karne ki ability nahi hoti.
 
-Note that a reference’s scope starts from where it is introduced and continues
-through the last time that reference is used. For instance, this code will
-compile because the last usage of the immutable references is in the `println!`,
-before the mutable reference is introduced:
+Note karein ke reference ka scope us point se start hota hai jahan woh introduce hota hai aur reference ke last use tak continue karta hai. Misal ke taur par, ye code compile ho jayega kyun ke immutable references ka last use `println!` mein hota hai, jo mutable reference introduce hone se pehle hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-13-reference-scope-ends/src/main.rs:here}}
 ```
 
-The scopes of the immutable references `r1` and `r2` end after the `println!`
-where they are last used, which is before the mutable reference `r3` is
-created. These scopes don’t overlap, so this code is allowed: The compiler can
-tell that the reference is no longer being used at a point before the end of
-the scope.
+Immutable references `r1` aur `r2` ke scopes us `println!` ke baad khatam ho jate hain jahan unka aakhri use hota hai, aur ye mutable reference `r3` create hone se pehle hota hai. Ye scopes overlap nahi karte, is liye ye code allowed hai: Compiler ye determine kar sakta hai ke scope ke end se pehle ek point par reference ko dobara use nahi kiya ja raha.
 
-Even though borrowing errors may be frustrating at times, remember that it’s
-the Rust compiler pointing out a potential bug early (at compile time rather
-than at runtime) and showing you exactly where the problem is. Then, you don’t
-have to track down why your data isn’t what you thought it was.
+Halaanke borrowing errors kabhi kabhi frustrating ho sakte hain, yaad rakhein ke ye Rust compiler hai jo ek potential bug ko jaldi point out kar raha hai (runtime ke bajaye compile time par) aur aapko exactly bata raha hai ke problem kahan hai. Phir aapko ye track down karne ki zaroorat nahi padti ke aapka data woh kyun nahi hai jo aap samajh rahe the.
+
 
 ### Dangling References
 
-In languages with pointers, it’s easy to erroneously create a _dangling
-pointer_—a pointer that references a location in memory that may have been
-given to someone else—by freeing some memory while preserving a pointer to that
-memory. In Rust, by contrast, the compiler guarantees that references will
-never be dangling references: If you have a reference to some data, the
-compiler will ensure that the data will not go out of scope before the
-reference to the data does.
+Pointers wali languages mein ghalti se ek *dangling pointer* create karna aasaan hota hai—aik aisa pointer jo memory mein kisi aisi location ko reference karta hai jo shayad kisi aur ko de di gayi ho—ye tab hota hai jab hum kuch memory ko free kar dein aur us memory ka pointer apne paas rakhein. Rust mein, is ke baraks, compiler guarantee karta hai ke references kabhi dangling references nahi honge: Agar aapke paas kisi data ka reference hai, to compiler ensure karega ke reference ke muqable mein data ka scope pehle khatam na ho.
 
-Let’s try to create a dangling reference to see how Rust prevents them with a
-compile-time error:
+Aaiye ek dangling reference create karne ki koshish karte hain taa-ke dekhein ke Rust compile-time error ke zariye inhein kaise prevent karta hai:
 
 <Listing file-name="src/main.rs">
 
@@ -212,23 +145,20 @@ compile-time error:
 
 </Listing>
 
-Here’s the error:
+Yahan error hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-14-dangling-reference/output.txt}}
 ```
 
-This error message refers to a feature we haven’t covered yet: lifetimes. We’ll
-discuss lifetimes in detail in Chapter 10. But, if you disregard the parts
-about lifetimes, the message does contain the key to why this code is a problem:
+Ye error message ek aise feature ki taraf ishara karta hai jis ko hum ne abhi tak cover nahi kiya: lifetimes. Hum Chapter 10 mein lifetimes par detail se baat karenge. Lekin agar aap lifetimes wale hisson ko filhaal ignore karein, to message mein ye samajhne ke liye key mojood hai ke ye code problem kyun hai:
 
 ```text
 this function's return type contains a borrowed value, but there is no value
 for it to be borrowed from
 ```
 
-Let’s take a closer look at exactly what’s happening at each stage of our
-`dangle` code:
+Aaiye qareeb se dekhte hain ke hamare `dangle` code ke har stage par exactly kya ho raha hai:
 
 <Listing file-name="src/main.rs">
 
@@ -238,26 +168,23 @@ Let’s take a closer look at exactly what’s happening at each stage of our
 
 </Listing>
 
-Because `s` is created inside `dangle`, when the code of `dangle` is finished,
-`s` will be deallocated. But we tried to return a reference to it. That means
-this reference would be pointing to an invalid `String`. That’s no good! Rust
-won’t let us do this.
+Kyun ke `s` ko `dangle` ke andar create kiya gaya hai, jab `dangle` ka code complete hoga, `s` deallocate ho jayega. Lekin hum ne iska reference return karne ki koshish ki. Is ka matlab hai ke ye reference ek invalid `String` ki taraf point kar raha hoga. Ye theek nahi hai! Rust humein aisa karne ki ijazat nahi deta.
 
-The solution here is to return the `String` directly:
+Yahan solution ye hai ke `String` ko directly return kiya jaye:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-16-no-dangle/src/main.rs:here}}
 ```
 
-This works without any problems. Ownership is moved out, and nothing is
-deallocated.
+Ye baghair kisi problem ke kaam karta hai. Ownership bahar move ho jati hai aur kuch bhi deallocate nahi hota.
+
 
 ### The Rules of References
 
-Let’s recap what we’ve discussed about references:
+Aaiye references ke baare mein jo kuch hum ne discuss kiya hai us ka recap karte hain:
 
-- At any given time, you can have _either_ one mutable reference _or_ any
-  number of immutable references.
-- References must always be valid.
+* Kisi bhi waqt aapke paas *ya to* ek mutable reference ho sakta hai *ya* kisi bhi number mein immutable references ho sakte hain.
+* References hamesha valid hone chahiye.
 
-Next, we’ll look at a different kind of reference: slices.
+Agla, hum ek different qisam ke reference ko dekhenge: slices.
+

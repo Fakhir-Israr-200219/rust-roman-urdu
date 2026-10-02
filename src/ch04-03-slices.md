@@ -1,34 +1,20 @@
 ## The Slice Type
 
-_Slices_ let you reference a contiguous sequence of elements in a
-[collection](ch08-00-common-collections.md)<!-- ignore -->. A slice is a kind
-of reference, so it does not have ownership.
+*Slices* aapko kisi [collection](ch08-00-common-collections.md)<!-- ignore --> mein elements ki ek contiguous sequence ko reference karne dete hain. Slice ek qisam ka reference hota hai, is liye iski ownership nahi hoti.
 
-Here’s a small programming problem: Write a function that takes a string of
-words separated by spaces and returns the first word it finds in that string.
-If the function doesn’t find a space in the string, the whole string must be
-one word, so the entire string should be returned.
+Yahan ek chhota sa programming problem hai: Ek aisa function likhein jo spaces se separate kiye gaye words ki ek string le aur us string mein milne wala pehla word return kare. Agar function ko string mein koi space na mile, to poori string ek word honi chahiye, is liye poori string return honi chahiye.
 
-> Note: For the purposes of introducing slices, we are assuming ASCII only in
-> this section; a more thorough discussion of UTF-8 handling is in the
-> [“Storing UTF-8 Encoded Text with Strings”][strings]<!-- ignore --> section
-> of Chapter 8.
+> Note: Slices introduce karne ke maqsad ke liye, hum is section mein sirf ASCII assume kar rahe hain; UTF-8 handling ki zyada thorough discussion Chapter 8 ke [“Storing UTF-8 Encoded Text with Strings”][strings]<!-- ignore --> section mein hai.
 
-Let’s work through how we’d write the signature of this function without using
-slices, to understand the problem that slices will solve:
+Aaiye step by step dekhte hain ke slices ko use kiye baghair hum is function ki signature kaise likhenge, taa-ke samajh saken ke slices kis problem ko solve karengi:
 
 ```rust,ignore
 fn first_word(s: &String) -> ?
 ```
 
-The `first_word` function has a parameter of type `&String`. We don’t need
-ownership, so this is fine. (In idiomatic Rust, functions do not take ownership
-of their arguments unless they need to, and the reasons for that will become
-clear as we keep going.) But what should we return? We don’t really have a way
-to talk about *part* of a string. However, we could return the index of the end
-of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
+`first_word` function ka parameter `&String` type ka hai. Humein ownership ki zaroorat nahi, is liye ye theek hai. (Idiomatic Rust mein, functions apne arguments ki ownership tab tak nahi lete jab tak unhein iski zaroorat na ho, aur iski wajahen jaise jaise hum aage barhenge clear hoti jayengi.) Lekin humein return kya karna chahiye? Hamare paas string ke *ek part* ke baare mein baat karne ka koi proper tareeqa nahi hai. Lekin hum word ke end ka index return kar sakte hain, jise ek space indicate karti hai. Aaiye Listing 4-7 mein dikhaye gaye tareeqe se ise try karte hain.
 
-<Listing number="4-7" file-name="src/main.rs" caption="The `first_word` function that returns a byte index value into the `String` parameter">
+<Listing number="4-7" file-name="src/main.rs" caption="`first_word` function jo `String` parameter mein byte index value return karta hai">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:here}}
@@ -36,50 +22,31 @@ of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
 
 </Listing>
 
-Because we need to go through the `String` element by element and check whether
-a value is a space, we’ll convert our `String` to an array of bytes using the
-`as_bytes` method.
+Kyun ke humein `String` ko element by element traverse karke check karna hai ke koi value space hai ya nahi, hum `as_bytes` method ko use karke apni `String` ko bytes ki ek array mein convert karenge.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:as_bytes}}
 ```
 
-Next, we create an iterator over the array of bytes using the `iter` method:
+Is ke baad, hum `iter` method ko use karke bytes ki array par ek iterator create karte hain:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:iter}}
 ```
 
-We’ll discuss iterators in more detail in [Chapter 13][ch13]<!-- ignore -->.
-For now, know that `iter` is a method that returns each element in a collection
-and that `enumerate` wraps the result of `iter` and returns each element as
-part of a tuple instead. The first element of the tuple returned from
-`enumerate` is the index, and the second element is a reference to the element.
-This is a bit more convenient than calculating the index ourselves.
+Hum Chapter 13 mein iterators par mazeed detail se baat karenge [Chapter 13][ch13]<!-- ignore -->. Filhaal, itna jaan lein ke `iter` ek aisa method hai jo collection mein mojood har element return karta hai aur `enumerate` `iter` ke result ko wrap karta hai aur har element ko ek tuple ke hisse ke taur par return karta hai. `enumerate` se return hone wale tuple ka pehla element index hota hai aur doosra element element ka reference hota hai. Ye khud index calculate karne ke muqable mein thora zyada convenient hai.
 
-Because the `enumerate` method returns a tuple, we can use patterns to
-destructure that tuple. We’ll be discussing patterns more in [Chapter
-6][ch6]<!-- ignore -->. In the `for` loop, we specify a pattern that has `i`
-for the index in the tuple and `&item` for the single byte in the tuple.
-Because we get a reference to the element from `.iter().enumerate()`, we use
-`&` in the pattern.
+Kyun ke `enumerate` method ek tuple return karta hai, hum us tuple ko destructure karne ke liye patterns use kar sakte hain. Hum Chapter 6 mein patterns par mazeed baat karenge [Chapter 6][ch6]<!-- ignore -->. `for` loop mein hum ek aisa pattern specify karte hain jisme tuple ke index ke liye `i` aur tuple mein mojood single byte ke liye `&item` hai. Kyun ke humein `.iter().enumerate()` se element ka reference milta hai, is liye hum pattern mein `&` use karte hain.
 
-Inside the `for` loop, we search for the byte that represents the space by
-using the byte literal syntax. If we find a space, we return the position.
-Otherwise, we return the length of the string by using `s.len()`.
+`for` loop ke andar, hum byte literal syntax ko use karke us byte ko search karte hain jo space ko represent karta hai. Agar humein space mil jaye, to hum uski position return kar dete hain. Warna, hum `s.len()` ko use karke string ki length return kar dete hain.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:inside_for}}
 ```
 
-We now have a way to find out the index of the end of the first word in the
-string, but there’s a problem. We’re returning a `usize` on its own, but it’s
-only a meaningful number in the context of the `&String`. In other words,
-because it’s a separate value from the `String`, there’s no guarantee that it
-will still be valid in the future. Consider the program in Listing 4-8 that
-uses the `first_word` function from Listing 4-7.
+Ab hamare paas string mein pehle word ke end ka index find karne ka ek tareeqa hai, lekin ek problem hai. Hum apne aap mein ek `usize` return kar rahe hain, lekin ye number sirf `&String` ke context mein meaningful hai. Doosre alfaaz mein, kyun ke ye `String` se separate ek value hai, is baat ki koi guarantee nahi hai ke future mein bhi ye valid rahega. Listing 4-8 mein diye gaye program ko dekhein jo Listing 4-7 ke `first_word` function ko use karta hai.
 
-<Listing number="4-8" file-name="src/main.rs" caption="Storing the result from calling the `first_word` function and then changing the `String` contents">
+<Listing number="4-8" file-name="src/main.rs" caption="`first_word` function ko call karne ka result store karna aur phir `String` ke contents ko change karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-08/src/main.rs:here}}
@@ -87,48 +54,29 @@ uses the `first_word` function from Listing 4-7.
 
 </Listing>
 
-This program compiles without any errors and would also do so if we used `word`
-after calling `s.clear()`. Because `word` isn’t connected to the state of `s`
-at all, `word` still contains the value `5`. We could use that value `5` with
-the variable `s` to try to extract the first word out, but this would be a bug
-because the contents of `s` have changed since we saved `5` in `word`.
+Ye program baghair kisi error ke compile hota hai aur agar hum `s.clear()` call karne ke baad `word` ko use karein tab bhi compile hoga. Kyun ke `word` ka `s` ki state ke saath koi connection nahi hai, `word` mein ab bhi value `5` mojood hai. Hum is value `5` ko variable `s` ke saath use karke pehla word extract karne ki koshish kar sakte hain, lekin ye ek bug hoga kyun ke `word` mein `5` save karne ke baad `s` ke contents change ho chuke hain.
 
-Having to worry about the index in `word` getting out of sync with the data in
-`s` is tedious and error-prone! Managing these indices is even more brittle if
-we write a `second_word` function. Its signature would have to look like this:
+`word` mein index ke `s` ke data ke saath out of sync hone ki fikr karna tedious aur error-prone hai! Agar hum `second_word` function likhein to in indices ko manage karna aur bhi brittle ho jayega. Iski signature kuch is tarah dikhni padegi:
 
 ```rust,ignore
 fn second_word(s: &String) -> (usize, usize) {
 ```
 
-Now we’re tracking a starting _and_ an ending index, and we have even more
-values that were calculated from data in a particular state but aren’t tied to
-that state at all. We have three unrelated variables floating around that need
-to be kept in sync.
+Ab hum starting *aur* ending index ko track kar rahe hain, aur hamare paas aur bhi zyada aisi values hain jo kisi particular state mein data se calculate ki gayi hain lekin us state ke saath bilkul tied nahi hain. Hamare paas teen unrelated variables idhar udhar mojood hain jinhein sync mein rakhna zaroori hai.
 
-Luckily, Rust has a solution to this problem: string slices.
+Khush qismati se, Rust ke paas is problem ka solution hai: string slices.
 
 ### String Slices
 
-A _string slice_ is a reference to a contiguous sequence of the elements of a
-`String`, and it looks like this:
+Ek *string slice* `String` ke elements ki ek contiguous sequence ka reference hota hai, aur ye is tarah nazar aata hai:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-17-slice/src/main.rs:here}}
 ```
 
-Rather than a reference to the entire `String`, `hello` is a reference to a
-portion of the `String`, specified in the extra `[0..5]` bit. We create slices
-using a range within square brackets by specifying
-`[starting_index..ending_index]`, where _`starting_index`_ is the first
-position in the slice and _`ending_index`_ is one more than the last position
-in the slice. Internally, the slice data structure stores the starting position
-and the length of the slice, which corresponds to _`ending_index`_ minus
-_`starting_index`_. So, in the case of `let world = &s[6..11];`, `world` would
-be a slice that contains a pointer to the byte at index 6 of `s` with a length
-value of `5`.
+Poori `String` ke reference ke bajaye, `hello` `String` ke ek portion ka reference hai, jise extra `[0..5]` bit specify karti hai. Hum square brackets ke andar ek range specify karke slices create karte hain, yani `[starting_index..ending_index]`, jahan *`starting_index`* slice ki pehli position hoti hai aur *`ending_index`* slice ki aakhri position se ek zyada hota hai. Internally, slice data structure starting position aur slice ki length store karta hai, jo *`ending_index`* minus *`starting_index`* ke barabar hoti hai. Is liye, `let world = &s[6..11];` ke case mein, `world` ek aisa slice hoga jo `s` ke index 6 par mojood byte ka pointer aur `5` ki length value rakhta hai.
 
-Figure 4-7 shows this in a diagram.
+Figure 4-7 isay ek diagram mein dikhati hai.
 
 <img alt="Three tables: a table representing the stack data of s, which points
 to the byte at index 0 in a table of the string data &quot;hello world&quot; on
@@ -136,11 +84,9 @@ the heap. The third table represents the stack data of the slice world, which
 has a length value of 5 and points to byte 6 of the heap data table."
 src="img/trpl04-07.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-7: A string slice referring to part of a
-`String`</span>
+<span class="caption">Figure 4-7: `String` ke ek hissa ko refer karta hua string slice</span>
 
-With Rust’s `..` range syntax, if you want to start at index 0, you can drop
-the value before the two periods. In other words, these are equal:
+Rust ki `..` range syntax ke saath, agar aap index 0 se start karna chahte hain, to aap do periods se pehle wali value ko hata sakte hain. Doosre alfaaz mein, ye dono barabar hain:
 
 ```rust
 let s = String::from("hello");
@@ -149,8 +95,7 @@ let slice = &s[0..2];
 let slice = &s[..2];
 ```
 
-By the same token, if your slice includes the last byte of the `String`, you
-can drop the trailing number. That means these are equal:
+Isi tarah, agar aapke slice mein `String` ka aakhri byte shamil hai, to aap trailing number ko hata sakte hain. Is ka matlab hai ke ye dono barabar hain:
 
 ```rust
 let s = String::from("hello");
@@ -161,8 +106,7 @@ let slice = &s[3..len];
 let slice = &s[3..];
 ```
 
-You can also drop both values to take a slice of the entire string. So, these
-are equal:
+Aap dono values ko bhi hata sakte hain taa-ke poori string ka slice le saken. Is liye, ye dono barabar hain:
 
 ```rust
 let s = String::from("hello");
@@ -173,12 +117,9 @@ let slice = &s[0..len];
 let slice = &s[..];
 ```
 
-> Note: String slice range indices must occur at valid UTF-8 character
-> boundaries. If you attempt to create a string slice in the middle of a
-> multibyte character, your program will exit with an error.
+> Note: String slice ke range indices ka valid UTF-8 character boundaries par hona zaroori hai. Agar aap kisi multibyte character ke darmiyan string slice create karne ki koshish karein, to aapka program error ke saath exit ho jayega.
 
-With all this information in mind, let’s rewrite `first_word` to return a
-slice. The type that signifies “string slice” is written as `&str`:
+In tamam maloomat ko zehan mein rakhte hue, aaiye `first_word` ko dobara likhte hain taa-ke ye ek slice return kare. “String slice” ko represent karne wali type `&str` likhi jati hai:
 
 <Listing file-name="src/main.rs">
 
@@ -188,30 +129,17 @@ slice. The type that signifies “string slice” is written as `&str`:
 
 </Listing>
 
-We get the index for the end of the word the same way we did in Listing 4-7, by
-looking for the first occurrence of a space. When we find a space, we return a
-string slice using the start of the string and the index of the space as the
-starting and ending indices.
+Humein word ke end ka index usi tarah milta hai jis tarah Listing 4-7 mein mila tha, yani space ke pehle occurrence ko dhoondh kar. Jab humein space mil jati hai, to hum string ke start aur space ke index ko starting aur ending indices ke taur par use karke ek string slice return kar dete hain.
 
-Now when we call `first_word`, we get back a single value that is tied to the
-underlying data. The value is made up of a reference to the starting point of
-the slice and the number of elements in the slice.
+Ab jab hum `first_word` ko call karte hain, to humein ek single value milti hai jo underlying data ke saath tied hoti hai. Ye value slice ke starting point ke ek reference aur slice mein elements ki tadaad se mil kar banti hai.
 
-Returning a slice would also work for a `second_word` function:
+`second_word` function ke liye bhi slice return karna kaam karega:
 
 ```rust,ignore
 fn second_word(s: &String) -> &str {
 ```
 
-We now have a straightforward API that’s much harder to mess up because the
-compiler will ensure that the references into the `String` remain valid.
-Remember the bug in the program in Listing 4-8, when we got the index to the
-end of the first word but then cleared the string so our index was invalid?
-That code was logically incorrect but didn’t show any immediate errors. The
-problems would show up later if we kept trying to use the first word index with
-an emptied string. Slices make this bug impossible and let us know much sooner
-that we have a problem with our code. Using the slice version of `first_word`
-will throw a compile-time error:
+Ab hamare paas ek straightforward API hai jise ghalat use karna kaafi mushkil hai, kyun ke compiler ensure karega ke `String` ke andar references valid rahen. Listing 4-8 mein program wala bug yaad karein, jab humne pehle word ke end ka index hasil kiya tha aur phir string ko clear kar diya tha, jis se hamara index invalid ho gaya tha? Woh code logically incorrect tha lekin foran koi error nazar nahi aaya. Agar hum emptied string ke saath first word ke index ko use karne ki koshish karte rehte, to problems baad mein saamne aatin. Slices is bug ko impossible bana deti hain aur humein bohat pehle hi bata deti hain ke hamare code mein problem hai. `first_word` ka slice version use karne se compile-time error milega:
 
 <Listing file-name="src/main.rs">
 
@@ -221,20 +149,13 @@ will throw a compile-time error:
 
 </Listing>
 
-Here’s the compiler error:
+Yahan compiler error hai:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-19-slice-error/output.txt}}
 ```
 
-Recall from the borrowing rules that if we have an immutable reference to
-something, we cannot also take a mutable reference. Because `clear` needs to
-truncate the `String`, it needs to get a mutable reference. The `println!`
-after the call to `clear` uses the reference in `word`, so the immutable
-reference must still be active at that point. Rust disallows the mutable
-reference in `clear` and the immutable reference in `word` from existing at the
-same time, and compilation fails. Not only has Rust made our API easier to use,
-but it has also eliminated an entire class of errors at compile time!
+Borrowing rules se yaad karein ke agar hamare paas kisi cheez ka immutable reference hai, to hum us ka mutable reference bhi nahi le sakte. Kyun ke `clear` ko `String` ko truncate karne ki zaroorat hoti hai, is liye use mutable reference lena padta hai. `clear` ki call ke baad `println!` `word` mein mojood reference ko use karta hai, is liye us point par immutable reference ab bhi active hona zaroori hai. Rust `clear` ke mutable reference aur `word` ke immutable reference ko ek hi waqt mein exist karne ki ijazat nahi deta, aur compilation fail ho jati hai. Rust ne na sirf hamari API ko use karna aasaan bana diya hai, balki compile time par errors ki ek poori category ko bhi eliminate kar diya hai!
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -242,31 +163,25 @@ but it has also eliminated an entire class of errors at compile time!
 
 #### String Literals as Slices
 
-Recall that we talked about string literals being stored inside the binary. Now
-that we know about slices, we can properly understand string literals:
+Yaad karein ke hum ne baat ki thi ke string literals binary ke andar store hoti hain. Ab jab hum slices ke baare mein jaante hain, to hum string literals ko properly samajh sakte hain:
 
 ```rust
 let s = "Hello, world!";
 ```
 
-The type of `s` here is `&str`: It’s a slice pointing to that specific point of
-the binary. This is also why string literals are immutable; `&str` is an
-immutable reference.
+Yahan `s` ki type `&str` hai: Ye binary ke us specific point ki taraf point karne wala slice hai. Isi wajah se string literals immutable bhi hoti hain; `&str` ek immutable reference hai.
 
 #### String Slices as Parameters
 
-Knowing that you can take slices of literals and `String` values leads us to
-one more improvement on `first_word`, and that’s its signature:
+Ye jaanna ke aap literals aur `String` values ke slices le sakte hain, humein `first_word` mein ek aur improvement ki taraf le jata hai, aur woh hai iski signature:
 
 ```rust,ignore
 fn first_word(s: &String) -> &str {
 ```
 
-A more experienced Rustacean would write the signature shown in Listing 4-9
-instead because it allows us to use the same function on both `&String` values
-and `&str` values.
+Ek zyada experienced Rustacean is signature ko use karega jo Listing 4-9 mein dikhayi gayi hai, kyun ke is se hum same function ko `&String` values aur `&str` values dono par use kar sakte hain.
 
-<Listing number="4-9" caption="Improving the `first_word` function by using a string slice for the type of the `s` parameter">
+<Listing number="4-9" caption="`s` parameter ki type ke liye string slice use karke `first_word` function ko behtar banana">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-09/src/main.rs:here}}
@@ -274,14 +189,10 @@ and `&str` values.
 
 </Listing>
 
-If we have a string slice, we can pass that directly. If we have a `String`, we
-can pass a slice of the `String` or a reference to the `String`. This
-flexibility takes advantage of deref coercions, a feature we will cover in
-the [“Using Deref Coercions in Functions and Methods”][deref-coercions]<!--
-ignore --> section of Chapter 15.
+Agar hamare paas string slice ho, to hum use directly pass kar sakte hain. Agar hamare paas `String` ho, to hum `String` ka slice ya `String` ka reference pass kar sakte hain. Ye flexibility deref coercions ka faida uthati hai, jo ek aisa feature hai jise hum Chapter 15 ke [“Using Deref Coercions in Functions and Methods”][deref-coercions]<!--
+ignore --> section mein cover karenge.
 
-Defining a function to take a string slice instead of a reference to a `String`
-makes our API more general and useful without losing any functionality:
+`String` ke reference ke bajaye string slice lene ke liye function define karna hamari API ko zyada general aur useful bana deta hai, baghair kisi functionality ko lose kiye:
 
 <Listing file-name="src/main.rs">
 
@@ -293,15 +204,13 @@ makes our API more general and useful without losing any functionality:
 
 ### Other Slices
 
-String slices, as you might imagine, are specific to strings. But there’s a
-more general slice type too. Consider this array:
+String slices, jaisa ke aap andaza laga sakte hain, strings ke liye specific hoti hain. Lekin ek zyada general slice type bhi hoti hai. Is array par gaur karein:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
 ```
 
-Just as we might want to refer to part of a string, we might want to refer to
-part of an array. We’d do so like this:
+Jis tarah hum string ke kisi part ko refer karna chah sakte hain, isi tarah hum array ke kisi part ko bhi refer karna chah sakte hain. Hum ye is tarah karenge:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
@@ -311,24 +220,17 @@ let slice = &a[1..3];
 assert_eq!(slice, &[2, 3]);
 ```
 
-This slice has the type `&[i32]`. It works the same way as string slices do, by
-storing a reference to the first element and a length. You’ll use this kind of
-slice for all sorts of other collections. We’ll discuss these collections in
-detail when we talk about vectors in Chapter 8.
+Is slice ki type `&[i32]` hai. Ye string slices ki tarah hi kaam karti hai, yani pehle element ka reference aur ek length store karti hai. Aap is qisam ki slice ko har tarah ki doosri collections ke liye use karenge. Hum Chapter 8 mein vectors ke baare mein baat karte waqt in collections ko detail mein discuss karenge.
+
 
 ## Summary
 
-The concepts of ownership, borrowing, and slices ensure memory safety in Rust
-programs at compile time. The Rust language gives you control over your memory
-usage in the same way as other systems programming languages. But having the
-owner of data automatically clean up that data when the owner goes out of scope
-means you don’t have to write and debug extra code to get this control.
+Ownership, borrowing, aur slices ke concepts Rust programs mein compile time par memory safety ko ensure karte hain. Rust language aapko apni memory usage par usi tarah control deti hai jaise doosri systems programming languages deti hain. Lekin data ka owner automatically us data ko clean up kar deta hai jab owner scope se bahar chala jata hai, jis ka matlab hai ke is control ko hasil karne ke liye aapko extra code likhne aur debug karne ki zaroorat nahi padti.
 
-Ownership affects how lots of other parts of Rust work, so we’ll talk about
-these concepts further throughout the rest of the book. Let’s move on to
-Chapter 5 and look at grouping pieces of data together in a `struct`.
+Ownership Rust ke bohat se doosre parts ke kaam karne ke tareeqe ko affect karti hai, is liye kitab ke baqi hisson mein hum in concepts par mazeed baat karenge. Aaiye Chapter 5 ki taraf chalte hain aur dekhte hain ke data ke mukhtalif pieces ko ek `struct` mein kis tarah ek saath group kiya jata hai.
 
 [ch13]: ch13-02-iterators.html
 [ch6]: ch06-02-match.html#patterns-that-bind-to-values
 [strings]: ch08-02-strings.html#storing-utf-8-encoded-text-with-strings
 [deref-coercions]: ch15-02-deref.html#using-deref-coercions-in-functions-and-methods
+
