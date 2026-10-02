@@ -1,14 +1,5 @@
-# Using Structs to Structure Related Data
+# Related Data Ko Structure Karne Ke Liye Structs Ka Istemal
 
-A _struct_, or _structure_, is a custom data type that lets you package
-together and name multiple related values that make up a meaningful group. If
-you’re familiar with an object-oriented language, a struct is like an object’s
-data attributes. In this chapter, we’ll compare and contrast tuples with
-structs to build on what you already know and demonstrate when structs are a
-better way to group data.
+Ek *struct*, ya *structure*, ek custom data type hota hai jo aapko multiple related values ko, jo mil kar ek meaningful group banati hain, ek saath package aur name karne deta hai. Agar aap object-oriented language se waqif hain, to struct kisi object ke data attributes ki tarah hota hai. Is chapter mein hum tuples aur structs ka muqabla aur farq discuss karenge taa-ke aap jo pehle se jaante hain us par build kar saken aur ye demonstrate kar saken ke data ko group karne ke liye structs kab behtar tareeqa hoti hain.
 
-We’ll demonstrate how to define and instantiate structs. We’ll discuss how to
-define associated functions, especially the kind of associated functions called
-_methods_, to specify behavior associated with a struct type. Structs and enums
-(discussed in Chapter 6) are the building blocks for creating new types in your
-program’s domain to take full advantage of Rust’s compile-time type checking.
+Hum dekhenge ke structs ko kaise define aur instantiate kiya jata hai. Hum associated functions ko define karne ke tareeqe par baat karenge, khaas taur par us qisam ki associated functions jinhein *methods* kaha jata hai, taa-ke struct type se associated behavior specify kiya ja sake. Structs aur enums (jin par Chapter 6 mein baat ki jayegi) aapke program ke domain mein naye types create karne ke building blocks hain, taa-ke Rust ki compile-time type checking ka poora faida uthaya ja sake.
