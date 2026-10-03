@@ -1,35 +1,20 @@
-## Unrecoverable Errors with `panic!`
+## `panic!` Ke Saath Unrecoverable Errors
 
-Sometimes bad things happen in your code, and there’s nothing you can do about
-it. In these cases, Rust has the `panic!` macro. There are two ways to cause a
-panic in practice: by taking an action that causes our code to panic (such as
-accessing an array past the end) or by explicitly calling the `panic!` macro.
-In both cases, we cause a panic in our program. By default, these panics will
-print a failure message, unwind, clean up the stack, and quit. Via an
-environment variable, you can also have Rust display the call stack when a
-panic occurs to make it easier to track down the source of the panic.
+Kabhi kabhi aapke code mein buri situations paida ho jati hain, aur aap unke baare mein kuch nahi kar sakte. Aise cases mein Rust ke paas `panic!` macro hota hai. Amli taur par panic cause karne ke do tareeqe hain: aisa action lena jo hamare code ko panic karwa de (jaise array ke end se aage access karna), ya `panic!` macro ko explicitly call karna. Dono cases mein hum apne program mein panic cause karte hain. Default taur par, ye panics ek failure message print karenge, unwind karenge, stack ko clean up karenge, aur quit kar jayenge. Ek environment variable ke zariye, aap Rust ko panic hone par call stack display karne ke liye bhi keh sakte hain, taa-ke panic ke source ko track down karna aasaan ho.
 
-> ### Unwinding the Stack or Aborting in Response to a Panic
+
+> ### Panic Ke Response Mein Stack Ko Unwind Karna Ya Abort Karna
 >
-> By default, when a panic occurs, the program starts _unwinding_, which means
-> Rust walks back up the stack and cleans up the data from each function it
-> encounters. However, walking back and cleaning up is a lot of work. Rust
-> therefore allows you to choose the alternative of immediately _aborting_,
-> which ends the program without cleaning up.
+> Default taur par, jab panic hota hai, program *unwinding* shuru karta hai, jis ka matlab hai ke Rust stack par wapas upar jata hai aur har us function se data ko clean up karta hai jise woh encounter karta hai. Lekin wapas jana aur cleanup karna kaafi kaam hai. Is liye Rust aapko foran *aborting* ka alternative choose karne ki bhi ijazat deta hai, jo cleanup kiye baghair program ko end kar deta hai.
 >
-> Memory that the program was using will then need to be cleaned up by the
-> operating system. If in your project you need to make the resultant binary as
-> small as possible, you can switch from unwinding to aborting upon a panic by
-> adding `panic = 'abort'` to the appropriate `[profile]` sections in your
-> _Cargo.toml_ file. For example, if you want to abort on panic in release mode,
-> add this:
+> Is ke baad program jis memory ko use kar raha tha, usay operating system ko clean up karna hoga. Agar aapke project mein resultant binary ko jitna mumkin ho sake chhota rakhna zaroori ho, to aap apni *Cargo.toml* file ke munasib `[profile]` sections mein `panic = 'abort'` add karke panic hone par unwinding se aborting par switch kar sakte hain. Misal ke taur par, agar aap release mode mein panic par abort karna chahte hain, to ye add karein:
 >
 > ```toml
 > [profile.release]
 > panic = 'abort'
 > ```
 
-Let’s try calling `panic!` in a simple program:
+Aaiye ek simple program mein `panic!` call karke dekhte hain:
 
 <Listing file-name="src/main.rs">
 
@@ -39,35 +24,23 @@ Let’s try calling `panic!` in a simple program:
 
 </Listing>
 
-When you run the program, you’ll see something like this:
+Jab aap program run karenge, to aapko kuch is tarah ka output nazar aayega:
 
 ```console
 {{#include ../listings/ch09-error-handling/no-listing-01-panic/output.txt}}
 ```
 
-The call to `panic!` causes the error message contained in the last two lines.
-The first line shows our panic message and the place in our source code where
-the panic occurred: _src/main.rs:2:5_ indicates that it’s the second line,
-fifth character of our _src/main.rs_ file.
+`panic!` ki call aakhri do lines mein maujood error message ko cause karti hai. Pehli line hamara panic message aur hamare source code mein woh jagah dikhati hai jahan panic hua: *src/main.rs:2:5* indicate karta hai ke ye hamari *src/main.rs* file ki second line ka fifth character hai.
 
-In this case, the line indicated is part of our code, and if we go to that
-line, we see the `panic!` macro call. In other cases, the `panic!` call might
-be in code that our code calls, and the filename and line number reported by
-the error message will be someone else’s code where the `panic!` macro is
-called, not the line of our code that eventually led to the `panic!` call.
+Is case mein, indicated line hamare apne code ka hissa hai, aur agar hum us line par jayein, to humein `panic!` macro ki call nazar aati hai. Doosre cases mein, `panic!` ki call us code mein ho sakti hai jise hamara code call karta hai, aur error message mein report kiya gaya filename aur line number us doosre code ki jagah hogi jahan `panic!` macro call hui hai, na ke hamare code ki woh line jis ne aakhirkar `panic!` call tak pohanchaya.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-a-panic-backtrace"></a>
 
-We can use the backtrace of the functions the `panic!` call came from to figure
-out the part of our code that is causing the problem. To understand how to use
-a `panic!` backtrace, let’s look at another example and see what it’s like when
-a `panic!` call comes from a library because of a bug in our code instead of
-from our code calling the macro directly. Listing 9-1 has some code that
-attempts to access an index in a vector beyond the range of valid indexes.
+Hum un functions ka backtrace use kar sakte hain jahan se `panic!` call aayi hai taa-ke apne code ke us hissa ko figure out kar saken jo problem cause kar raha hai. `panic!` backtrace ko use karne ka tareeqa samajhne ke liye, aaiye ek aur example dekhte hain aur dekhte hain ke us waqt kya hota hai jab `panic!` call hamare code se directly macro call karne ke bajaye hamare code mein kisi bug ki wajah se ek library se aati hai. Listing 9-1 mein aisa code hai jo vector mein valid indexes ki range se bahar kisi index ko access karne ki koshish karta hai.
 
-<Listing number="9-1" file-name="src/main.rs" caption="Attempting to access an element beyond the end of a vector, which will cause a call to `panic!`">
+<Listing number="9-1" file-name="src/main.rs" caption="Vector ke end se aage kisi element ko access karne ki koshish karna, jo `panic!` ki call cause karega">
 
 ```rust,should_panic,panics
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-01/src/main.rs}}
@@ -75,42 +48,19 @@ attempts to access an index in a vector beyond the range of valid indexes.
 
 </Listing>
 
-Here, we’re attempting to access the 100th element of our vector (which is at
-index 99 because indexing starts at zero), but the vector has only three
-elements. In this situation, Rust will panic. Using `[]` is supposed to return
-an element, but if you pass an invalid index, there’s no element that Rust
-could return here that would be correct.
+Yahan, hum apne vector ke 100th element ko access karne ki koshish kar rahe hain (jo index 99 par hai kyun ke indexing zero se shuru hoti hai), lekin vector mein sirf teen elements hain. Is situation mein Rust panic karega. `[]` ko use karna ek element return karne ke liye hota hai, lekin agar aap invalid index pass karein, to Rust ke paas yahan return karne ke liye koi aisa element nahi hai jo correct ho.
 
-In C, attempting to read beyond the end of a data structure is undefined
-behavior. You might get whatever is at the location in memory that would
-correspond to that element in the data structure, even though the memory
-doesn’t belong to that structure. This is called a _buffer overread_ and can
-lead to security vulnerabilities if an attacker is able to manipulate the index
-in such a way as to read data they shouldn’t be allowed to that is stored after
-the data structure.
+C mein, data structure ke end se aage read karne ki koshish undefined behavior hoti hai. Aapko memory mein woh kuch bhi mil sakta hai jo data structure mein us element ke corresponding location par ho, chahe woh memory us structure ki na ho. Isay *buffer overread* kaha jata hai aur agar koi attacker index ko is tarah manipulate kar sake ke woh aisa data read kar le jise usay read karne ki permission nahi honi chahiye aur jo data structure ke baad stored ho, to ye security vulnerabilities ka sabab ban sakta hai.
 
-To protect your program from this sort of vulnerability, if you try to read an
-element at an index that doesn’t exist, Rust will stop execution and refuse to
-continue. Let’s try it and see:
+Apne program ko is qisam ki vulnerability se protect karne ke liye, agar aap kisi aise index par element read karne ki koshish karein jo exist nahi karta, to Rust execution ko stop kar deta hai aur continue karne se inkar karta hai. Aaiye ise try karke dekhte hain:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-01/output.txt}}
 ```
 
-This error points at line 4 of our _main.rs_ where we attempt to access index
-99 of the vector in `v`.
+Ye error hamari *main.rs* ki line 4 ki taraf point karta hai jahan hum `v` mein vector ke index 99 ko access karne ki koshish karte hain.
 
-The `note:` line tells us that we can set the `RUST_BACKTRACE` environment
-variable to get a backtrace of exactly what happened to cause the error. A
-_backtrace_ is a list of all the functions that have been called to get to this
-point. Backtraces in Rust work as they do in other languages: The key to
-reading the backtrace is to start from the top and read until you see files you
-wrote. That’s the spot where the problem originated. The lines above that spot
-are code that your code has called; the lines below are code that called your
-code. These before-and-after lines might include core Rust code, standard
-library code, or crates that you’re using. Let’s try to get a backtrace by
-setting the `RUST_BACKTRACE` environment variable to any value except `0`.
-Listing 9-2 shows output similar to what you’ll see.
+`note:` line humein batati hai ke hum error cause karne wali exact situation ka backtrace hasil karne ke liye `RUST_BACKTRACE` environment variable set kar sakte hain. Ek *backtrace* un tamam functions ki list hoti hai jinhein is point tak pohanchne ke liye call kiya gaya hai. Rust mein backtraces doosri languages ki tarah kaam karte hain: Backtrace ko read karne ki key ye hai ke top se shuru karein aur tab tak read karein jab tak aapko woh files nazar na aa jayein jo aap ne khud likhi hain. Ye woh jagah hai jahan problem originate hui. Us spot ke upar wali lines woh code hain jise aapke code ne call kiya; neeche wali lines woh code hain jis ne aapke code ko call kiya. Ye before-and-after lines core Rust code, standard library code, ya un crates ko include kar sakti hain jinhein aap use kar rahe hain. Aaiye `RUST_BACKTRACE` environment variable ko `0` ke ilawa kisi bhi value par set karke backtrace hasil karne ki koshish karte hain. Listing 9-2 aapko nazar aane wale output jaisa output dikhati hai.
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/listing-09-01
@@ -119,7 +69,7 @@ copy the backtrace output below
 check the backtrace number mentioned in the text below the listing
 -->
 
-<Listing number="9-2" caption="The backtrace generated by a call to `panic!` displayed when the environment variable `RUST_BACKTRACE` is set">
+<Listing number="9-2" caption="`panic!` ki call se generate hone wala backtrace jab `RUST_BACKTRACE` environment variable set ho">
 
 ```console
 $ RUST_BACKTRACE=1 cargo run
@@ -147,24 +97,10 @@ note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose bac
 
 </Listing>
 
-That’s a lot of output! The exact output you see might be different depending
-on your operating system and Rust version. In order to get backtraces with this
-information, debug symbols must be enabled. Debug symbols are enabled by
-default when using `cargo build` or `cargo run` without the `--release` flag,
-as we have here.
+Ye kaafi zyada output hai! Aapko jo exact output milega woh aapke operating system aur Rust version ke mutabiq different ho sakta hai. Is information ke saath backtraces hasil karne ke liye debug symbols enabled hona zaroori hai. Jab hum `cargo build` ya `cargo run` ko `--release` flag ke baghair use karte hain, to debug symbols default taur par enabled hote hain, jaisa ke yahan hai.
 
-In the output in Listing 9-2, line 6 of the backtrace points to the line in our
-project that’s causing the problem: line 4 of _src/main.rs_. If we don’t want
-our program to panic, we should start our investigation at the location pointed
-to by the first line mentioning a file we wrote. In Listing 9-1, where we
-deliberately wrote code that would panic, the way to fix the panic is to not
-request an element beyond the range of the vector indexes. When your code
-panics in the future, you’ll need to figure out what action the code is taking
-with what values to cause the panic and what the code should do instead.
+Listing 9-2 ke output mein, backtrace ki line 6 hamare project ki us line ki taraf point karti hai jo problem cause kar rahi hai: *src/main.rs* ki line 4. Agar hum nahi chahte ke hamara program panic kare, to humein apni investigation us location se shuru karni chahiye jis ki taraf hamari likhi hui file ka zikr karne wali pehli line point karti hai. Listing 9-1 mein, jahan hum ne jaan boojh kar aisa code likha tha jo panic kare, panic ko fix karne ka tareeqa ye hai ke vector indexes ki range se bahar kisi element ko request na kiya jaye. Jab future mein aapka code panic kare, to aapko figure out karna hoga ke panic cause karne ke liye code kis values ke saath kya action perform kar raha hai aur us ke bajaye code ko kya karna chahiye.
 
-We’ll come back to `panic!` and when we should and should not use `panic!` to
-handle error conditions in the [“To `panic!` or Not to
-`panic!`”][to-panic-or-not-to-panic]<!-- ignore --> section later in this
-chapter. Next, we’ll look at how to recover from an error using `Result`.
+Hum baad mein is chapter ke [“To `panic!` or Not to `panic!`”][to-panic-or-not-to-panic]<!-- ignore --> section mein `panic!` aur ye discuss karenge ke error conditions ko handle karne ke liye `panic!` ko kab use karna chahiye aur kab nahi. Agley section mein, hum dekhenge ke `Result` ko use karke error se kaise recover kiya jata hai.
 
 [to-panic-or-not-to-panic]: ch09-03-to-panic-or-not-to-panic.html#to-panic-or-not-to-panic

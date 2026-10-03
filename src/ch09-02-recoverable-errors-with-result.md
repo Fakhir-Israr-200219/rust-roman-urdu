@@ -1,14 +1,9 @@
-## Recoverable Errors with `Result`
+## `Result` Ke Saath Recoverable Errors
 
-Most errors aren’t serious enough to require the program to stop entirely.
-Sometimes when a function fails, it’s for a reason that you can easily interpret
-and respond to. For example, if you try to open a file and that operation fails
-because the file doesn’t exist, you might want to create the file instead of
-terminating the process.
+Zyada tar errors itne serious nahi hote ke program ko bilkul stop karna zaroori ho. Kabhi kabhi jab koi function fail hota hai, to uski wajah aisi hoti hai jise aap aasani se samajh sakte hain aur us ke mutabiq response de sakte hain. Misal ke taur par, agar aap kisi file ko open karne ki koshish karein aur operation is liye fail ho jaye ke file exist nahi karti, to shayad aap process ko terminate karne ke bajaye woh file create karna chahein.
 
-Recall from [“Handling Potential Failure with `Result`”][handle_failure]<!--
-ignore --> in Chapter 2 that the `Result` enum is defined as having two
-variants, `Ok` and `Err`, as follows:
+Chapter 2 mein [“Handling Potential Failure with `Result`”][handle_failure]<!--
+ignore --> se yaad karein ke `Result` enum ko do variants, `Ok` aur `Err`, ke saath define kiya gaya hai, jaisa ke neeche diya gaya hai:
 
 ```rust
 enum Result<T, E> {
@@ -17,17 +12,9 @@ enum Result<T, E> {
 }
 ```
 
-The `T` and `E` are generic type parameters: We’ll discuss generics in more
-detail in Chapter 10. What you need to know right now is that `T` represents
-the type of the value that will be returned in a success case within the `Ok`
-variant, and `E` represents the type of the error that will be returned in a
-failure case within the `Err` variant. Because `Result` has these generic type
-parameters, we can use the `Result` type and the functions defined on it in
-many different situations where the success value and error value we want to
-return may differ.
+`T` aur `E` generic type parameters hain: Hum Chapter 10 mein generics ke baare mein mazeed detail mein discuss karenge. Filhal aapko itna jaanne ki zaroorat hai ke `T` us value ki type ko represent karta hai jo success case mein `Ok` variant ke andar return ki jayegi, aur `E` us error ki type ko represent karta hai jo failure case mein `Err` variant ke andar return ki jayegi. Kyun ke `Result` mein ye generic type parameters hain, hum `Result` type aur is par defined functions ko bohat si different situations mein use kar sakte hain, jahan hum jo success value aur error value return karna chahte hain woh different ho sakti hain.
 
-Let’s call a function that returns a `Result` value because the function could
-fail. In Listing 9-3, we try to open a file.
+Aaiye ek aisa function call karte hain jo `Result` value return karta hai kyun ke woh fail ho sakta hai. Listing 9-3 mein, hum ek file open karne ki koshish karte hain.
 
 <Listing number="9-3" file-name="src/main.rs" caption="Opening a file">
 
@@ -37,27 +24,11 @@ fail. In Listing 9-3, we try to open a file.
 
 </Listing>
 
-The return type of `File::open` is a `Result<T, E>`. The generic parameter `T`
-has been filled in by the implementation of `File::open` with the type of the
-success value, `std::fs::File`, which is a file handle. The type of `E` used in
-the error value is `std::io::Error`. This return type means the call to
-`File::open` might succeed and return a file handle that we can read from or
-write to. The function call also might fail: For example, the file might not
-exist, or we might not have permission to access the file. The `File::open`
-function needs to have a way to tell us whether it succeeded or failed and at
-the same time give us either the file handle or error information. This
-information is exactly what the `Result` enum conveys.
+`File::open` ka return type `Result<T, E>` hai. Generic parameter `T` ko `File::open` ki implementation ne success value ki type, `std::fs::File`, ke saath fill kiya hai, jo ek file handle hai. Error value mein use hone wali `E` ki type `std::io::Error` hai. Is return type ka matlab hai ke `File::open` ki call successful ho sakti hai aur ek aisa file handle return kar sakti hai jise hum read ya write kar sakte hain. Function call fail bhi ho sakti hai: Misal ke taur par, file exist nahi karti ho sakti hai, ya shayad humein file access karne ki permission na ho. `File::open` function ke paas humein ye batane ka tareeqa hona chahiye ke woh successful hui ya fail, aur saath hi humein file handle ya error information mein se ek provide karni chahiye. Ye bilkul woh information hai jo `Result` enum convey karti hai.
 
-In the case where `File::open` succeeds, the value in the variable
-`greeting_file_result` will be an instance of `Ok` that contains a file handle.
-In the case where it fails, the value in `greeting_file_result` will be an
-instance of `Err` that contains more information about the kind of error that
-occurred.
+Jab `File::open` successful hoti hai, to variable `greeting_file_result` mein `Ok` ka ek instance hoga jismein file handle hoga. Jab ye fail hoti hai, to `greeting_file_result` mein `Err` ka ek instance hoga jismein hone wale error ki type ke baare mein mazeed information hogi.
 
-We need to add to the code in Listing 9-3 to take different actions depending
-on the value `File::open` returns. Listing 9-4 shows one way to handle the
-`Result` using a basic tool, the `match` expression that we discussed in
-Chapter 6.
+Humein Listing 9-3 ke code mein ye add karna hoga ke `File::open` ki taraf se return hone wali value ke mutabiq different actions liye ja saken. Listing 9-4 ek basic tool, `match` expression, ko use karke `Result` ko handle karne ka ek tareeqa dikhati hai jise hum Chapter 6 mein discuss kar chuke hain.
 
 <Listing number="9-4" file-name="src/main.rs" caption="Using a `match` expression to handle the `Result` variants that might be returned">
 
@@ -67,35 +38,23 @@ Chapter 6.
 
 </Listing>
 
-Note that, like the `Option` enum, the `Result` enum and its variants have been
-brought into scope by the prelude, so we don’t need to specify `Result::`
-before the `Ok` and `Err` variants in the `match` arms.
+Note karein ke `Option` enum ki tarah, `Result` enum aur iske variants bhi prelude ke zariye scope mein laaye gaye hain, is liye `match` arms mein `Ok` aur `Err` variants se pehle humein `Result::` specify karne ki zaroorat nahi hai.
 
-When the result is `Ok`, this code will return the inner `file` value out of
-the `Ok` variant, and we then assign that file handle value to the variable
-`greeting_file`. After the `match`, we can use the file handle for reading or
-writing.
+Jab result `Ok` ho, to ye code `Ok` variant ke andar se inner `file` value return karega, aur phir hum us file handle ki value ko variable `greeting_file` mein assign kar dete hain. `match` ke baad, hum file handle ko reading ya writing ke liye use kar sakte hain.
 
-The other arm of the `match` handles the case where we get an `Err` value from
-`File::open`. In this example, we’ve chosen to call the `panic!` macro. If
-there’s no file named _hello.txt_ in our current directory and we run this
-code, we’ll see the following output from the `panic!` macro:
+`match` ki doosri arm us case ko handle karti hai jab humein `File::open` se `Err` value milti hai. Is example mein, hum ne `panic!` macro call karne ka intekhab kiya hai. Agar hamari current directory mein *hello.txt* naam ki koi file na ho aur hum ye code run karein, to humein `panic!` macro ki taraf se neeche diya gaya output nazar aayega:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-04/output.txt}}
 ```
 
-As usual, this output tells us exactly what has gone wrong.
+Hamesha ki tarah, ye output humein bilkul batata hai ke kya ghalat hua hai.
 
-### Matching on Different Errors
+[handle_failure]: ch02-00-guessing-game-tutorial.html#handling-potential-failure-with-result
 
-The code in Listing 9-4 will `panic!` no matter why `File::open` failed.
-However, we want to take different actions for different failure reasons. If
-`File::open` failed because the file doesn’t exist, we want to create the file
-and return the handle to the new file. If `File::open` failed for any other
-reason—for example, because we didn’t have permission to open the file—we still
-want the code to `panic!` in the same way it did in Listing 9-4. For this, we
-add an inner `match` expression, shown in Listing 9-5.
+### Different Errors Par Match Karna
+
+Listing 9-4 mein diya gaya code `File::open` ke fail hone ki wajah chahe jo bhi ho, `panic!` karega. Lekin hum different failure reasons ke liye different actions lena chahte hain. Agar `File::open` is liye fail hui ke file exist nahi karti, to hum file create karna aur nayi file ka handle return karna chahte hain. Agar `File::open` kisi aur reason ki wajah se fail hui—misal ke taur par, kyun ke hamare paas file open karne ki permission nahi thi—to hum phir bhi chahte hain ke code bilkul Listing 9-4 ki tarah `panic!` kare. Is ke liye hum ek inner `match` expression add karte hain, jaisa ke Listing 9-5 mein dikhaya gaya hai.
 
 <Listing number="9-5" file-name="src/main.rs" caption="Handling different kinds of errors in different ways">
 
@@ -108,32 +67,15 @@ tests to fail lol -->
 
 </Listing>
 
-The type of the value that `File::open` returns inside the `Err` variant is
-`io::Error`, which is a struct provided by the standard library. This struct
-has a method, `kind`, that we can call to get an `io::ErrorKind` value. The
-enum `io::ErrorKind` is provided by the standard library and has variants
-representing the different kinds of errors that might result from an `io`
-operation. The variant we want to use is `ErrorKind::NotFound`, which indicates
-the file we’re trying to open doesn’t exist yet. So, we match on
-`greeting_file_result`, but we also have an inner match on `error.kind()`.
+`Err` variant ke andar `File::open` jo value return karti hai uski type `io::Error` hai, jo standard library ki provide ki hui ek struct hai. Is struct mein `kind` naam ka ek method hai jise hum `io::ErrorKind` value hasil karne ke liye call kar sakte hain. `io::ErrorKind` enum standard library ki taraf se provide ki jati hai aur is mein different qisam ke errors ko represent karne wale variants hote hain jo kisi `io` operation ke natije mein aa sakte hain. Hum jis variant ko use karna chahte hain woh `ErrorKind::NotFound` hai, jo indicate karta hai ke jis file ko hum open karne ki koshish kar rahe hain woh abhi exist nahi karti. Is liye hum `greeting_file_result` par match karte hain, lekin saath hi `error.kind()` par ek inner match bhi karte hain.
 
-The condition we want to check in the inner match is whether the value returned
-by `error.kind()` is the `NotFound` variant of the `ErrorKind` enum. If it is,
-we try to create the file with `File::create`. However, because `File::create`
-could also fail, we need a second arm in the inner `match` expression. When the
-file can’t be created, a different error message is printed. The second arm of
-the outer `match` stays the same, so the program panics on any error besides
-the missing file error.
+Inner match mein hum jis condition ko check karna chahte hain woh ye hai ke `error.kind()` ki taraf se return hone wali value `ErrorKind` enum ka `NotFound` variant hai ya nahi. Agar aisa ho, to hum `File::create` ke zariye file create karne ki koshish karte hain. Lekin kyun ke `File::create` bhi fail ho sakti hai, humein inner `match` expression mein ek second arm ki zaroorat hoti hai. Jab file create nahi ho sakti, to ek different error message print kiya jata hai. Outer `match` ki second arm waisi hi rehti hai, is liye missing file error ke ilawa kisi bhi error par program panic karta hai.
 
-> #### Alternatives to Using `match` with `Result<T, E>`
+> #### `Result<T, E>` Ke Saath `match` Use Karne Ke Alternatives
 >
-> That’s a lot of `match`! The `match` expression is very useful but also very
-> much a primitive. In Chapter 13, you’ll learn about closures, which are used
-> with many of the methods defined on `Result<T, E>`. These methods can be more
-> concise than using `match` when handling `Result<T, E>` values in your code.
+> Itni saari `match`! `match` expression bohat useful hai, lekin saath hi ye kaafi basic bhi hai. Chapter 13 mein aap closures ke baare mein seekhenge, jo `Result<T, E>` par defined bohat se methods ke saath use hoti hain. Jab aap apne code mein `Result<T, E>` values ko handle kar rahe hon, to ye methods `match` use karne ke muqable mein zyada concise ho sakti hain.
 >
-> For example, here’s another way to write the same logic as shown in Listing
-> 9-5, this time using closures and the `unwrap_or_else` method:
+> Misal ke taur par, yahan Listing 9-5 mein dikhayi gayi same logic ko likhne ka ek aur tareeqa hai, is baar closures aur `unwrap_or_else` method ko use karte hue:
 >
 > <!-- CAN'T EXTRACT SEE https://github.com/rust-lang/mdBook/issues/1127 -->
 >
@@ -154,25 +96,15 @@ the missing file error.
 > }
 > ```
 >
-> Although this code has the same behavior as Listing 9-5, it doesn’t contain
-> any `match` expressions and is cleaner to read. Come back to this example
-> after you’ve read Chapter 13 and look up the `unwrap_or_else` method in the
-> standard library documentation. Many more of these methods can clean up huge,
-> nested `match` expressions when you’re dealing with errors.
+> Agarche ye code Listing 9-5 jaisa hi behavior rakhta hai, lekin is mein koi `match` expression nahi hai aur ye parhne mein zyada clean hai. Chapter 13 parhne ke baad is example ki taraf dobara aayein aur standard library ki documentation mein `unwrap_or_else` method ko dekhein. Jab aap errors ke saath deal kar rahe hon, to in mein se bohat se aur methods huge, nested `match` expressions ko clean up kar sakte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="shortcuts-for-panic-on-error-unwrap-and-expect"></a>
 
-#### Shortcuts for Panic on Error
+#### Error Par Panic Karne Ke Shortcuts
 
-Using `match` works well enough, but it can be a bit verbose and doesn’t always
-communicate intent well. The `Result<T, E>` type has many helper methods
-defined on it to do various, more specific tasks. The `unwrap` method is a
-shortcut method implemented just like the `match` expression we wrote in
-Listing 9-4. If the `Result` value is the `Ok` variant, `unwrap` will return
-the value inside the `Ok`. If the `Result` is the `Err` variant, `unwrap` will
-call the `panic!` macro for us. Here is an example of `unwrap` in action:
+`match` use karna kaafi achha kaam karta hai, lekin ye thora verbose ho sakta hai aur hamesha intent ko achhi tarah communicate nahi karta. `Result<T, E>` type par mukhtalif helper methods defined hain jo different, zyada specific tasks perform karte hain. `unwrap` method ek shortcut method hai jo bilkul usi tarah implement ki gayi hai jaise woh `match` expression jo hum ne Listing 9-4 mein likhi thi. Agar `Result` value `Ok` variant ho, to `unwrap` `Ok` ke andar wali value return karega. Agar `Result` `Err` variant ho, to `unwrap` hamare liye `panic!` macro call karega. Yahan `unwrap` ko action mein dekhte hain:
 
 <Listing file-name="src/main.rs">
 
@@ -182,8 +114,7 @@ call the `panic!` macro for us. Here is an example of `unwrap` in action:
 
 </Listing>
 
-If we run this code without a _hello.txt_ file, we’ll see an error message from
-the `panic!` call that the `unwrap` method makes:
+Agar hum ye code *hello.txt* file ke baghair run karein, to humein `unwrap` method ki taraf se ki gayi `panic!` call ka error message nazar aayega:
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-04-unwrap
@@ -196,10 +127,7 @@ thread 'main' panicked at src/main.rs:4:49:
 called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-Similarly, the `expect` method lets us also choose the `panic!` error message.
-Using `expect` instead of `unwrap` and providing good error messages can convey
-your intent and make tracking down the source of a panic easier. The syntax of
-`expect` looks like this:
+Isi tarah, `expect` method humein `panic!` ka error message khud choose karne ki bhi ijazat deti hai. `unwrap` ke bajaye `expect` use karna aur achhe error messages provide karna aapke intent ko clear kar sakta hai aur panic ke source ko track down karna aasaan bana sakta hai. `expect` ki syntax kuch is tarah hoti hai:
 
 <Listing file-name="src/main.rs">
 
@@ -209,10 +137,7 @@ your intent and make tracking down the source of a panic easier. The syntax of
 
 </Listing>
 
-We use `expect` in the same way as `unwrap`: to return the file handle or call
-the `panic!` macro. The error message used by `expect` in its call to `panic!`
-will be the parameter that we pass to `expect`, rather than the default
-`panic!` message that `unwrap` uses. Here’s what it looks like:
+Hum `expect` ko `unwrap` ki tarah hi use karte hain: file handle return karne ke liye ya `panic!` macro call karne ke liye. `expect` ki taraf se `panic!` ko di jane wali error message woh parameter hogi jo hum `expect` ko pass karte hain, na ke woh default `panic!` message jo `unwrap` use karta hai. Ye is tarah nazar aati hai:
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-05-expect
@@ -225,23 +150,13 @@ thread 'main' panicked at src/main.rs:5:10:
 hello.txt should be included in this project: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-In production-quality code, most Rustaceans choose `expect` rather than
-`unwrap` and give more context about why the operation is expected to always
-succeed. That way, if your assumptions are ever proven wrong, you have more
-information to use in debugging.
+Production-quality code mein, zyada tar Rustaceans `unwrap` ke bajaye `expect` ko choose karte hain aur is baat ke baare mein zyada context provide karte hain ke operation ke hamesha successful hone ki umeed kyun hai. Is tarah, agar kabhi aapki assumptions ghalat sabit hon, to debugging mein use karne ke liye aapke paas zyada information hoti hai.
 
-### Propagating Errors
+### Errors Propagate Karna
 
-When a function’s implementation calls something that might fail, instead of
-handling the error within the function itself, you can return the error to the
-calling code so that it can decide what to do. This is known as _propagating_
-the error and gives more control to the calling code, where there might be more
-information or logic that dictates how the error should be handled than what
-you have available in the context of your code.
+Jab kisi function ki implementation kisi aisi cheez ko call karti hai jo fail ho sakti hai, to error ko function ke andar hi handle karne ke bajaye, aap error ko calling code ko return kar sakte hain taa-ke woh decide kar sake ke kya karna hai. Isay *error propagate karna* kaha jata hai aur is se calling code ko zyada control milta hai, kyun ke wahan aapke code ke context mein available information ya logic se zyada maloomat ya logic ho sakti hai jo ye decide karti hai ke error ko kis tarah handle karna chahiye.
 
-For example, Listing 9-6 shows a function that reads a username from a file. If
-the file doesn’t exist or can’t be read, this function will return those errors
-to the code that called the function.
+Misal ke taur par, Listing 9-6 ek aisa function dikhati hai jo ek file se username read karta hai. Agar file exist nahi karti ya read nahi ki ja sakti, to ye function un errors ko us code ko return kar dega jis ne function ko call kiya tha.
 
 <Listing number="9-6" file-name="src/main.rs" caption="A function that returns errors to the calling code using `match`">
 
@@ -255,66 +170,25 @@ don't want to include it for rustdoc testing purposes. -->
 
 </Listing>
 
-This function can be written in a much shorter way, but we’re going to start by
-doing a lot of it manually in order to explore error handling; at the end,
-we’ll show the shorter way. Let’s look at the return type of the function
-first: `Result<String, io::Error>`. This means the function is returning a
-value of the type `Result<T, E>`, where the generic parameter `T` has been
-filled in with the concrete type `String` and the generic type `E` has been
-filled in with the concrete type `io::Error`.
+Is function ko bohat chhote tareeqe se likha ja sakta hai, lekin error handling ko explore karne ke liye hum shuru mein iska kaafi hissa manually likhenge; aakhir mein hum iska shorter tareeqa dikhayenge. Sab se pehle function ke return type ko dekhein: `Result<String, io::Error>`. Is ka matlab hai ke function `Result<T, E>` type ki ek value return kar raha hai, jahan generic parameter `T` ko concrete type `String` ke saath aur generic type `E` ko concrete type `io::Error` ke saath fill kiya gaya hai.
 
-If this function succeeds without any problems, the code that calls this
-function will receive an `Ok` value that holds a `String`—the `username` that
-this function read from the file. If this function encounters any problems, the
-calling code will receive an `Err` value that holds an instance of `io::Error`
-that contains more information about what the problems were. We chose
-`io::Error` as the return type of this function because that happens to be the
-type of the error value returned from both of the operations we’re calling in
-this function’s body that might fail: the `File::open` function and the
-`read_to_string` method.
+Agar ye function baghair kisi problem ke successful hota hai, to jo code is function ko call karta hai usay `Ok` value milegi jismein ek `String` hogi—yani woh `username` jo is function ne file se read kiya. Agar is function ko koi problem encounter hoti hai, to calling code ko ek `Err` value milegi jismein `io::Error` ka ek instance hoga jo problems ke baare mein mazeed information contain karta hai. Hum ne is function ke return type ke taur par `io::Error` is liye choose kiya kyun ke ye ittefaq se un dono operations se return hone wali error value ki type hai jinhein hum is function ke body mein call kar rahe hain aur jo fail ho sakte hain: `File::open` function aur `read_to_string` method.
 
-The body of the function starts by calling the `File::open` function. Then, we
-handle the `Result` value with a `match` similar to the `match` in Listing 9-4.
-If `File::open` succeeds, the file handle in the pattern variable `file`
-becomes the value in the mutable variable `username_file` and the function
-continues. In the `Err` case, instead of calling `panic!`, we use the `return`
-keyword to return early out of the function entirely and pass the error value
-from `File::open`, now in the pattern variable `e`, back to the calling code as
-this function’s error value.
+Function ki body `File::open` function ko call karne se shuru hoti hai. Phir hum `Result` value ko Listing 9-4 ke `match` jaisi `match` ke zariye handle karte hain. Agar `File::open` successful hoti hai, to pattern variable `file` mein file handle ki value mutable variable `username_file` ki value ban jati hai aur function continue karta hai. `Err` case mein, `panic!` call karne ke bajaye hum `return` keyword use karke function se foran aur poori tarah bahar return karte hain aur `File::open` ki error value, jo ab pattern variable `e` mein hai, calling code ko is function ki error value ke taur par pass kar dete hain.
 
-So, if we have a file handle in `username_file`, the function then creates a
-new `String` in variable `username` and calls the `read_to_string` method on
-the file handle in `username_file` to read the contents of the file into
-`username`. The `read_to_string` method also returns a `Result` because it
-might fail, even though `File::open` succeeded. So, we need another `match` to
-handle that `Result`: If `read_to_string` succeeds, then our function has
-succeeded, and we return the username from the file that’s now in `username`
-wrapped in an `Ok`. If `read_to_string` fails, we return the error value in the
-same way that we returned the error value in the `match` that handled the
-return value of `File::open`. However, we don’t need to explicitly say
-`return`, because this is the last expression in the function.
+Is liye, agar `username_file` mein file handle mojood ho, to function variable `username` mein ek naya `String` create karta hai aur `username_file` mein mojood file handle par `read_to_string` method call karke file ke contents ko `username` mein read karta hai. `read_to_string` method bhi ek `Result` return karti hai kyun ke ye fail ho sakti hai, agarche `File::open` successful hui ho. Is liye humein us `Result` ko handle karne ke liye ek aur `match` ki zaroorat hai: Agar `read_to_string` successful hoti hai, to hamara function successful ho gaya hai, aur hum file se read kiya gaya username, jo ab `username` mein hai, `Ok` mein wrap karke return karte hain. Agar `read_to_string` fail hoti hai, to hum error value ko bilkul usi tarah return karte hain jis tarah hum ne `File::open` ki return value ko handle karne wali `match` mein error value return ki thi. Lekin humein explicitly `return` kehne ki zaroorat nahi hai, kyun ke ye function ka last expression hai.
 
-The code that calls this code will then handle getting either an `Ok` value
-that contains a username or an `Err` value that contains an `io::Error`. It’s
-up to the calling code to decide what to do with those values. If the calling
-code gets an `Err` value, it could call `panic!` and crash the program, use a
-default username, or look up the username from somewhere other than a file, for
-example. We don’t have enough information on what the calling code is actually
-trying to do, so we propagate all the success or error information upward for
-it to handle appropriately.
+Jo code is code ko call karta hai, woh phir ya to username contain karne wali `Ok` value hasil karega ya `io::Error` contain karne wali `Err` value. In values ke saath kya karna hai, ye calling code par depend karta hai. Agar calling code ko `Err` value milti hai, to woh, misal ke taur par, `panic!` call karke program ko crash kar sakta hai, default username use kar sakta hai, ya file ke ilawa kisi aur jagah se username lookup kar sakta hai. Humein itni information nahi hai ke calling code asal mein kya karne ki koshish kar raha hai, is liye hum tamam success ya error information ko upar propagate kar dete hain taa-ke woh usay munasib tareeqe se handle kar sake.
 
-This pattern of propagating errors is so common in Rust that Rust provides the
-question mark operator `?` to make this easier.
+Errors propagate karne ka ye pattern Rust mein itna common hai ke Rust isay aasaan banane ke liye question mark operator `?` provide karta hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="a-shortcut-for-propagating-errors-the--operator"></a>
 
-#### The `?` Operator Shortcut
+#### `?` Operator Ka Shortcut
 
-Listing 9-7 shows an implementation of `read_username_from_file` that has the
-same functionality as in Listing 9-6, but this implementation uses the `?`
-operator.
+Listing 9-7 mein `read_username_from_file` ki ek aisi implementation dikhayi gayi hai jo Listing 9-6 jaisi hi functionality rakhti hai, lekin is implementation mein `?` operator use kiya gaya hai.
 
 <Listing number="9-7" file-name="src/main.rs" caption="A function that returns errors to the calling code using the `?` operator">
 
@@ -328,40 +202,15 @@ don't want to include it for rustdoc testing purposes. -->
 
 </Listing>
 
-The `?` placed after a `Result` value is defined to work in almost the same way
-as the `match` expressions that we defined to handle the `Result` values in
-Listing 9-6. If the value of the `Result` is an `Ok`, the value inside the `Ok`
-will get returned from this expression, and the program will continue. If the
-value is an `Err`, the `Err` will be returned from the whole function as if we
-had used the `return` keyword so that the error value gets propagated to the
-calling code.
+Kisi `Result` value ke baad lagaya gaya `?` lagbhag usi tarah kaam karta hai jis tarah Listing 9-6 mein `Result` values ko handle karne ke liye hum ne `match` expressions define ki thi. Agar `Result` ki value `Ok` ho, to `Ok` ke andar wali value is expression se return ho jayegi aur program continue karega. Agar value `Err` ho, to `Err` poore function se aise return ho jayega jaise hum ne `return` keyword use kiya ho, taa-ke error value calling code ko propagate ho jaye.
 
-There is a difference between what the `match` expression from Listing 9-6 does
-and what the `?` operator does: Error values that have the `?` operator called
-on them go through the `from` function, defined in the `From` trait in the
-standard library, which is used to convert values from one type into another.
-When the `?` operator calls the `from` function, the error type received is
-converted into the error type defined in the return type of the current
-function. This is useful when a function returns one error type to represent
-all the ways a function might fail, even if parts might fail for many different
-reasons.
+Listing 9-6 ki `match` expression aur `?` operator ke behavior mein ek farq hai: Jin error values par `?` operator call kiya jata hai, woh standard library ke `From` trait mein defined `from` function se guzarti hain, jo values ko ek type se doosri type mein convert karne ke liye use hota hai. Jab `?` operator `from` function ko call karta hai, to receive hone wali error type ko current function ke return type mein defined error type mein convert kar diya jata hai. Ye us waqt useful hota hai jab koi function tamam possible failure ways ko represent karne ke liye ek hi error type return karta hai, chahe function ke different parts kai different reasons ki wajah se fail ho sakte hon.
 
-For example, we could change the `read_username_from_file` function in Listing
-9-7 to return a custom error type named `OurError` that we define. If we also
-define `impl From<io::Error> for OurError` to construct an instance of
-`OurError` from an `io::Error`, then the `?` operator calls in the body of
-`read_username_from_file` will call `from` and convert the error types without
-needing to add any more code to the function.
+Misal ke taur par, hum Listing 9-7 mein `read_username_from_file` function ko change karke `OurError` naam ka ek custom error type return karwa sakte hain jo hum khud define karein. Agar hum `impl From<io::Error> for OurError` bhi define karein taa-ke `io::Error` se `OurError` ka instance construct kiya ja sake, to `read_username_from_file` ki body mein `?` operator ki calls `from` ko call karengi aur error types ko convert kar dengi, bina function mein koi aur code add kiye.
 
-In the context of Listing 9-7, the `?` at the end of the `File::open` call will
-return the value inside an `Ok` to the variable `username_file`. If an error
-occurs, the `?` operator will return early out of the whole function and give
-any `Err` value to the calling code. The same thing applies to the `?` at the
-end of the `read_to_string` call.
+Listing 9-7 ke context mein, `File::open` call ke end par maujood `?` `Ok` ke andar wali value ko variable `username_file` ko return karega. Agar koi error hota hai, to `?` operator poore function se foran return karega aur koi bhi `Err` value calling code ko de dega. Yahi baat `read_to_string` call ke end par maujood `?` par bhi apply hoti hai.
 
-The `?` operator eliminates a lot of boilerplate and makes this function’s
-implementation simpler. We could even shorten this code further by chaining
-method calls immediately after the `?`, as shown in Listing 9-8.
+`?` operator bohat saara boilerplate khatam kar deta hai aur is function ki implementation ko simpler bana deta hai. Hum `?` ke foran baad method calls ko chain karke is code ko aur bhi short kar sakte hain, jaisa ke Listing 9-8 mein dikhaya gaya hai.
 
 <Listing number="9-8" file-name="src/main.rs" caption="Chaining method calls after the `?` operator">
 
@@ -375,16 +224,9 @@ don't want to include it for rustdoc testing purposes. -->
 
 </Listing>
 
-We’ve moved the creation of the new `String` in `username` to the beginning of
-the function; that part hasn’t changed. Instead of creating a variable
-`username_file`, we’ve chained the call to `read_to_string` directly onto the
-result of `File::open("hello.txt")?`. We still have a `?` at the end of the
-`read_to_string` call, and we still return an `Ok` value containing `username`
-when both `File::open` and `read_to_string` succeed rather than returning
-errors. The functionality is again the same as in Listing 9-6 and Listing 9-7;
-this is just a different, more ergonomic way to write it.
+Hum ne `username` mein naya `String` create karne ko function ke shuru mein move kar diya hai; ye hissa change nahi hua. `username_file` naam ka variable create karne ke bajaye, hum ne `read_to_string` ki call ko directly `File::open("hello.txt")?` ke result ke saath chain kar diya hai. `read_to_string` call ke end par ab bhi `?` maujood hai, aur jab `File::open` aur `read_to_string` dono successful hote hain, to hum ab bhi `username` ko contain karne wali `Ok` value return karte hain, errors return nahi karte. Functionality phir se Listing 9-6 aur Listing 9-7 jaisi hi hai; bas ise likhne ka ye ek different, zyada ergonomic tareeqa hai.
 
-Listing 9-9 shows a way to make this even shorter using `fs::read_to_string`.
+Listing 9-9 mein `fs::read_to_string` ko use karke is code ko aur bhi short karne ka tareeqa dikhaya gaya hai.
 
 <Listing number="9-9" file-name="src/main.rs" caption="Using `fs::read_to_string` instead of opening and then reading the file">
 
@@ -398,30 +240,17 @@ don't want to include it for rustdoc testing purposes. -->
 
 </Listing>
 
-Reading a file into a string is a fairly common operation, so the standard
-library provides the convenient `fs::read_to_string` function that opens the
-file, creates a new `String`, reads the contents of the file, puts the contents
-into that `String`, and returns it. Of course, using `fs::read_to_string`
-doesn’t give us the opportunity to explain all the error handling, so we did it
-the longer way first.
+Kisi file ko string mein read karna ek kaafi common operation hai, is liye standard library convenient `fs::read_to_string` function provide karti hai jo file ko open karti hai, ek naya `String` create karti hai, file ke contents ko read karti hai, un contents ko us `String` mein daalti hai, aur usay return karti hai. Beshak, `fs::read_to_string` use karne se humein tamam error handling ko explain karne ka mauqa nahi milta, is liye hum ne pehle isay longer way mein kiya.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="where-the--operator-can-be-used"></a>
 
-#### Where to Use the `?` Operator
+#### `?` Operator Kahan Use Karna Hai
 
-The `?` operator can only be used in functions whose return type is compatible
-with the value the `?` is used on. This is because the `?` operator is defined
-to perform an early return of a value out of the function, in the same manner
-as the `match` expression we defined in Listing 9-6. In Listing 9-6, the
-`match` was using a `Result` value, and the early return arm returned an
-`Err(e)` value. The return type of the function has to be a `Result` so that
-it’s compatible with this `return`.
+`?` operator sirf un functions mein use kiya ja sakta hai jin ka return type us value ke saath compatible ho jis par `?` use kiya ja raha hai. Is ki wajah ye hai ke `?` operator function se value ko foran return karne ke liye define kiya gaya hai, bilkul usi tarah jaise woh `match` expression jo hum ne Listing 9-6 mein define ki thi. Listing 9-6 mein, `match` ek `Result` value use kar raha tha, aur early return wali arm ne `Err(e)` value return ki thi. Function ka return type `Result` hona zaroori hai taa-ke woh is `return` ke saath compatible ho.
 
-In Listing 9-10, let’s look at the error we’ll get if we use the `?` operator
-in a `main` function with a return type that is incompatible with the type of
-the value we use `?` on.
+Listing 9-10 mein dekhte hain ke agar hum `?` operator ko aise `main` function mein use karein jis ka return type us value ki type ke saath compatible nahi hai jis par hum `?` use kar rahe hain, to humein kya error milega.
 
 <Listing number="9-10" file-name="src/main.rs" caption="Attempting to use the `?` in the `main` function that returns `()` won’t compile.">
 
@@ -431,34 +260,17 @@ the value we use `?` on.
 
 </Listing>
 
-This code opens a file, which might fail. The `?` operator follows the `Result`
-value returned by `File::open`, but this `main` function has the return type of
-`()`, not `Result`. When we compile this code, we get the following error
-message:
+Ye code ek file open karta hai, jo fail ho sakti hai. `File::open` ki taraf se return hone wali `Result` value ke baad `?` operator hai, lekin is `main` function ka return type `()` hai, `Result` nahi. Jab hum is code ko compile karte hain, to humein neeche diya gaya error message milta hai:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-10/output.txt}}
 ```
 
-This error points out that we’re only allowed to use the `?` operator in a
-function that returns `Result`, `Option`, or another type that implements
-`FromResidual`.
+Ye error batata hai ke humein `?` operator sirf aise function mein use karne ki ijazat hai jo `Result`, `Option`, ya kisi doosri aisi type return karta ho jo `FromResidual` implement karti ho.
 
-To fix the error, you have two choices. One choice is to change the return type
-of your function to be compatible with the value you’re using the `?` operator
-on as long as you have no restrictions preventing that. The other choice is to
-use a `match` or one of the `Result<T, E>` methods to handle the `Result<T, E>`
-in whatever way is appropriate.
+Is error ko fix karne ke liye aapke paas do choices hain. Ek choice ye hai ke apne function ka return type us value ke saath compatible kar dein jis par aap `?` operator use kar rahe hain, jab tak aapko rokne wali koi restriction na ho. Doosri choice ye hai ke `Result<T, E>` ko us tareeqe se handle karne ke liye `match` ya `Result<T, E>` ke methods mein se kisi ek ko use karein jo appropriate ho.
 
-The error message also mentioned that `?` can be used with `Option<T>` values
-as well. As with using `?` on `Result`, you can only use `?` on `Option` in a
-function that returns an `Option`. The behavior of the `?` operator when called
-on an `Option<T>` is similar to its behavior when called on a `Result<T, E>`:
-If the value is `None`, the `None` will be returned early from the function at
-that point. If the value is `Some`, the value inside the `Some` is the
-resultant value of the expression, and the function continues. Listing 9-11 has
-an example of a function that finds the last character of the first line in the
-given text.
+Error message ne ye bhi mention kiya tha ke `?` ko `Option<T>` values ke saath bhi use kiya ja sakta hai. `Result` par `?` use karne ki tarah, aap `Option` par `?` sirf aise function mein use kar sakte hain jo `Option` return karta ho. `Option<T>` par `?` operator call hone par iska behavior `Result<T, E>` par call hone ke behavior jaisa hai: Agar value `None` ho, to us point par function se `None` foran return ho jayega. Agar value `Some` ho, to `Some` ke andar wali value expression ka resultant value hogi aur function continue karega. Listing 9-11 mein aise function ki example hai jo diye gaye text ki first line ka last character find karta hai.
 
 <Listing number="9-11" caption="Using the `?` operator on an `Option<T>` value">
 
@@ -468,43 +280,15 @@ given text.
 
 </Listing>
 
-This function returns `Option<char>` because it’s possible that there is a
-character there, but it’s also possible that there isn’t. This code takes the
-`text` string slice argument and calls the `lines` method on it, which returns
-an iterator over the lines in the string. Because this function wants to
-examine the first line, it calls `next` on the iterator to get the first value
-from the iterator. If `text` is the empty string, this call to `next` will
-return `None`, in which case we use `?` to stop and return `None` from
-`last_char_of_first_line`. If `text` is not the empty string, `next` will
-return a `Some` value containing a string slice of the first line in `text`.
+Ye function `Option<char>` return karta hai kyun ke mumkin hai ke wahan koi character ho, lekin ye bhi mumkin hai ke wahan koi character na ho. Ye code `text` string slice argument leta hai aur is par `lines` method call karta hai, jo string ki lines par ek iterator return karti hai. Kyun ke ye function first line ko examine karna chahta hai, ye iterator par `next` call karta hai taa-ke iterator se first value hasil ki ja sake. Agar `text` empty string ho, to `next` ki ye call `None` return karegi, aur is surat mein hum `?` use karke `last_char_of_first_line` se `None` ko foran stop karke return karte hain. Agar `text` empty string nahi hai, to `next` ek `Some` value return karega jismein `text` ki first line ka string slice hoga.
 
-The `?` extracts the string slice, and we can call `chars` on that string slice
-to get an iterator of its characters. We’re interested in the last character in
-this first line, so we call `last` to return the last item in the iterator.
-This is an `Option` because it’s possible that the first line is the empty
-string; for example, if `text` starts with a blank line but has characters on
-other lines, as in `"\nhi"`. However, if there is a last character on the first
-line, it will be returned in the `Some` variant. The `?` operator in the middle
-gives us a concise way to express this logic, allowing us to implement the
-function in one line. If we couldn’t use the `?` operator on `Option`, we’d
-have to implement this logic using more method calls or a `match` expression.
+`?` string slice ko extract karta hai, aur hum us string slice par `chars` call karke uske characters ka iterator hasil kar sakte hain. Hum is first line ke last character mein interested hain, is liye hum iterator mein se last item return karne ke liye `last` call karte hain. Ye ek `Option` hai kyun ke mumkin hai ke first line empty string ho; misal ke taur par, agar `text` ek blank line se start ho lekin doosri lines mein characters hon, jaisa ke `"\nhi"` mein hai. Lekin agar first line mein koi last character hai, to woh `Some` variant mein return hoga. Darmiyan mein `?` operator humein is logic ko concise tareeqe se express karne deta hai, jis ki wajah se hum function ko ek hi line mein implement kar sakte hain. Agar hum `Option` par `?` operator use nahi kar sakte, to humein is logic ko mazeed method calls ya `match` expression ke zariye implement karna padta.
 
-Note that you can use the `?` operator on a `Result` in a function that returns
-`Result`, and you can use the `?` operator on an `Option` in a function that
-returns `Option`, but you can’t mix and match. The `?` operator won’t
-automatically convert a `Result` to an `Option` or vice versa; in those cases,
-you can use methods like the `ok` method on `Result` or the `ok_or` method on
-`Option` to do the conversion explicitly.
+Note karein ke aap `Result` return karne wale function mein `Result` par `?` operator use kar sakte hain, aur `Option` return karne wale function mein `Option` par `?` operator use kar sakte hain, lekin aap dono ko mix and match nahi kar sakte. `?` operator automatically `Result` ko `Option` ya `Option` ko `Result` mein convert nahi karta; un cases mein, aap conversion ko explicitly karne ke liye `Result` par `ok` method ya `Option` par `ok_or` method jaise methods use kar sakte hain.
 
-So far, all the `main` functions we’ve used return `()`. The `main` function is
-special because it’s the entry point and exit point of an executable program,
-and there are restrictions on what its return type can be for the program to
-behave as expected.
+Ab tak hum ne jitne bhi `main` functions use kiye hain woh `()` return karte hain. `main` function special hai kyun ke ye executable program ka entry point aur exit point hota hai, aur is baat par restrictions hoti hain ke program ke expected tareeqe se behave karne ke liye iska return type kya ho sakta hai.
 
-Luckily, `main` can also return a `Result<(), E>`. Listing 9-12 has the code
-from Listing 9-10, but we’ve changed the return type of `main` to be
-`Result<(), Box<dyn Error>>` and added a return value `Ok(())` to the end. This
-code will now compile.
+Khush qismati se, `main` `Result<(), E>` bhi return kar sakta hai. Listing 9-12 mein Listing 9-10 ka code hai, lekin hum ne `main` ka return type change karke `Result<(), Box<dyn Error>>` kar diya hai aur end par return value `Ok(())` add kar di hai. Ab ye code compile hoga.
 
 <Listing number="9-12" file-name="src/main.rs" caption="Changing `main` to return `Result<(), E>` allows the use of the `?` operator on `Result` values.">
 
@@ -514,32 +298,14 @@ code will now compile.
 
 </Listing>
 
-The `Box<dyn Error>` type is a trait object, which we’ll talk about in [“Using
-Trait Objects to Abstract over Shared Behavior”][trait-objects]<!-- ignore -->
-in Chapter 18. For now, you can read `Box<dyn Error>` to mean “any kind of
-error.” Using `?` on a `Result` value in a `main` function with the error type
-`Box<dyn Error>` is allowed because it allows any `Err` value to be returned
-early. Even though the body of this `main` function will only ever return
-errors of type `std::io::Error`, by specifying `Box<dyn Error>`, this signature
-will continue to be correct even if more code that returns other errors is
-added to the body of `main`.
+`Box<dyn Error>` type ek trait object hai, jiske baare mein hum Chapter 18 mein [“Using Trait Objects to Abstract over Shared Behavior”][trait-objects]<!-- ignore --> mein baat karenge. Filhal, aap `Box<dyn Error>` ko “kisi bhi qisam ka error” samajh sakte hain. `Box<dyn Error>` error type wale `main` function mein `Result` value par `?` use karne ki ijazat hai kyun ke ye kisi bhi `Err` value ko foran return karne ki ijazat deta hai. Agarche is `main` function ki body sirf `std::io::Error` type ke errors return karegi, `Box<dyn Error>` specify karne se ye signature tab bhi correct rahegi agar `main` ki body mein aisa mazeed code add kiya jaye jo doosre errors return karta ho.
 
-When a `main` function returns a `Result<(), E>`, the executable will exit with
-a value of `0` if `main` returns `Ok(())` and will exit with a nonzero value if
-`main` returns an `Err` value. Executables written in C return integers when
-they exit: Programs that exit successfully return the integer `0`, and programs
-that error return some integer other than `0`. Rust also returns integers from
-executables to be compatible with this convention.
+Jab `main` function `Result<(), E>` return karta hai, to executable `0` ki value ke saath exit karega agar `main` `Ok(())` return kare, aur agar `main` `Err` value return kare to executable nonzero value ke saath exit karega. C mein likhe gaye executables exit hone par integers return karte hain: Jo programs successfully exit hote hain woh integer `0` return karte hain, aur jo programs error ke saath exit hote hain woh `0` ke ilawa koi integer return karte hain. Rust bhi is convention ke saath compatible rehne ke liye executables se integers return karta hai.
 
-The `main` function may return any types that implement [the
-`std::process::Termination` trait][termination]<!-- ignore -->, which contains
-a function `report` that returns an `ExitCode`. Consult the standard library
-documentation for more information on implementing the `Termination` trait for
-your own types.
+`main` function un tamam types ko return kar sakta hai jo [the
+`std::process::Termination` trait][termination]<!-- ignore --> implement karti hain, jismein ek `report` function hota hai jo `ExitCode` return karta hai. Apni types ke liye `Termination` trait implement karne ke baare mein mazeed maloomat ke liye standard library ki documentation dekhein.
 
-Now that we’ve discussed the details of calling `panic!` or returning `Result`,
-let’s return to the topic of how to decide which is appropriate to use in which
-cases.
+Ab jab ke hum ne `panic!` call karne ya `Result` return karne ki details discuss kar li hain, to aaiye dobara is topic ki taraf chalte hain ke different cases mein in mein se kisay use karna munasib hai.
 
 [handle_failure]: ch02-00-guessing-game-tutorial.html#handling-potential-failure-with-result
 [trait-objects]: ch18-02-trait-objects.html#using-trait-objects-to-abstract-over-shared-behavior
