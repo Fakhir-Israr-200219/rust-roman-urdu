@@ -1,46 +1,20 @@
 # Generic Types, Traits, and Lifetimes
 
-Every programming language has tools for effectively handling the duplication
-of concepts. In Rust, one such tool is _generics_: abstract stand-ins for
-concrete types or other properties. We can express the behavior of generics or
-how they relate to other generics without knowing what will be in their place
-when compiling and running the code.
+Har programming language mein concepts ki duplication ko effectively handle karne ke liye tools hote hain. Rust mein aisa hi ek tool *generics* hai: concrete types ya doosri properties ke liye abstract stand-ins. Hum generics ke behavior ya unka doosre generics ke saath relation is baat ko jaane baghair express kar sakte hain ke code compile aur run hone par unki jagah kya hoga.
 
-Functions can take parameters of some generic type, instead of a concrete type
-like `i32` or `String`, in the same way they take parameters with unknown
-values to run the same code on multiple concrete values. In fact, we already
-used generics in Chapter 6 with `Option<T>`, in Chapter 8 with `Vec<T>` and
-`HashMap<K, V>`, and in Chapter 9 with `Result<T, E>`. In this chapter, you’ll
-explore how to define your own types, functions, and methods with generics!
+Functions kisi concrete type jaise `i32` ya `String` ke bajaye kisi generic type ke parameters le sakti hain, bilkul usi tarah jaise woh unknown values ke parameters leti hain taa-ke same code ko multiple concrete values par run kiya ja sake. Asal mein, hum Chapter 6 mein `Option<T>` ke saath, Chapter 8 mein `Vec<T>` aur `HashMap<K, V>` ke saath, aur Chapter 9 mein `Result<T, E>` ke saath generics pehle hi use kar chuke hain. Is chapter mein aap explore karenge ke apne khud ke types, functions, aur methods ko generics ke saath kaise define kiya jata hai!
 
-First, we’ll review how to extract a function to reduce code duplication. We’ll
-then use the same technique to make a generic function from two functions that
-differ only in the types of their parameters. We’ll also explain how to use
-generic types in struct and enum definitions.
+Sab se pehle, hum review karenge ke code duplication ko kam karne ke liye kisi function ko kaise extract kiya jata hai. Phir hum isi technique ko use karke do aise functions se ek generic function banayenge jo sirf apne parameters ke types mein different hain. Hum ye bhi explain karenge ke struct aur enum definitions mein generic types ko kaise use kiya jata hai.
 
-Then, you’ll learn how to use traits to define behavior in a generic way. You
-can combine traits with generic types to constrain a generic type to accept
-only those types that have a particular behavior, as opposed to just any type.
+Phir aap seekhenge ke generic tareeqe se behavior define karne ke liye traits ko kaise use kiya jata hai. Aap traits ko generic types ke saath combine karke kisi generic type ko sirf un types ko accept karne tak constrain kar sakte hain jin mein koi particular behavior ho, bajaye is ke ke woh kisi bhi type ko accept kare.
 
-Finally, we’ll discuss _lifetimes_: a variety of generics that give the
-compiler information about how references relate to each other. Lifetimes allow
-us to give the compiler enough information about borrowed values so that it can
-ensure that references will be valid in more situations than it could without
-our help.
+Aakhir mein, hum *lifetimes* par baat karenge: ye generics ki ek variety hain jo compiler ko is baare mein information deti hain ke references ek doosre se kis tarah related hain. Lifetimes humein borrowed values ke baare mein compiler ko itni information dene deti hain ke woh ye ensure kar sake ke references un situations mein bhi valid honge jahan hamari help ke baghair woh aisa ensure nahi kar sakta.
 
-## Removing Duplication by Extracting a Function
+## Function Extract Karke Duplication Khatam Karna
 
-Generics allow us to replace specific types with a placeholder that represents
-multiple types to remove code duplication. Before diving into generics syntax,
-let’s first look at how to remove duplication in a way that doesn’t involve
-generic types by extracting a function that replaces specific values with a
-placeholder that represents multiple values. Then, we’ll apply the same
-technique to extract a generic function! By looking at how to recognize
-duplicated code you can extract into a function, you’ll start to recognize
-duplicated code that can use generics.
+Generics humein specific types ki jagah ek aisa placeholder use karne dete hain jo multiple types ko represent karta hai, aur is tarah code duplication ko khatam kiya ja sakta hai. Generics ki syntax mein dive karne se pehle, aaiye pehle dekhein ke generic types ko involve kiye baghair duplication ko kaise remove kiya jata hai. Is ke liye hum ek function extract karenge jo specific values ki jagah ek aisa placeholder use karta hai jo multiple values ko represent karta hai. Phir, hum isi technique ko apply karke ek generic function extract karenge! Ye dekh kar ke aise duplicated code ko kaise recognize kiya jata hai jise aap function mein extract kar sakte hain, aap aise duplicated code ko bhi recognize karna shuru kar denge jo generics ko use kar sakta hai.
 
-We’ll begin with the short program in Listing 10-1 that finds the largest
-number in a list.
+Hum Listing 10-1 mein diye gaye short program se shuru karenge jo ek list mein sab se bara number find karta hai.
 
 <Listing number="10-1" file-name="src/main.rs" caption="Finding the largest number in a list of numbers">
 
@@ -50,18 +24,9 @@ number in a list.
 
 </Listing>
 
-We store a list of integers in the variable `number_list` and place a reference
-to the first number in the list in a variable named `largest`. We then iterate
-through all the numbers in the list, and if the current number is greater than
-the number stored in `largest`, we replace the reference in that variable.
-However, if the current number is less than or equal to the largest number seen
-so far, the variable doesn’t change, and the code moves on to the next number
-in the list. After considering all the numbers in the list, `largest` should
-refer to the largest number, which in this case is 100.
+Hum integers ki ek list variable `number_list` mein store karte hain aur list ke pehle number ka reference `largest` naam ke variable mein rakhte hain. Phir hum list ke tamam numbers par iterate karte hain, aur agar current number `largest` mein stored number se bara ho, to hum us variable mein reference ko replace kar dete hain. Lekin agar current number ab tak dekhe gaye sab se bare number se chhota ya us ke barabar ho, to variable change nahi hota aur code list ke next number ki taraf chala jata hai. List ke tamam numbers ko consider karne ke baad, `largest` ko sab se bare number ko refer karna chahiye, jo is case mein 100 hai.
 
-We’ve now been tasked with finding the largest number in two different lists of
-numbers. To do so, we can choose to duplicate the code in Listing 10-1 and use
-the same logic at two different places in the program, as shown in Listing 10-2.
+Ab humein numbers ki do different lists mein sab se bara number find karne ka task diya gaya hai. Is ke liye hum Listing 10-1 ke code ko duplicate karne aur program mein do different jagahon par same logic use karne ka intekhab kar sakte hain, jaisa ke Listing 10-2 mein dikhaya gaya hai.
 
 <Listing number="10-2" file-name="src/main.rs" caption="Code to find the largest number in *two* lists of numbers">
 
@@ -71,19 +36,11 @@ the same logic at two different places in the program, as shown in Listing 10-2.
 
 </Listing>
 
-Although this code works, duplicating code is tedious and error-prone. We also
-have to remember to update the code in multiple places when we want to change
-it.
+Agarche ye code kaam karta hai, lekin code ko duplicate karna tedious aur error-prone hai. Jab hum is mein change karna chahte hain, to humein multiple places par code ko update karna bhi yaad rakhna padta hai.
 
-To eliminate this duplication, we’ll create an abstraction by defining a
-function that operates on any list of integers passed in as a parameter. This
-solution makes our code clearer and lets us express the concept of finding the
-largest number in a list abstractly.
+Is duplication ko khatam karne ke liye, hum ek aisi abstraction create karenge jo kisi bhi list of integers ko, jo parameter ke taur par pass ki gayi ho, operate karne wala function define karti hai. Ye solution hamare code ko zyada clear banata hai aur humein list mein sab se bara number find karne ke concept ko abstract tareeqe se express karne deta hai.
 
-In Listing 10-3, we extract the code that finds the largest number into a
-function named `largest`. Then, we call the function to find the largest number
-in the two lists from Listing 10-2. We could also use the function on any other
-list of `i32` values we might have in the future.
+Listing 10-3 mein, hum sab se bara number find karne wale code ko `largest` naam ke function mein extract karte hain. Phir, hum Listing 10-2 ki dono lists mein sab se bara number find karne ke liye function ko call karte hain. Hum future mein maujood kisi bhi doosri `i32` values ki list par bhi is function ko use kar sakte hain.
 
 <Listing number="10-3" file-name="src/main.rs" caption="Abstracted code to find the largest number in two lists">
 
@@ -93,23 +50,14 @@ list of `i32` values we might have in the future.
 
 </Listing>
 
-The `largest` function has a parameter called `list`, which represents any
-concrete slice of `i32` values we might pass into the function. As a result,
-when we call the function, the code runs on the specific values that we pass
-in.
+`largest` function ka ek parameter `list` hai, jo `i32` values ke kisi bhi concrete slice ko represent karta hai jise hum function mein pass kar sakte hain. Is ke result ke taur par, jab hum function ko call karte hain, to code un specific values par run hota hai jo hum pass karte hain.
 
-In summary, here are the steps we took to change the code from Listing 10-2 to
-Listing 10-3:
+Khulasa ye hai ke Listing 10-2 ke code ko Listing 10-3 mein change karne ke liye hum ne ye steps liye:
 
-1. Identify duplicate code.
-1. Extract the duplicate code into the body of the function, and specify the
-   inputs and return values of that code in the function signature.
-1. Update the two instances of duplicated code to call the function instead.
+1. Duplicate code ko identify kiya.
+2. Duplicate code ko function ki body mein extract kiya, aur function signature mein us code ke inputs aur return values specify kiye.
+3. Duplicate code ke dono instances ko update karke unki jagah function ko call kiya.
 
-Next, we’ll use these same steps with generics to reduce code duplication. In
-the same way that the function body can operate on an abstract `list` instead
-of specific values, generics allow code to operate on abstract types.
+Agla step ye hai ke hum code duplication ko reduce karne ke liye inhi steps ko generics ke saath use karenge. Jis tarah function ki body specific values ke bajaye ek abstract `list` par operate kar sakti hai, usi tarah generics code ko abstract types par operate karne dete hain.
 
-For example, say we had two functions: one that finds the largest item in a
-slice of `i32` values and one that finds the largest item in a slice of `char`
-values. How would we eliminate that duplication? Let’s find out!
+Misal ke taur par, maan lein hamare paas do functions hon: ek jo `i32` values ke slice mein sab se bara item find karta ho aur doosra jo `char` values ke slice mein sab se bara item find karta ho. Hum is duplication ko kaise khatam karenge? Aaiye pata lagate hain!
