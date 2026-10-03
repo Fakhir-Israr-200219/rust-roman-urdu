@@ -1,22 +1,12 @@
-## Separating Modules into Different Files
+## Modules Ko Different Files Mein Separate Karna
 
-So far, all the examples in this chapter defined multiple modules in one file.
-When modules get large, you might want to move their definitions to a separate
-file to make the code easier to navigate.
+Ab tak is chapter ki tamam examples mein multiple modules ko ek hi file mein define kiya gaya hai. Jab modules bade ho jate hain, to aap unki definitions ko ek separate file mein move karna chahenge taa-ke code ko navigate karna aasaan ho jaye.
 
-For example, let’s start from the code in Listing 7-17 that had multiple
-restaurant modules. We’ll extract modules into files instead of having all the
-modules defined in the crate root file. In this case, the crate root file is
-_src/lib.rs_, but this procedure also works with binary crates whose crate root
-file is _src/main.rs_.
+Misal ke taur par, aaiye Listing 7-17 ke code se shuru karte hain jisme multiple restaurant modules the. Hum tamam modules ko crate root file mein define karne ke bajaye unhein files mein extract karenge. Is case mein crate root file *src/lib.rs* hai, lekin ye procedure un binary crates ke saath bhi kaam karta hai jinki crate root file *src/main.rs* hoti hai.
 
-First, we’ll extract the `front_of_house` module to its own file. Remove the
-code inside the curly brackets for the `front_of_house` module, leaving only
-the `mod front_of_house;` declaration, so that _src/lib.rs_ contains the code
-shown in Listing 7-21. Note that this won’t compile until we create the
-_src/front_of_house.rs_ file in Listing 7-22.
+Sab se pehle, hum `front_of_house` module ko apni separate file mein extract karenge. `front_of_house` module ke curly brackets ke andar ka code remove kar dein aur sirf `mod front_of_house;` declaration rehne dein, taa-ke *src/lib.rs* mein woh code ho jo Listing 7-21 mein dikhaya gaya hai. Note karein ke ye tab tak compile nahi hoga jab tak hum Listing 7-22 mein dikhayi gayi *src/front_of_house.rs* file create nahi kar lete.
 
-<Listing number="7-21" file-name="src/lib.rs" caption="Declaring the `front_of_house` module whose body will be in *src/front_of_house.rs*">
+<Listing number="7-21" file-name="src/lib.rs" caption="`front_of_house` module declare karna jiska body *src/front_of_house.rs* mein hoga">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-21-and-22/src/lib.rs}}
@@ -24,12 +14,9 @@ _src/front_of_house.rs_ file in Listing 7-22.
 
 </Listing>
 
-Next, place the code that was in the curly brackets into a new file named
-_src/front_of_house.rs_, as shown in Listing 7-22. The compiler knows to look
-in this file because it came across the module declaration in the crate root
-with the name `front_of_house`.
+Ab woh code jo curly brackets ke andar tha, *src/front_of_house.rs* naam ki ek nayi file mein rakhein, jaisa ke Listing 7-22 mein dikhaya gaya hai. Compiler is file mein code dhoondhna jaanta hai kyun ke crate root mein usay `front_of_house` name wali module declaration mili thi.
 
-<Listing number="7-22" file-name="src/front_of_house.rs" caption="Definitions inside the `front_of_house` module in *src/front_of_house.rs*">
+<Listing number="7-22" file-name="src/front_of_house.rs" caption="`front_of_house` module ke andar ki definitions *src/front_of_house.rs* mein">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-21-and-22/src/front_of_house.rs}}
@@ -37,22 +24,11 @@ with the name `front_of_house`.
 
 </Listing>
 
-Note that you only need to load a file using a `mod` declaration _once_ in your
-module tree. Once the compiler knows the file is part of the project (and knows
-where in the module tree the code resides because of where you’ve put the `mod`
-statement), other files in your project should refer to the loaded file’s code
-using a path to where it was declared, as covered in the [“Paths for Referring
-to an Item in the Module Tree”][paths]<!-- ignore --> section. In other words,
-`mod` is _not_ an “include” operation that you may have seen in other
-programming languages.
+Note karein ke apne module tree mein kisi file ko `mod` declaration ke zariye *sirf ek baar* load karna hota hai. Jab compiler ko pata chal jaye ke file project ka hissa hai (aur ye bhi pata chal jaye ke code module tree mein kahan mojood hai, kyun ke aap ne `mod` statement kahan rakha hai), to aapke project ki doosri files ko loaded file ke code ko refer karne ke liye us jagah ka path use karna chahiye jahan woh declare hui hai, jaisa ke [“Paths for Referring to an Item in the Module Tree”][paths]<!-- ignore --> section mein cover kiya gaya hai. Doosre alfaaz mein, `mod` koi “include” operation *nahi* hai jo aap ne doosri programming languages mein dekha ho.
 
-Next, we’ll extract the `hosting` module to its own file. The process is a bit
-different because `hosting` is a child module of `front_of_house`, not of the
-root module. We’ll place the file for `hosting` in a new directory that will be
-named for its ancestors in the module tree, in this case _src/front_of_house_.
+Ab hum `hosting` module ko apni separate file mein extract karenge. Ye process thora different hai kyun ke `hosting`, root module ka nahi balki `front_of_house` ka child module hai. Hum `hosting` ki file ko ek nayi directory mein rakhenge jo module tree mein uske ancestors ke name par rakhi jayegi; is case mein *src/front_of_house*.
 
-To start moving `hosting`, we change _src/front_of_house.rs_ to contain only
-the declaration of the `hosting` module:
+`hosting` ko move karna shuru karne ke liye, hum *src/front_of_house.rs* ko change karke us mein sirf `hosting` module ki declaration rakhenge:
 
 <Listing file-name="src/front_of_house.rs">
 
@@ -62,8 +38,7 @@ the declaration of the `hosting` module:
 
 </Listing>
 
-Then, we create a _src/front_of_house_ directory and a _hosting.rs_ file to
-contain the definitions made in the `hosting` module:
+Phir, hum ek *src/front_of_house* directory aur ek *hosting.rs* file create karte hain jisme `hosting` module mein ki gayi definitions hongi:
 
 <Listing file-name="src/front_of_house/hosting.rs">
 
@@ -73,57 +48,33 @@ contain the definitions made in the `hosting` module:
 
 </Listing>
 
-If we instead put _hosting.rs_ in the _src_ directory, the compiler would
-expect the _hosting.rs_ code to be in a `hosting` module declared in the crate
-root and not declared as a child of the `front_of_house` module. The
-compiler’s rules for which files to check for which modules’ code mean the
-directories and files more closely match the module tree.
+Agar is ke bajaye hum *hosting.rs* ko *src* directory mein rakh dein, to compiler ye expect karega ke *hosting.rs* ka code crate root mein declare kiye gaye ek `hosting` module mein ho, na ke `front_of_house` module ke child ke taur par declare kiye gaye module mein. Compiler ke ye rules ke kaun si files mein kaun se modules ka code check karna hai, is wajah se directories aur files module tree ke saath zyada closely match karti hain.
 
 > ### Alternate File Paths
 >
-> So far we’ve covered the most idiomatic file paths the Rust compiler uses,
-> but Rust also supports an older style of file path. For a module named
-> `front_of_house` declared in the crate root, the compiler will look for the
-> module’s code in:
+> Ab tak hum ne sab se idiomatic file paths cover kiye hain jinhein Rust compiler use karta hai, lekin Rust file paths ke ek purane style ko bhi support karta hai. Crate root mein `front_of_house` naam ke module ke liye, compiler module ka code in jagahon par dhoondhega:
 >
-> - _src/front_of_house.rs_ (what we covered)
-> - _src/front_of_house/mod.rs_ (older style, still supported path)
+> * *src/front_of_house.rs* (jise hum ne cover kiya)
+> * *src/front_of_house/mod.rs* (purana style, ab bhi supported path)
 >
-> For a module named `hosting` that is a submodule of `front_of_house`, the
-> compiler will look for the module’s code in:
+> `front_of_house` ke submodule `hosting` ke liye, compiler module ka code in jagahon par dhoondhega:
 >
-> - _src/front_of_house/hosting.rs_ (what we covered)
-> - _src/front_of_house/hosting/mod.rs_ (older style, still supported path)
+> * *src/front_of_house/hosting.rs* (jise hum ne cover kiya)
+> * *src/front_of_house/hosting/mod.rs* (purana style, ab bhi supported path)
 >
-> If you use both styles for the same module, you’ll get a compiler error.
-> Using a mix of both styles for different modules in the same project is
-> allowed but might be confusing for people navigating your project.
+> Agar aap same module ke liye dono styles use karein, to aapko compiler error milega. Ek hi project mein different modules ke liye dono styles ko mix karna allowed hai, lekin aapke project ko navigate karne wale logon ke liye ye confusing ho sakta hai.
 >
-> The main downside to the style that uses files named _mod.rs_ is that your
-> project can end up with many files named _mod.rs_, which can get confusing
-> when you have them open in your editor at the same time.
+> *mod.rs* naam wali files ko use karne wale style ka main downside ye hai ke aapke project mein bohat si files ka name *mod.rs* ho sakta hai. Jab aap unhein apne editor mein ek hi waqt mein open karte hain, to ye confusing ho sakta hai.
 
-We’ve moved each module’s code to a separate file, and the module tree remains
-the same. The function calls in `eat_at_restaurant` will work without any
-modification, even though the definitions live in different files. This
-technique lets you move modules to new files as they grow in size.
+Hum ne har module ke code ko ek separate file mein move kar diya hai, aur module tree wahi hai. `eat_at_restaurant` mein function calls bina kisi modification ke kaam karengi, halaan ke definitions different files mein mojood hain. Ye technique aapko modules ka size barhne par unhein new files mein move karne deti hai.
 
-Note that the `pub use crate::front_of_house::hosting` statement in
-_src/lib.rs_ also hasn’t changed, nor does `use` have any impact on what files
-are compiled as part of the crate. The `mod` keyword declares modules, and Rust
-looks in a file with the same name as the module for the code that goes into
-that module.
+Ye note karein ke *src/lib.rs* mein `pub use crate::front_of_house::hosting` statement bhi change nahi hua, aur `use` ka is baat par koi asar nahi hota ke crate ke hissa ke taur par kaun si files compile hoti hain. `mod` keyword modules ko declare karta hai, aur Rust us module mein jane wale code ke liye module ke same name wali file mein dekhta hai.
 
 ## Summary
 
-Rust lets you split a package into multiple crates and a crate into modules so
-that you can refer to items defined in one module from another module. You can
-do this by specifying absolute or relative paths. These paths can be brought
-into scope with a `use` statement so that you can use a shorter path for
-multiple uses of the item in that scope. Module code is private by default, but
-you can make definitions public by adding the `pub` keyword.
+Rust aapko ek package ko multiple crates mein aur ek crate ko modules mein split karne deta hai, taa-ke aap ek module mein defined items ko doosre module se refer kar saken. Aap ye absolute ya relative paths specify karke kar sakte hain. In paths ko `use` statement ke saath scope mein laya ja sakta hai, taa-ke us scope mein item ko multiple baar use karte waqt aap shorter path use kar saken. Module code by default private hota hai, lekin aap `pub` keyword add karke definitions ko public bana sakte hain.
 
-In the next chapter, we’ll look at some collection data structures in the
-standard library that you can use in your neatly organized code.
+Agley chapter mein, hum standard library mein mojood kuch collection data structures dekhenge jinhein aap apne neatly organized code mein use kar sakte hain.
 
 [paths]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
+

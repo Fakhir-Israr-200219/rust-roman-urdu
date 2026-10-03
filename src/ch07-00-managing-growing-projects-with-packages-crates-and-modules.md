@@ -4,49 +4,21 @@
 
 # Packages, Crates, and Modules
 
-As you write large programs, organizing your code will become increasingly
-important. By grouping related functionality and separating code with distinct
-features, you’ll clarify where to find code that implements a particular
-feature and where to go to change how a feature works.
+Jab aap bade programs likhte hain, to apne code ko organize karna dheere dheere aur zyada important hota jayega. Related functionality ko group karke aur different features wale code ko separate karke, aap ye wazeh kar sakenge ke kisi particular feature ko implement karne wala code kahan milega aur kisi feature ke kaam karne ke tareeqe ko change karne ke liye kahan jana hoga.
 
-The programs we’ve written so far have been in one module in one file. As a
-project grows, you should organize code by splitting it into multiple modules
-and then multiple files. A package can contain multiple binary crates and
-optionally one library crate. As a package grows, you can extract parts into
-separate crates that become external dependencies. This chapter covers all
-these techniques. For very large projects comprising a set of interrelated
-packages that evolve together, Cargo provides workspaces, which we’ll cover in
-[“Cargo Workspaces”][workspaces]<!-- ignore --> in Chapter 14.
+Ab tak hum ne jo programs likhe hain woh ek file mein ek module ke andar rahe hain. Jaise jaise project grow hota hai, aapko code ko pehle multiple modules aur phir multiple files mein split karke organize karna chahiye. Ek package mein multiple binary crates aur optionally ek library crate ho sakta hai. Jaise jaise package grow hota hai, aap uske kuch parts ko separate crates mein extract kar sakte hain jo external dependencies ban jate hain. Ye chapter in tamam techniques ko cover karta hai. Bohat bade projects ke liye jo aapas mein related packages ke ek set par mushtamil hon aur saath saath evolve karte hon, Cargo workspaces provide karta hai, jinhein hum Chapter 14 mein [“Cargo Workspaces”][workspaces]<!-- ignore --> mein cover karenge.
 
-We’ll also discuss encapsulating implementation details, which lets you reuse
-code at a higher level: Once you’ve implemented an operation, other code can
-call your code via its public interface without having to know how the
-implementation works. The way you write code defines which parts are public for
-other code to use and which parts are private implementation details that you
-reserve the right to change. This is another way to limit the amount of detail
-you have to keep in your head.
+Hum implementation details ko encapsulate karne ke baare mein bhi baat karenge, jo aapko higher level par code reuse karne deta hai: Ek baar aap ne koi operation implement kar liya, to doosra code aapke code ko uske public interface ke zariye call kar sakta hai, baghair ye jaane ke ke implementation kis tarah kaam karti hai. Aap jis tarah code likhte hain woh define karta hai ke doosre code ke use karne ke liye kaun se parts public hain aur kaun se parts private implementation details hain jinhein aap future mein change karne ka haq apne paas rakhte hain. Ye un details ki quantity ko limit karne ka ek aur tareeqa hai jo aapko apne zehan mein rakhni padti hain.
 
-A related concept is scope: The nested context in which code is written has a
-set of names that are defined as “in scope.” When reading, writing, and
-compiling code, programmers and compilers need to know whether a particular
-name at a particular spot refers to a variable, function, struct, enum, module,
-constant, or other item and what that item means. You can create scopes and
-change which names are in or out of scope. You can’t have two items with the
-same name in the same scope; tools are available to resolve name conflicts.
+Ek related concept scope hai: Woh nested context jisme code likha jata hai, us mein names ka ek set hota hai jo “in scope” define kiye jate hain. Code ko read, write, aur compile karte waqt, programmers aur compilers ko ye jaanna zaroori hota hai ke kisi particular jagah par koi particular name kisi variable, function, struct, enum, module, constant, ya kisi aur item ko refer karta hai aur us item ka kya matlab hai. Aap scopes create kar sakte hain aur change kar sakte hain ke kaun se names scope mein hain aur kaun se scope se bahar. Aap ek hi scope mein same name ke do items nahi rakh sakte; name conflicts ko resolve karne ke liye tools available hain.
 
-Rust has a number of features that allow you to manage your code’s
-organization, including which details are exposed, which details are private,
-and what names are in each scope in your programs. These features, sometimes
-collectively referred to as the _module system_, include:
+Rust mein kai aise features hain jo aapko apne code ki organization manage karne dete hain, jin mein ye bhi shamil hai ke kaun si details expose ki jati hain, kaun si details private hoti hain, aur aapke programs ke har scope mein kaun se names mojood hote hain. In features ko kabhi kabhi collectively *module system* kaha jata hai, aur in mein ye shamil hain:
 
-* **Packages**: A Cargo feature that lets you build, test, and share crates
-* **Crates**: A tree of modules that produces a library or executable
-* **Modules and use**: Let you control the organization, scope, and privacy of
-paths
-* **Paths**: A way of naming an item, such as a struct, function, or module
+* **Packages**: Cargo ka ek feature jo aapko crates build, test, aur share karne deta hai
+* **Crates**: Modules ka ek tree jo library ya executable produce karta hai
+* **Modules and use**: Aapko paths ki organization, scope, aur privacy control karne dete hain
+* **Paths**: Kisi item, jaise struct, function, ya module ko name karne ka ek tareeqa
 
-In this chapter, we’ll cover all these features, discuss how they interact, and
-explain how to use them to manage scope. By the end, you should have a solid
-understanding of the module system and be able to work with scopes like a pro!
+Is chapter mein hum in tamam features ko cover karenge, discuss karenge ke ye aapas mein kis tarah interact karte hain, aur explain karenge ke inhein scope manage karne ke liye kis tarah use kiya jata hai. Chapter ke end tak, aapko module system ki solid understanding honi chahiye aur aap scopes ke saath ek pro ki tarah kaam karne ke qabil hone chahiye!
 
 [workspaces]: ch14-03-cargo-workspaces.html

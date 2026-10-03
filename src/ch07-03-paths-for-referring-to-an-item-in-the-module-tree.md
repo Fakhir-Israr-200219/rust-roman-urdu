@@ -1,34 +1,21 @@
-## Paths for Referring to an Item in the Module Tree
+## Module Tree Mein Kisi Item Ko Refer Karne Ke Liye Paths
 
-To show Rust where to find an item in a module tree, we use a path in the same
-way we use a path when navigating a filesystem. To call a function, we need to
-know its path.
+Rust ko module tree mein kisi item ko dhoondhne ki jagah batane ke liye hum path use karte hain, bilkul usi tarah jaise filesystem navigate karte waqt path use karte hain. Kisi function ko call karne ke liye humein uska path maloom hona zaroori hai.
 
-A path can take two forms:
+Path do forms mein se kisi ek form mein ho sakta hai:
 
-- An _absolute path_ is the full path starting from a crate root; for code
-  from an external crate, the absolute path begins with the crate name, and for
-  code from the current crate, it starts with the literal `crate`.
-- A _relative path_ starts from the current module and uses `self`, `super`, or
-  an identifier in the current module.
+* An *absolute path* crate root se shuru hone wala full path hota hai; external crate ke code ke liye absolute path crate name se shuru hota hai, aur current crate ke code ke liye ye literal `crate` se shuru hota hai.
+* A *relative path* current module se shuru hota hai aur `self`, `super`, ya current module mein mojood kisi identifier ko use karta hai.
 
-Both absolute and relative paths are followed by one or more identifiers
-separated by double colons (`::`).
+Absolute aur relative dono paths ke baad ek ya zyada identifiers aate hain jo double colons (`::`) se separate hote hain.
 
-Returning to Listing 7-1, say we want to call the `add_to_waitlist` function.
-This is the same as asking: What’s the path of the `add_to_waitlist` function?
-Listing 7-3 contains Listing 7-1 with some of the modules and functions removed.
+Listing 7-1 ki taraf wapas aate hue, maan lein hum `add_to_waitlist` function ko call karna chahte hain. Ye asal mein ye poochne jaisa hai: `add_to_waitlist` function ka path kya hai? Listing 7-3 mein Listing 7-1 mojood hai, lekin kuch modules aur functions remove kar diye gaye hain.
 
-We’ll show two ways to call the `add_to_waitlist` function from a new function,
-`eat_at_restaurant`, defined in the crate root. These paths are correct, but
-there’s another problem remaining that will prevent this example from compiling
-as is. We’ll explain why in a bit.
+Hum crate root mein define kiye gaye ek naye function, `eat_at_restaurant`, se `add_to_waitlist` function ko call karne ke do tareeqe dikhayenge. Ye paths correct hain, lekin ek aur problem abhi baqi hai jo is example ko as-is compile hone se rokegi. Hum thori dair mein explain karenge ke kyun.
 
-The `eat_at_restaurant` function is part of our library crate’s public API, so
-we mark it with the `pub` keyword. In the [“Exposing Paths with the `pub`
-Keyword”][pub]<!-- ignore --> section, we’ll go into more detail about `pub`.
+`eat_at_restaurant` function hamari library crate ki public API ka hissa hai, is liye hum isay `pub` keyword ke saath mark karte hain. [`pub` Keyword Ke Saath Paths Expose Karna][pub]<!-- ignore --> section mein hum `pub` ke baare mein mazeed detail mein baat karenge.
 
-<Listing number="7-3" file-name="src/lib.rs" caption="Calling the `add_to_waitlist` function using absolute and relative paths">
+<Listing number="7-3" file-name="src/lib.rs" caption="Absolute aur relative paths use karke `add_to_waitlist` function ko call karna">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-03/src/lib.rs}}
@@ -36,39 +23,15 @@ Keyword”][pub]<!-- ignore --> section, we’ll go into more detail about `pub`
 
 </Listing>
 
-The first time we call the `add_to_waitlist` function in `eat_at_restaurant`,
-we use an absolute path. The `add_to_waitlist` function is defined in the same
-crate as `eat_at_restaurant`, which means we can use the `crate` keyword to
-start an absolute path. We then include each of the successive modules until we
-make our way to `add_to_waitlist`. You can imagine a filesystem with the same
-structure: We’d specify the path `/front_of_house/hosting/add_to_waitlist` to
-run the `add_to_waitlist` program; using the `crate` name to start from the
-crate root is like using `/` to start from the filesystem root in your shell.
+Pehli baar jab hum `eat_at_restaurant` mein `add_to_waitlist` function ko call karte hain, to hum ek absolute path use karte hain. `add_to_waitlist` function usi crate mein defined hai jisme `eat_at_restaurant` hai, jis ka matlab hai ke hum absolute path shuru karne ke liye `crate` keyword use kar sakte hain. Phir hum har successive module ko include karte hue `add_to_waitlist` tak pohanchte hain. Aap ek aise filesystem ka tasawwur kar sakte hain jiski structure bilkul isi tarah ho: `add_to_waitlist` program ko run karne ke liye hum path `/front_of_house/hosting/add_to_waitlist` specify karte; crate root se shuru karne ke liye `crate` name use karna usi tarah hai jaise apne shell mein filesystem root se shuru karne ke liye `/` use karna.
 
-The second time we call `add_to_waitlist` in `eat_at_restaurant`, we use a
-relative path. The path starts with `front_of_house`, the name of the module
-defined at the same level of the module tree as `eat_at_restaurant`. Here the
-filesystem equivalent would be using the path
-`front_of_house/hosting/add_to_waitlist`. Starting with a module name means
-that the path is relative.
+Doosri baar jab hum `eat_at_restaurant` mein `add_to_waitlist` ko call karte hain, to hum relative path use karte hain. Path `front_of_house` se shuru hota hai, jo module tree mein `eat_at_restaurant` ke same level par defined module ka name hai. Yahan filesystem equivalent path `front_of_house/hosting/add_to_waitlist` use karna hoga. Module name se shuru karne ka matlab hai ke path relative hai.
 
-Choosing whether to use a relative or absolute path is a decision you’ll make
-based on your project, and it depends on whether you’re more likely to move
-item definition code separately from or together with the code that uses the
-item. For example, if we moved the `front_of_house` module and the
-`eat_at_restaurant` function into a module named `customer_experience`, we’d
-need to update the absolute path to `add_to_waitlist`, but the relative path
-would still be valid. However, if we moved the `eat_at_restaurant` function
-separately into a module named `dining`, the absolute path to the
-`add_to_waitlist` call would stay the same, but the relative path would need to
-be updated. Our preference in general is to specify absolute paths because it’s
-more likely we’ll want to move code definitions and item calls independently of
-each other.
+Relative ya absolute path mein se kisay use karna hai, ye aap apne project ki bunyaad par decide karenge, aur ye is baat par depend karta hai ke aapke liye item ki definition wala code aur us item ko use karne wala code alag alag move hone ka imkaan zyada hai ya dono saath move hone ka. Misal ke taur par, agar hum `front_of_house` module aur `eat_at_restaurant` function ko `customer_experience` naam ke module mein move kar dein, to humein `add_to_waitlist` ka absolute path update karna padega, lekin relative path phir bhi valid rahega. Lekin agar hum `eat_at_restaurant` function ko alag se `dining` naam ke module mein move kar dein, to `add_to_waitlist` call ka absolute path same rahega, lekin relative path ko update karna padega. Aam tor par hamari preference absolute paths specify karna hai, kyun ke zyada imkaan hai ke hum code definitions aur item calls ko ek doosre se independently move karna chahenge.
 
-Let’s try to compile Listing 7-3 and find out why it won’t compile yet! The
-errors we get are shown in Listing 7-4.
+Aaiye Listing 7-3 ko compile karke dekhte hain ke ye abhi compile kyun nahi hoti! Humein jo errors milte hain woh Listing 7-4 mein dikhaye gaye hain.
 
-<Listing number="7-4" caption="Compiler errors from building the code in Listing 7-3">
+<Listing number="7-4" caption="Listing 7-3 ke code ko build karne se milne wale compiler errors">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-03/output.txt}}
@@ -76,35 +39,17 @@ errors we get are shown in Listing 7-4.
 
 </Listing>
 
-The error messages say that module `hosting` is private. In other words, we
-have the correct paths for the `hosting` module and the `add_to_waitlist`
-function, but Rust won’t let us use them because it doesn’t have access to the
-private sections. In Rust, all items (functions, methods, structs, enums,
-modules, and constants) are private to parent modules by default. If you want
-to make an item like a function or struct private, you put it in a module.
+Error messages kehte hain ke `hosting` module private hai. Doosre alfaaz mein, `hosting` module aur `add_to_waitlist` function ke liye hamare paths correct hain, lekin Rust humein inhein use karne nahi dega kyun ke in private sections tak hamari access nahi hai. Rust mein tamam items (functions, methods, structs, enums, modules, aur constants) by default parent modules ke liye private hote hain. Agar aap kisi item jaise function ya struct ko private banana chahte hain, to aap usay ek module mein rakhte hain.
 
-Items in a parent module can’t use the private items inside child modules, but
-items in child modules can use the items in their ancestor modules. This is
-because child modules wrap and hide their implementation details, but the child
-modules can see the context in which they’re defined. To continue with our
-metaphor, think of the privacy rules as being like the back office of a
-restaurant: What goes on in there is private to restaurant customers, but
-office managers can see and do everything in the restaurant they operate.
+Parent module mein mojood items child modules ke andar private items ko use nahi kar sakte, lekin child modules mein mojood items apne ancestor modules ke items ko use kar sakte hain. Iski wajah ye hai ke child modules apni implementation details ko wrap aur hide karte hain, lekin child modules us context ko dekh sakte hain jisme woh define kiye gaye hain. Apni metaphor ko continue karte hue, privacy rules ko restaurant ke back office ki tarah samjhein: Wahan jo kuch hota hai woh restaurant ke customers ke liye private hota hai, lekin office managers us restaurant mein sab kuch dekh aur kar sakte hain jise woh operate karte hain.
 
-Rust chose to have the module system function this way so that hiding inner
-implementation details is the default. That way, you know which parts of the
-inner code you can change without breaking the outer code. However, Rust does
-give you the option to expose inner parts of child modules’ code to outer
-ancestor modules by using the `pub` keyword to make an item public.
+Rust ne module system ko is tarah function karne ke liye is liye design kiya taa-ke inner implementation details ko hide karna default ho. Is tarah aapko maloom hota hai ke inner code ke kaun se parts aap outer code ko break kiye baghair change kar sakte hain. Lekin Rust aapko `pub` keyword use karke child modules ke code ke inner parts ko outer ancestor modules ke liye expose karne ka option bhi deta hai, taa-ke kisi item ko public banaya ja sake.
 
-### Exposing Paths with the `pub` Keyword
+### `pub` Keyword Ke Saath Paths Expose Karna
 
-Let’s return to the error in Listing 7-4 that told us the `hosting` module is
-private. We want the `eat_at_restaurant` function in the parent module to have
-access to the `add_to_waitlist` function in the child module, so we mark the
-`hosting` module with the `pub` keyword, as shown in Listing 7-5.
+Aaiye Listing 7-4 mein diye gaye error ki taraf wapas aate hain jis ne humein bataya tha ke `hosting` module private hai. Hum chahte hain ke parent module mein mojood `eat_at_restaurant` function ko child module mein mojood `add_to_waitlist` function tak access hasil ho, is liye hum `hosting` module ko `pub` keyword ke saath mark karte hain, jaisa ke Listing 7-5 mein dikhaya gaya hai.
 
-<Listing number="7-5" file-name="src/lib.rs" caption="Declaring the `hosting` module as `pub` to use it from `eat_at_restaurant`">
+<Listing number="7-5" file-name="src/lib.rs" caption="`hosting` module ko `pub` declare karna taa-ke ise `eat_at_restaurant` se use kiya ja sake">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-05/src/lib.rs:here}}
@@ -112,10 +57,9 @@ access to the `add_to_waitlist` function in the child module, so we mark the
 
 </Listing>
 
-Unfortunately, the code in Listing 7-5 still results in compiler errors, as
-shown in Listing 7-6.
+Badqismati se, Listing 7-5 ka code ab bhi compiler errors produce karta hai, jaisa ke Listing 7-6 mein dikhaya gaya hai.
 
-<Listing number="7-6" caption="Compiler errors from building the code in Listing 7-5">
+<Listing number="7-6" caption="Listing 7-5 ke code ko build karne se milne wale compiler errors">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-05/output.txt}}
@@ -123,23 +67,13 @@ shown in Listing 7-6.
 
 </Listing>
 
-What happened? Adding the `pub` keyword in front of `mod hosting` makes the
-module public. With this change, if we can access `front_of_house`, we can
-access `hosting`. But the _contents_ of `hosting` are still private; making the
-module public doesn’t make its contents public. The `pub` keyword on a module
-only lets code in its ancestor modules refer to it, not access its inner code.
-Because modules are containers, there’s not much we can do by only making the
-module public; we need to go further and choose to make one or more of the
-items within the module public as well.
+Kya hua? `mod hosting` ke aage `pub` keyword add karne se module public ho jata hai. Is change ke saath, agar hum `front_of_house` tak access kar sakte hain, to hum `hosting` tak bhi access kar sakte hain. Lekin `hosting` ke *contents* ab bhi private hain; module ko public banane se uske contents public nahi ho jate. Module par `pub` keyword sirf itna karta hai ke uske ancestor modules mein mojood code us module ko refer kar sakta hai, uske inner code ko access nahi kar sakta. Kyun ke modules containers hote hain, is liye sirf module ko public banane se hum bohat kuch nahi kar sakte; humein ek qadam aur aage ja kar module ke andar mojood ek ya zyada items ko bhi public banane ka intekhab karna hoga.
 
-The errors in Listing 7-6 say that the `add_to_waitlist` function is private.
-The privacy rules apply to structs, enums, functions, and methods as well as
-modules.
+Listing 7-6 mein errors kehte hain ke `add_to_waitlist` function private hai. Privacy rules modules ke saath saath structs, enums, functions, aur methods par bhi apply hote hain.
 
-Let’s also make the `add_to_waitlist` function public by adding the `pub`
-keyword before its definition, as in Listing 7-7.
+Aaiye `add_to_waitlist` function ki definition se pehle `pub` keyword add karke ise bhi public banate hain, jaisa ke Listing 7-7 mein hai.
 
-<Listing number="7-7" file-name="src/lib.rs" caption="Adding the `pub` keyword to `mod hosting` and `fn add_to_waitlist` lets us call the function from `eat_at_restaurant`.">
+<Listing number="7-7" file-name="src/lib.rs" caption="`mod hosting` aur `fn add_to_waitlist` mein `pub` keyword add karne se hum `eat_at_restaurant` se function ko call kar sakte hain.">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-07/src/lib.rs:here}}
@@ -147,73 +81,29 @@ keyword before its definition, as in Listing 7-7.
 
 </Listing>
 
-Now the code will compile! To see why adding the `pub` keyword lets us use
-these paths in `eat_at_restaurant` with respect to the privacy rules, let’s
-look at the absolute and the relative paths.
+Ab code compile ho jayega! Ye samajhne ke liye ke `pub` keyword add karne se privacy rules ke hawale se `eat_at_restaurant` mein in paths ko use karne ki ijazat kyun milti hai, aaiye absolute aur relative paths ko dekhte hain.
 
-In the absolute path, we start with `crate`, the root of our crate’s module
-tree. The `front_of_house` module is defined in the crate root. While
-`front_of_house` isn’t public, because the `eat_at_restaurant` function is
-defined in the same module as `front_of_house` (that is, `eat_at_restaurant`
-and `front_of_house` are siblings), we can refer to `front_of_house` from
-`eat_at_restaurant`. Next is the `hosting` module marked with `pub`. We can
-access the parent module of `hosting`, so we can access `hosting`. Finally, the
-`add_to_waitlist` function is marked with `pub`, and we can access its parent
-module, so this function call works!
+Absolute path mein hum `crate` se shuru karte hain, jo hamare crate ke module tree ka root hai. `front_of_house` module crate root mein defined hai. Agarche `front_of_house` public nahi hai, kyun ke `eat_at_restaurant` function usi module mein defined hai jisme `front_of_house` hai (yani `eat_at_restaurant` aur `front_of_house` siblings hain), is liye hum `eat_at_restaurant` se `front_of_house` ko refer kar sakte hain. Is ke baad `hosting` module hai jo `pub` se marked hai. Hum `hosting` ke parent module ko access kar sakte hain, is liye hum `hosting` ko bhi access kar sakte hain. Aakhir mein, `add_to_waitlist` function `pub` se marked hai, aur hum uske parent module ko access kar sakte hain, is liye ye function call kaam karti hai!
 
-In the relative path, the logic is the same as the absolute path except for the
-first step: Rather than starting from the crate root, the path starts from
-`front_of_house`. The `front_of_house` module is defined within the same module
-as `eat_at_restaurant`, so the relative path starting from the module in which
-`eat_at_restaurant` is defined works. Then, because `hosting` and
-`add_to_waitlist` are marked with `pub`, the rest of the path works, and this
-function call is valid!
+Relative path mein logic absolute path jaisa hi hai, siwaye pehle step ke: Crate root se shuru hone ke bajaye, path `front_of_house` se shuru hota hai. `front_of_house` module usi module ke andar defined hai jisme `eat_at_restaurant` hai, is liye us module se shuru hone wala relative path jahan `eat_at_restaurant` defined hai, kaam karta hai. Phir, kyun ke `hosting` aur `add_to_waitlist` dono `pub` se marked hain, path ka baqi hissa kaam karta hai, aur ye function call valid hai!
 
-If you plan to share your library crate so that other projects can use your
-code, your public API is your contract with users of your crate that determines
-how they can interact with your code. There are many considerations around
-managing changes to your public API to make it easier for people to depend on
-your crate. These considerations are beyond the scope of this book; if you’re
-interested in this topic, see [the Rust API Guidelines][api-guidelines].
+Agar aap apni library crate ko share karne ka plan rakhte hain taa-ke doosre projects aapka code use kar saken, to aapki public API aapke crate ke users ke saath aapka contract hoti hai jo determine karta hai ke woh aapke code ke saath kis tarah interact kar sakte hain. Aapki public API mein changes ko manage karne ke hawale se bohat si considerations hain taa-ke logon ke liye aapke crate par depend karna aasaan ho. Ye considerations is book ke scope se bahar hain; agar aap is topic mein interested hain, to [Rust API Guidelines][api-guidelines] dekhein.
 
-> #### Best Practices for Packages with a Binary and a Library
+> #### Binary aur Library Wale Packages Ke Liye Best Practices
 >
-> We mentioned that a package can contain both a _src/main.rs_ binary crate
-> root as well as a _src/lib.rs_ library crate root, and both crates will have
-> the package name by default. Typically, packages with this pattern of
-> containing both a library and a binary crate will have just enough code in the
-> binary crate to start an executable that calls code defined in the library
-> crate. This lets other projects benefit from the most functionality that the
-> package provides because the library crate’s code can be shared.
+> Hum ne mention kiya tha ke ek package mein *src/main.rs* binary crate root ke saath saath *src/lib.rs* library crate root bhi ho sakta hai, aur dono crates ke paas by default package ka name hoga. Aam tor par, jin packages mein library aur binary crate dono hote hain, unke binary crate mein sirf itna code hota hai jo ek executable ko start kare aur library crate mein define kiye gaye code ko call kare. Is se doosre projects package ki provide ki hui zyada se zyada functionality se faida utha sakte hain, kyun ke library crate ka code share kiya ja sakta hai.
 >
-> The module tree should be defined in _src/lib.rs_. Then, any public items can
-> be used in the binary crate by starting paths with the name of the package.
-> The binary crate becomes a user of the library crate just like a completely
-> external crate would use the library crate: It can only use the public API.
-> This helps you design a good API; not only are you the author, but you’re
-> also a client!
+> Module tree ko *src/lib.rs* mein define kiya jana chahiye. Phir, kisi bhi public item ko binary crate mein package ke name se paths shuru karke use kiya ja sakta hai. Binary crate library crate ka user ban jata hai, bilkul usi tarah jaise koi completely external crate library crate ko use karega: Ye sirf public API ko use kar sakta hai. Ye aapko ek achhi API design karne mein madad karta hai; aap sirf author hi nahi, balki ek client bhi hain!
 >
-> In [Chapter 12][ch12]<!-- ignore -->, we’ll demonstrate this organizational
-> practice with a command line program that will contain both a binary crate
-> and a library crate.
+> [Chapter 12][ch12]<!-- ignore --> mein, hum is organizational practice ko ek command line program ke saath demonstrate karenge jo binary crate aur library crate dono par mushtamil hoga.
 
-### Starting Relative Paths with `super`
+### Relative Paths Ko `super` Se Shuru Karna
 
-We can construct relative paths that begin in the parent module, rather than
-the current module or the crate root, by using `super` at the start of the
-path. This is like starting a filesystem path with the `..` syntax that means
-to go to the parent directory. Using `super` allows us to reference an item
-that we know is in the parent module, which can make rearranging the module
-tree easier when the module is closely related to the parent but the parent
-might be moved elsewhere in the module tree someday.
+Hum relative paths bana sakte hain jo current module ya crate root ke bajaye parent module se shuru hote hain. Is ke liye path ke start mein `super` use karte hain. Ye filesystem path ko `..` syntax ke saath shuru karne jaisa hai, jiska matlab parent directory mein jana hota hai. `super` use karne se hum us item ko refer kar sakte hain jiske baare mein humein pata hai ke woh parent module mein hai. Ye module tree ko rearrange karna aasaan bana sakta hai jab module ka parent ke saath close relation ho, lekin mumkin ho ke future mein parent ko module tree mein kisi aur jagah move kar diya jaye.
 
-Consider the code in Listing 7-8 that models the situation in which a chef
-fixes an incorrect order and personally brings it out to the customer. The
-function `fix_incorrect_order` defined in the `back_of_house` module calls the
-function `deliver_order` defined in the parent module by specifying the path to
-`deliver_order`, starting with `super`.
+Listing 7-8 mein diye gaye code ko dekhein, jo us situation ko model karta hai jahan ek chef ghalat order ko theek karta hai aur khud usay customer ke paas le kar jata hai. `back_of_house` module mein defined `fix_incorrect_order` function, `super` se shuru hone wala `deliver_order` ka path specify karke parent module mein defined `deliver_order` function ko call karta hai.
 
-<Listing number="7-8" file-name="src/lib.rs" caption="Calling a function using a relative path starting with `super`">
+<Listing number="7-8" file-name="src/lib.rs" caption="`super` se shuru hone wale relative path ka use karke function ko call karna">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-08/src/lib.rs}}
@@ -221,29 +111,13 @@ function `deliver_order` defined in the parent module by specifying the path to
 
 </Listing>
 
-The `fix_incorrect_order` function is in the `back_of_house` module, so we can
-use `super` to go to the parent module of `back_of_house`, which in this case
-is `crate`, the root. From there, we look for `deliver_order` and find it.
-Success! We think the `back_of_house` module and the `deliver_order` function
-are likely to stay in the same relationship to each other and get moved
-together should we decide to reorganize the crate’s module tree. Therefore, we
-used `super` so that we’ll have fewer places to update code in the future if
-this code gets moved to a different module.
+`fix_incorrect_order` function `back_of_house` module mein hai, is liye hum `super` ko use karke `back_of_house` ke parent module mein ja sakte hain, jo is case mein `crate`, yani root hai. Wahan se hum `deliver_order` ko dhoondte hain aur use mil jata hai. Kamyabi! Hamara khayal hai ke `back_of_house` module aur `deliver_order` function ke darmiyan ye relation barqarar rehne ka imkaan hai aur agar hum crate ke module tree ko reorganize karne ka faisla karein to ye dono saath move honge. Is liye hum ne `super` use kiya taa-ke agar future mein ye code kisi doosre module mein move kiya jaye to humein code ko update karne ke liye kam jagahon par changes karne padhein.
 
-### Making Structs and Enums Public
+### Structs aur Enums Ko Public Banana
 
-We can also use `pub` to designate structs and enums as public, but there are a
-few extra details to the usage of `pub` with structs and enums. If we use `pub`
-before a struct definition, we make the struct public, but the struct’s fields
-will still be private. We can make each field public or not on a case-by-case
-basis. In Listing 7-9, we’ve defined a public `back_of_house::Breakfast` struct
-with a public `toast` field but a private `seasonal_fruit` field. This models
-the case in a restaurant where the customer can pick the type of bread that
-comes with a meal, but the chef decides which fruit accompanies the meal based
-on what’s in season and in stock. The available fruit changes quickly, so
-customers can’t choose the fruit or even see which fruit they’ll get.
+Hum structs aur enums ko public designate karne ke liye bhi `pub` use kar sakte hain, lekin structs aur enums ke saath `pub` ke usage mein kuch extra details hain. Agar hum struct definition se pehle `pub` use karein, to hum struct ko public bana dete hain, lekin struct ke fields phir bhi private rahenge. Hum har field ko case-by-case basis par public ya private rakh sakte hain. Listing 7-9 mein hum ne ek public `back_of_house::Breakfast` struct define kiya hai jisme `toast` field public hai, jabke `seasonal_fruit` field private hai. Ye restaurant ki us situation ko model karta hai jahan customer meal ke saath milne wali bread ka type choose kar sakta hai, lekin chef decide karta hai ke meal ke saath kaunsa fruit diya jaye, jo is baat par depend karta hai ke season mein aur stock mein kya available hai. Available fruit jaldi jaldi change hota rehta hai, is liye customers fruit choose nahi kar sakte aur na hi ye dekh sakte hain ke unhein kaunsa fruit milega.
 
-<Listing number="7-9" file-name="src/lib.rs" caption="A struct with some public fields and some private fields">
+<Listing number="7-9" file-name="src/lib.rs" caption="Ek struct jisme kuch public fields aur kuch private fields hain">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-09/src/lib.rs}}
@@ -251,23 +125,13 @@ customers can’t choose the fruit or even see which fruit they’ll get.
 
 </Listing>
 
-Because the `toast` field in the `back_of_house::Breakfast` struct is public,
-in `eat_at_restaurant` we can write and read to the `toast` field using dot
-notation. Notice that we can’t use the `seasonal_fruit` field in
-`eat_at_restaurant`, because `seasonal_fruit` is private. Try uncommenting the
-line modifying the `seasonal_fruit` field value to see what error you get!
+Kyun ke `back_of_house::Breakfast` struct mein `toast` field public hai, `eat_at_restaurant` mein hum dot notation use karke `toast` field mein value likh aur usay read kar sakte hain. Notice karein ke hum `eat_at_restaurant` mein `seasonal_fruit` field ko use nahi kar sakte, kyun ke `seasonal_fruit` private hai. `seasonal_fruit` field ki value ko modify karne wali line ko uncomment karke dekhein ke aapko kaunsa error milta hai!
 
-Also, note that because `back_of_house::Breakfast` has a private field, the
-struct needs to provide a public associated function that constructs an
-instance of `Breakfast` (we’ve named it `summer` here). If `Breakfast` didn’t
-have such a function, we couldn’t create an instance of `Breakfast` in
-`eat_at_restaurant`, because we couldn’t set the value of the private
-`seasonal_fruit` field in `eat_at_restaurant`.
+Ye bhi note karein ke kyun ke `back_of_house::Breakfast` mein ek private field hai, is liye struct ko ek public associated function provide karni hoti hai jo `Breakfast` ka instance construct kare (yahan hum ne isay `summer` naam diya hai). Agar `Breakfast` mein aisi function na hoti, to hum `eat_at_restaurant` mein `Breakfast` ka instance create nahi kar sakte the, kyun ke hum `eat_at_restaurant` mein private `seasonal_fruit` field ki value set nahi kar sakte.
 
-In contrast, if we make an enum public, all of its variants are then public. We
-only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
+Is ke baraks, agar hum kisi enum ko public banate hain, to uski tamam variants bhi public ho jati hain. Humein sirf `enum` keyword se pehle `pub` likhne ki zaroorat hoti hai, jaisa ke Listing 7-10 mein dikhaya gaya hai.
 
-<Listing number="7-10" file-name="src/lib.rs" caption="Designating an enum as public makes all its variants public.">
+<Listing number="7-10" file-name="src/lib.rs" caption="Enum ko public designate karne se uski tamam variants public ho jati hain.">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-10/src/lib.rs}}
@@ -275,18 +139,11 @@ only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
 
 </Listing>
 
-Because we made the `Appetizer` enum public, we can use the `Soup` and `Salad`
-variants in `eat_at_restaurant`.
+Kyun ke hum ne `Appetizer` enum ko public banaya hai, is liye hum `eat_at_restaurant` mein `Soup` aur `Salad` variants ko use kar sakte hain.
 
-Enums aren’t very useful unless their variants are public; it would be annoying
-to have to annotate all enum variants with `pub` in every case, so the default
-for enum variants is to be public. Structs are often useful without their
-fields being public, so struct fields follow the general rule of everything
-being private by default unless annotated with `pub`.
+Enums us waqt tak zyada useful nahi hote jab tak unki variants public na hon; har case mein tamam enum variants ko `pub` se annotate karna annoying hota, is liye enum variants ka default public hona hai. Structs aksar apne fields ko public kiye baghair bhi useful hote hain, is liye struct fields general rule follow karte hain ke har cheez by default private hoti hai jab tak usay `pub` ke saath annotate na kiya jaye.
 
-There’s one more situation involving `pub` that we haven’t covered, and that is
-our last module system feature: the `use` keyword. We’ll cover `use` by itself
-first, and then we’ll show how to combine `pub` and `use`.
+`pub` se related ek aur situation hai jise hum ne abhi tak cover nahi kiya, aur woh hamare module system ka aakhri feature hai: `use` keyword. Pehle hum `use` ko khud cover karenge, aur phir dikhayenge ke `pub` aur `use` ko kis tarah combine kiya jata hai.
 
 [pub]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
 [api-guidelines]: https://rust-lang.github.io/api-guidelines/

@@ -1,45 +1,21 @@
 ## Packages and Crates
 
-The first parts of the module system we’ll cover are packages and crates.
+Module system ke pehle parts jinhein hum cover karenge woh packages aur crates hain.
 
-A _crate_ is the smallest amount of code that the Rust compiler considers at a
-time. Even if you run `rustc` rather than `cargo` and pass a single source code
-file (as we did all the way back in [“Rust Program Basics”][basics]<!-- ignore
---> in Chapter 1), the compiler considers that file to be a crate. Crates can
-contain modules, and the modules may be defined in other files that get
-compiled with the crate, as we’ll see in the coming sections.
+Ek *crate* code ki sab se chhoti miktar hai jise Rust compiler ek waqt mein consider karta hai. Agar aap `cargo` ke bajaye `rustc` run karein aur ek single source code file pass karein (jaisa ke hum ne Chapter 1 mein [“Rust Program Basics”][basics]<!-- ignore
+--> mein bilkul shuru mein kiya tha), to compiler us file ko ek crate samajhta hai. Crates mein modules ho sakte hain, aur modules doosri files mein define kiye ja sakte hain jo crate ke saath compile hoti hain, jaisa ke hum aanay wale sections mein dekhenge.
 
-A crate can come in one of two forms: a binary crate or a library crate.
-_Binary crates_ are programs you can compile to an executable that you can run,
-such as a command line program or a server. Each must have a function called
-`main` that defines what happens when the executable runs. All the crates we’ve
-created so far have been binary crates.
+Ek crate do forms mein se kisi ek form mein ho sakta hai: binary crate ya library crate. *Binary crates* aise programs hote hain jinhein aap executable mein compile kar sakte hain jise aap run kar sakte hain, jaise command line program ya server. Har binary crate mein `main` naam ka ek function hona zaroori hai jo define karta hai ke executable run hone par kya hota hai. Ab tak hum ne jo tamam crates create kiye hain woh binary crates the.
 
-_Library crates_ don’t have a `main` function, and they don’t compile to an
-executable. Instead, they define functionality intended to be shared with
-multiple projects. For example, the `rand` crate we used in [Chapter
-2][rand]<!-- ignore --> provides functionality that generates random numbers.
-Most of the time when Rustaceans say “crate,” they mean library crate, and they
-use “crate” interchangeably with the general programming concept of a “library.”
+*Library crates* mein `main` function nahi hota, aur ye executable mein compile nahi hote. Is ke bajaye, ye aisi functionality define karte hain jise multiple projects ke saath share karna hota hai. Misal ke taur par, `rand` crate jise hum ne [Chapter 2][rand]<!-- ignore --> mein use kiya tha, random numbers generate karne wali functionality provide karta hai. Zyada tar waqt jab Rustaceans “crate” kehte hain, to unki murad library crate hoti hai, aur woh “crate” ko general programming concept “library” ke saath interchangeably use karte hain.
 
-The _crate root_ is a source file that the Rust compiler starts from and makes
-up the root module of your crate (we’ll explain modules in depth in [“Control
-Scope and Privacy with Modules”][modules]<!-- ignore -->).
+*Crate root* ek source file hoti hai jahan se Rust compiler shuru karta hai aur jo aapke crate ka root module banati hai (hum modules ko [“Control Scope and Privacy with Modules”][modules]<!-- ignore --> mein detail mein explain karenge).
 
-A _package_ is a bundle of one or more crates that provides a set of
-functionality. A package contains a _Cargo.toml_ file that describes how to
-build those crates. Cargo is actually a package that contains the binary crate
-for the command line tool you’ve been using to build your code. The Cargo
-package also contains a library crate that the binary crate depends on. Other
-projects can depend on the Cargo library crate to use the same logic the Cargo
-command line tool uses.
+Ek *package* ek ya ek se zyada crates ka bundle hota hai jo functionality ka ek set provide karta hai. Package mein ek *Cargo.toml* file hoti hai jo describe karti hai ke un crates ko kis tarah build karna hai. Cargo asal mein ek package hai jisme us command line tool ke liye binary crate shamil hai jise aap apna code build karne ke liye use karte rahe hain. Cargo package mein ek library crate bhi shamil hai jis par binary crate depend karta hai. Doosre projects Cargo library crate par depend kar sakte hain taa-ke woh wahi logic use kar saken jo Cargo command line tool use karta hai.
 
-A package can contain as many binary crates as you like, but at most only one
-library crate. A package must contain at least one crate, whether that’s a
-library or binary crate.
+Ek package mein aap jitne chahein binary crates rakh sakte hain, lekin zyada se zyada sirf ek library crate ho sakta hai. Ek package mein kam az kam ek crate hona zaroori hai, chahe woh library crate ho ya binary crate.
 
-Let’s walk through what happens when we create a package. First, we enter the
-command `cargo new my-project`:
+Aaiye dekhte hain ke jab hum ek package create karte hain to kya hota hai. Sab se pehle, hum `cargo new my-project` command enter karte hain:
 
 ```console
 $ cargo new my-project
@@ -51,21 +27,9 @@ $ ls my-project/src
 main.rs
 ```
 
-After we run `cargo new my-project`, we use `ls` to see what Cargo creates. In
-the _my-project_ directory, there’s a _Cargo.toml_ file, giving us a package.
-There’s also a _src_ directory that contains _main.rs_. Open _Cargo.toml_ in
-your text editor and note that there’s no mention of _src/main.rs_. Cargo
-follows a convention that _src/main.rs_ is the crate root of a binary crate
-with the same name as the package. Likewise, Cargo knows that if the package
-directory contains _src/lib.rs_, the package contains a library crate with the
-same name as the package, and _src/lib.rs_ is its crate root. Cargo passes the
-crate root files to `rustc` to build the library or binary.
+`cargo new my-project` run karne ke baad, hum `ls` use karke dekhte hain ke Cargo kya create karta hai. *my-project* directory mein ek *Cargo.toml* file hoti hai, jo humein ek package provide karti hai. Ek *src* directory bhi hoti hai jisme *main.rs* hoti hai. Apne text editor mein *Cargo.toml* open karein aur note karein ke *src/main.rs* ka koi zikr nahi hai. Cargo ek convention follow karta hai ke *src/main.rs* us binary crate ka crate root hota hai jiska name package ke same hota hai. Isi tarah, Cargo jaanta hai ke agar package directory mein *src/lib.rs* ho, to package mein package ke same name ka ek library crate hota hai, aur *src/lib.rs* uska crate root hota hai. Cargo library ya binary build karne ke liye crate root files ko `rustc` ke paas pass karta hai.
 
-Here, we have a package that only contains _src/main.rs_, meaning it only
-contains a binary crate named `my-project`. If a package contains _src/main.rs_
-and _src/lib.rs_, it has two crates: a binary and a library, both with the same
-name as the package. A package can have multiple binary crates by placing files
-in the _src/bin_ directory: Each file will be a separate binary crate.
+Yahan hamare paas ek aisa package hai jisme sirf *src/main.rs* shamil hai, yani is mein sirf `my-project` naam ka ek binary crate hai. Agar package mein *src/main.rs* aur *src/lib.rs* dono hon, to is mein do crates hote hain: ek binary aur ek library, dono ka name package ke same hota hai. Package mein multiple binary crates bhi ho sakte hain agar files ko *src/bin* directory mein rakha jaye: Har file ek separate binary crate hogi.
 
 [basics]: ch01-02-hello-world.html#rust-program-basics
 [modules]: ch07-02-defining-modules-to-control-scope-and-privacy.html

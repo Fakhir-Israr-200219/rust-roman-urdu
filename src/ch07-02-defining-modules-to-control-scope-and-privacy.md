@@ -1,58 +1,32 @@
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="defining-modules-to-control-scope-and-privacy"></a>
+## Modules Ke Zariye Scope aur Privacy Control Karna
 
-## Control Scope and Privacy with Modules
-
-In this section, we’ll talk about modules and other parts of the module system,
-namely _paths_, which allow you to name items; the `use` keyword that brings a
-path into scope; and the `pub` keyword to make items public. We’ll also discuss
-the `as` keyword, external packages, and the glob operator.
+Is section mein hum modules aur module system ke doosre parts ke baare mein baat karenge, yani *paths*, jo aapko items ko name karne dete hain; `use` keyword jo kisi path ko scope mein lata hai; aur `pub` keyword jo items ko public banata hai. Hum `as` keyword, external packages, aur glob operator ke baare mein bhi discuss karenge.
 
 ### Modules Cheat Sheet
 
-Before we get to the details of modules and paths, here we provide a quick
-reference on how modules, paths, the `use` keyword, and the `pub` keyword work
-in the compiler, and how most developers organize their code. We’ll be going
-through examples of each of these rules throughout this chapter, but this is a
-great place to refer to as a reminder of how modules work.
+Modules aur paths ki details mein jane se pehle, yahan hum ek quick reference provide karte hain ke compiler mein modules, paths, `use` keyword, aur `pub` keyword kis tarah kaam karte hain, aur zyada tar developers apne code ko kis tarah organize karte hain. Is chapter mein hum in mein se har rule ki examples dekhenge, lekin modules kis tarah kaam karte hain iski yaad-dihani ke liye ye ek behtareen jagah hai.
 
-- **Start from the crate root**: When compiling a crate, the compiler first
-  looks in the crate root file (usually _src/lib.rs_ for a library crate and
-  _src/main.rs_ for a binary crate) for code to compile.
-- **Declaring modules**: In the crate root file, you can declare new modules;
-  say you declare a “garden” module with `mod garden;`. The compiler will look
-  for the module’s code in these places:
-  - Inline, within curly brackets that replace the semicolon following `mod
-    garden`
-  - In the file _src/garden.rs_
-  - In the file _src/garden/mod.rs_
-- **Declaring submodules**: In any file other than the crate root, you can
-  declare submodules. For example, you might declare `mod vegetables;` in
-  _src/garden.rs_. The compiler will look for the submodule’s code within the
-  directory named for the parent module in these places:
-  - Inline, directly following `mod vegetables`, within curly brackets instead
-    of the semicolon
-  - In the file _src/garden/vegetables.rs_
-  - In the file _src/garden/vegetables/mod.rs_
-- **Paths to code in modules**: Once a module is part of your crate, you can
-  refer to code in that module from anywhere else in that same crate, as long
-  as the privacy rules allow, using the path to the code. For example, an
-  `Asparagus` type in the garden vegetables module would be found at
-  `crate::garden::vegetables::Asparagus`.
-- **Private vs. public**: Code within a module is private from its parent
-  modules by default. To make a module public, declare it with `pub mod`
-  instead of `mod`. To make items within a public module public as well, use
-  `pub` before their declarations.
-- **The `use` keyword**: Within a scope, the `use` keyword creates shortcuts to
-  items to reduce repetition of long paths. In any scope that can refer to
-  `crate::garden::vegetables::Asparagus`, you can create a shortcut with `use
-  crate::garden::vegetables::Asparagus;`, and from then on you only need to
-  write `Asparagus` to make use of that type in the scope.
+* **Crate root se shuru karein**: Jab ek crate compile kiya jata hai, to compiler sab se pehle crate root file (aam tor par library crate ke liye *src/lib.rs* aur binary crate ke liye *src/main.rs*) mein compile kiye jane wale code ko dekhta hai.
+* **Modules declare karna**: Crate root file mein aap naye modules declare kar sakte hain; maan lein aap `mod garden;` ke zariye ek “garden” module declare karte hain. Compiler module ka code in jagahon par dekhega:
 
-Here, we create a binary crate named `backyard` that illustrates these rules.
-The crate’s directory, also named _backyard_, contains these files and
-directories:
+  * Inline, curly brackets ke andar jo `mod
+    garden` ke baad semicolon ki jagah use kiye gaye hain
+  * File *src/garden.rs* mein
+  * File *src/garden/mod.rs* mein
+* **Submodules declare karna**: Crate root ke ilawa kisi bhi file mein aap submodules declare kar sakte hain. Misal ke taur par, aap *src/garden.rs* mein `mod vegetables;` declare kar sakte hain. Compiler parent module ke name wali directory ke andar submodule ka code in jagahon par dekhega:
+
+  * Inline, `mod vegetables` ke bilkul baad, semicolon ki jagah curly brackets ke andar
+  * File *src/garden/vegetables.rs* mein
+  * File *src/garden/vegetables/mod.rs* mein
+* **Modules mein code ke paths**: Jab koi module aapke crate ka hissa ban jata hai, to aap usi crate mein kahin se bhi us module ke code ko refer kar sakte hain, basharte ke privacy rules iski ijazat dein, aur is ke liye code ka path use kiya jata hai. Misal ke taur par, garden vegetables module mein ek `Asparagus` type `crate::garden::vegetables::Asparagus` par milegi.
+* **Private vs. public**: Kisi module ke andar ka code by default uske parent modules se private hota hai. Kisi module ko public banane ke liye `mod` ke bajaye `pub mod` se declare karein. Kisi public module ke andar ke items ko bhi public banane ke liye unki declarations se pehle `pub` use karein.
+* **`use` keyword**: Kisi scope ke andar, `use` keyword items ke shortcuts create karta hai taa-ke lambe paths ko baar baar likhne ki zaroorat kam ho. Kisi bhi aise scope mein jo `crate::garden::vegetables::Asparagus` ko refer kar sakta ho, aap `use
+  crate::garden::vegetables::Asparagus;` ke zariye ek shortcut create kar sakte hain, aur uske baad is scope mein is type ko use karne ke liye aapko sirf `Asparagus` likhna hoga.
+
+Yahan hum `backyard` naam ka ek binary crate create karte hain jo in rules ko illustrate karta hai. Crate ki directory, jiska name bhi *backyard* hai, in files aur directories par mushtamil hai:
 
 ```text
 backyard
@@ -60,12 +34,12 @@ backyard
 ├── Cargo.toml
 └── src
     ├── garden
-    │   └── vegetables.rs
+    │   └── vegetables.rs
     ├── garden.rs
     └── main.rs
 ```
 
-The crate root file in this case is _src/main.rs_, and it contains:
+Is case mein crate root file *src/main.rs* hai, aur is mein ye code hai:
 
 <Listing file-name="src/main.rs">
 
@@ -75,8 +49,7 @@ The crate root file in this case is _src/main.rs_, and it contains:
 
 </Listing>
 
-The `pub mod garden;` line tells the compiler to include the code it finds in
-_src/garden.rs_, which is:
+`pub mod garden;` line compiler ko batati hai ke *src/garden.rs* mein jo code hai use include kare, jo ye hai:
 
 <Listing file-name="src/garden.rs">
 
@@ -86,43 +59,26 @@ _src/garden.rs_, which is:
 
 </Listing>
 
-Here, `pub mod vegetables;` means the code in _src/garden/vegetables.rs_ is
-included too. That code is:
+Yahan, `pub mod vegetables;` ka matlab hai ke *src/garden/vegetables.rs* mein mojood code bhi include kiya jaye. Woh code ye hai:
 
 ```rust,noplayground,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/quick-reference-example/src/garden/vegetables.rs}}
 ```
 
-Now let’s get into the details of these rules and demonstrate them in action!
+Ab aaiye in rules ki details mein jate hain aur inhein action mein demonstrate karte hain!
 
-### Grouping Related Code in Modules
+### Modules Mein Related Code Ko Group Karna
 
-_Modules_ let us organize code within a crate for readability and easy reuse.
-Modules also allow us to control the _privacy_ of items because code within a
-module is private by default. Private items are internal implementation details
-not available for outside use. We can choose to make modules and the items
-within them public, which exposes them to allow external code to use and depend
-on them.
+*Modules* humein ek crate ke andar code ko readability aur easy reuse ke liye organize karne dete hain. Modules humein items ki *privacy* control karne ki bhi ijazat dete hain, kyun ke module ke andar ka code by default private hota hai. Private items internal implementation details hote hain jo bahar se use ke liye available nahi hote. Hum modules aur unke andar mojood items ko public banane ka intekhab kar sakte hain, jo unhein expose karta hai taa-ke external code unhein use aur un par depend kar sake.
 
-As an example, let’s write a library crate that provides the functionality of a
-restaurant. We’ll define the signatures of functions but leave their bodies
-empty to concentrate on the organization of the code rather than the
-implementation of a restaurant.
+Misal ke taur par, aaiye ek library crate likhte hain jo ek restaurant ki functionality provide karti hai. Hum functions ke signatures define karenge lekin unki bodies khaali chhor denge taa-ke restaurant ki implementation ke bajaye code ki organization par focus kiya ja sake.
 
-In the restaurant industry, some parts of a restaurant are referred to as front
-of house and others as back of house. _Front of house_ is where customers are;
-this encompasses where the hosts seat customers, servers take orders and
-payment, and bartenders make drinks. _Back of house_ is where the chefs and
-cooks work in the kitchen, dishwashers clean up, and managers do administrative
-work.
+Restaurant industry mein, restaurant ke kuch parts ko front of house aur doosre parts ko back of house kaha jata hai. *Front of house* woh jagah hai jahan customers hote hain; is mein woh jagah shamil hai jahan hosts customers ko seat karte hain, servers orders aur payment lete hain, aur bartenders drinks banate hain. *Back of house* woh jagah hai jahan chefs aur cooks kitchen mein kaam karte hain, dishwashers safai karte hain, aur managers administrative kaam karte hain.
 
-To structure our crate in this way, we can organize its functions into nested
-modules. Create a new library named `restaurant` by running `cargo new
-restaurant --lib`. Then, enter the code in Listing 7-1 into _src/lib.rs_ to
-define some modules and function signatures; this code is the front of house
-section.
+Apne crate ko is tarah structure karne ke liye, hum iske functions ko nested modules mein organize kar sakte hain. `cargo new
+restaurant --lib` run karke `restaurant` naam ki ek nayi library create karein. Phir Listing 7-1 ka code *src/lib.rs* mein enter karein taa-ke kuch modules aur function signatures define kiye ja saken; ye front of house section hai.
 
-<Listing number="7-1" file-name="src/lib.rs" caption="A `front_of_house` module containing other modules that then contain functions">
+<Listing number="7-1" file-name="src/lib.rs" caption="Ek `front_of_house` module jisme mazeed modules hain aur un modules ke andar functions hain">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-01/src/lib.rs}}
@@ -130,27 +86,16 @@ section.
 
 </Listing>
 
-We define a module with the `mod` keyword followed by the name of the module
-(in this case, `front_of_house`). The body of the module then goes inside curly
-brackets. Inside modules, we can place other modules, as in this case with the
-modules `hosting` and `serving`. Modules can also hold definitions for other
-items, such as structs, enums, constants, traits, and as in Listing 7-1,
-functions.
+Hum `mod` keyword ke baad module ka name likh kar module define karte hain (is case mein `front_of_house`). Phir module ki body curly brackets ke andar hoti hai. Modules ke andar hum doosre modules bhi rakh sakte hain, jaisa ke is case mein `hosting` aur `serving` modules ke saath hai. Modules mein doosre items ki definitions bhi ho sakti hain, jaise structs, enums, constants, traits, aur, jaisa ke Listing 7-1 mein hai, functions.
 
-By using modules, we can group related definitions together and name why
-they’re related. Programmers using this code can navigate the code based on the
-groups rather than having to read through all the definitions, making it easier
-to find the definitions relevant to them. Programmers adding new functionality
-to this code would know where to place the code to keep the program organized.
+Modules ko use karke hum related definitions ko ek saath group kar sakte hain aur ye name kar sakte hain ke woh kis wajah se related hain. Is code ko use karne wale programmers tamam definitions ko parhne ke bajaye groups ki bunyaad par code ko navigate kar sakte hain, jis se unke liye relevant definitions dhoondhna aasaan ho jata hai. Is code mein new functionality add karne wale programmers ko bhi pata hoga ke program ko organized rakhne ke liye code ko kahan place karna hai.
 
-Earlier, we mentioned that _src/main.rs_ and _src/lib.rs_ are called _crate
-roots_. The reason for their name is that the contents of either of these two
-files form a module named `crate` at the root of the crate’s module structure,
-known as the _module tree_.
+Pehle hum ne mention kiya tha ke *src/main.rs* aur *src/lib.rs* ko *crate
+roots* kaha jata hai. Unka ye name hone ki wajah ye hai ke in dono mein se kisi bhi file ka content crate ki module structure ke root par `crate` naam ka ek module banata hai, jise *module tree* kaha jata hai.
 
-Listing 7-2 shows the module tree for the structure in Listing 7-1.
+Listing 7-2 Listing 7-1 ki structure ke liye module tree dikhati hai.
 
-<Listing number="7-2" caption="The module tree for the code in Listing 7-1">
+<Listing number="7-2" caption="Listing 7-1 ke code ka module tree">
 
 ```text
 crate
@@ -166,15 +111,6 @@ crate
 
 </Listing>
 
-This tree shows how some of the modules nest inside other modules; for example,
-`hosting` nests inside `front_of_house`. The tree also shows that some modules
-are _siblings_, meaning they’re defined in the same module; `hosting` and
-`serving` are siblings defined within `front_of_house`. If module A is
-contained inside module B, we say that module A is the _child_ of module B and
-that module B is the _parent_ of module A. Notice that the entire module tree
-is rooted under the implicit module named `crate`.
+Ye tree dikhata hai ke kuch modules doosre modules ke andar nested hain; misal ke taur par, `hosting`, `front_of_house` ke andar nested hai. Tree ye bhi dikhata hai ke kuch modules *siblings* hain, yani woh ek hi module mein define kiye gaye hain; `hosting` aur `serving` `front_of_house` ke andar define kiye gaye siblings hain. Agar module A, module B ke andar contained ho, to hum kehte hain ke module A, module B ka *child* hai aur module B, module A ka *parent* hai. Notice karein ke poora module tree implicit module `crate` ke neeche rooted hai.
 
-The module tree might remind you of the filesystem’s directory tree on your
-computer; this is a very apt comparison! Just like directories in a filesystem,
-you use modules to organize your code. And just like files in a directory, we
-need a way to find our modules.
+Module tree shayad aapko apne computer ke filesystem ke directory tree ki yaad dilaye; ye comparison bilkul munasib hai! Bilkul filesystem ki directories ki tarah, aap modules ko apne code ko organize karne ke liye use karte hain. Aur bilkul directory mein files ki tarah, humein apne modules ko dhoondhne ke liye ek tareeqe ki zaroorat hoti hai.
