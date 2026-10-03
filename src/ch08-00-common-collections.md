@@ -1,25 +1,24 @@
 # Common Collections
 
-Rust’s standard library includes a number of very useful data structures called
-_collections_. Most other data types represent one specific value, but
-collections can contain multiple values. Unlike the built-in array and tuple
-types, the data that these collections point to is stored on the heap, which
-means the amount of data does not need to be known at compile time and can grow
-or shrink as the program runs. Each kind of collection has different
-capabilities and costs, and choosing an appropriate one for your current
-situation is a skill you’ll develop over time. In this chapter, we’ll discuss
-three collections that are used very often in Rust programs:
+Rust ki standard library mein bohat si useful data structures shamil hain jinhein
+*collections* kaha jata hai. Zyada tar doosre data types ek specific value ko
+represent karte hain, lekin collections multiple values rakh sakti hain. Built-in
+array aur tuple types ke baraks, jin data ko ye collections point karti hain woh
+heap par store hota hai, jis ka matlab hai ke data ki miktar ka compile time par
+maloom hona zaroori nahi hota aur program run hote waqt ye barh ya kam ho sakti
+hai. Har qisam ki collection ki apni different capabilities aur costs hoti hain,
+aur apni current situation ke liye munasib collection choose karna ek aisi skill
+hai jo aap waqt ke saath develop karenge. Is chapter mein hum teen aisi
+collections discuss karenge jo Rust programs mein bohat zyada use hoti hain:
 
-- A _vector_ allows you to store a variable number of values next to each other.
-- A _string_ is a collection of characters. We’ve mentioned the `String` type
-  previously, but in this chapter, we’ll talk about it in depth.
-- A _hash map_ allows you to associate a value with a specific key. It’s a
-  particular implementation of the more general data structure called a _map_.
+* Ek *vector* aapko values ki variable number ko ek doosre ke saath store karne deta hai.
+* Ek *string* characters ki ek collection hoti hai. Hum ne pehle `String` type ka zikr kiya hai, lekin is chapter mein hum is ke baare mein detail mein baat karenge.
+* Ek *hash map* aapko kisi value ko ek specific key ke saath associate karne deta hai. Ye zyada general data structure jise *map* kaha jata hai, ki ek particular implementation hai.
 
-To learn about the other kinds of collections provided by the standard library,
-see [the documentation][collections].
+Standard library ki provide ki hui doosri qisam ki collections ke baare mein
+seekhne ke liye, [documentation][collections] dekhein.
 
-We’ll discuss how to create and update vectors, strings, and hash maps, as well
-as what makes each special.
+Hum discuss karenge ke vectors, strings, aur hash maps ko kaise create aur update
+kiya jata hai, aur ye bhi ke in mein se har ek ko kya khaas banata hai.
 
 [collections]: ../std/collections/index.html

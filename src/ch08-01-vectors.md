@@ -1,17 +1,18 @@
-## Storing Lists of Values with Vectors
+## Vectors Ke Zariye Values Ki Lists Store Karna
 
-The first collection type we’ll look at is `Vec<T>`, also known as a vector.
-Vectors allow you to store more than one value in a single data structure that
-puts all the values next to each other in memory. Vectors can only store values
-of the same type. They are useful when you have a list of items, such as the
-lines of text in a file or the prices of items in a shopping cart.
+Pehli collection type jise hum dekhenge woh `Vec<T>` hai, jise vector bhi kaha jata hai.
+Vectors aapko ek hi data structure mein ek se zyada values store karne dete hain, jo
+memory mein tamam values ko ek doosre ke paas rakhta hai. Vectors sirf ek hi type ki
+values store kar sakte hain. Ye us waqt useful hote hain jab aapke paas items ki koi
+list ho, jaise kisi file mein text ki lines ya shopping cart mein items ki prices.
 
-### Creating a New Vector
 
-To create a new, empty vector, we call the `Vec::new` function, as shown in
-Listing 8-1.
+### Naya Vector Create Karna
 
-<Listing number="8-1" caption="Creating a new, empty vector to hold values of type `i32`">
+Ek naya, empty vector create karne ke liye hum `Vec::new` function call karte hain, jaisa ke
+Listing 8-1 mein dikhaya gaya hai.
+
+<Listing number="8-1" caption="`i32` type ki values rakhne ke liye ek naya, empty vector create karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-01/src/main.rs:here}}
@@ -19,24 +20,24 @@ Listing 8-1.
 
 </Listing>
 
-Note that we added a type annotation here. Because we aren’t inserting any
-values into this vector, Rust doesn’t know what kind of elements we intend to
-store. This is an important point. Vectors are implemented using generics;
-we’ll cover how to use generics with your own types in Chapter 10. For now,
-know that the `Vec<T>` type provided by the standard library can hold any type.
-When we create a vector to hold a specific type, we can specify the type within
-angle brackets. In Listing 8-1, we’ve told Rust that the `Vec<T>` in `v` will
-hold elements of the `i32` type.
+Note karein ke hum ne yahan type annotation add ki hai. Kyun ke hum is vector mein koi
+values insert nahi kar rahe, Rust ko nahi pata ke hum kis type ke elements store karna
+chahte hain. Ye ek important point hai. Vectors generics ko use karke implement kiye jate
+hain; hum Chapter 10 mein dekhenge ke apne types ke saath generics ko kaise use kiya jata
+hai. Filhal, itna jaan lein ke standard library ki provide ki hui `Vec<T>` type kisi bhi
+type ko hold kar sakti hai. Jab hum kisi specific type ko hold karne ke liye vector create
+karte hain, to hum angle brackets ke andar type specify kar sakte hain. Listing 8-1 mein
+hum ne Rust ko bataya hai ke `v` mein mojood `Vec<T>` `i32` type ke elements hold karega.
 
-More often, you’ll create a `Vec<T>` with initial values, and Rust will infer
-the type of value you want to store, so you rarely need to do this type
-annotation. Rust conveniently provides the `vec!` macro, which will create a
-new vector that holds the values you give it. Listing 8-2 creates a new
-`Vec<i32>` that holds the values `1`, `2`, and `3`. The integer type is `i32`
-because that’s the default integer type, as we discussed in the [“Data
-Types”][data-types]<!-- ignore --> section of Chapter 3.
+Zyada tar waqt, aap initial values ke saath `Vec<T>` create karenge, aur Rust us value ka
+type infer kar lega jise aap store karna chahte hain, is liye aapko ye type annotation
+bohat kam hi karni padegi. Rust sahulat ke liye `vec!` macro provide karta hai, jo aapki
+di hui values ko hold karne wala ek naya vector create karega. Listing 8-2 mein ek naya
+`Vec<i32>` create kiya gaya hai jo `1`, `2`, aur `3` values ko hold karta hai. Integer type
+`i32` hai kyun ke ye default integer type hai, jaisa ke hum ne Chapter 3 ke [“Data
+Types”][data-types]<!-- ignore --> section mein discuss kiya tha.
 
-<Listing number="8-2" caption="Creating a new vector containing values">
+<Listing number="8-2" caption="Values par mushtamil ek naya vector create karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-02/src/main.rs:here}}
@@ -44,16 +45,17 @@ Types”][data-types]<!-- ignore --> section of Chapter 3.
 
 </Listing>
 
-Because we’ve given initial `i32` values, Rust can infer that the type of `v`
-is `Vec<i32>`, and the type annotation isn’t necessary. Next, we’ll look at how
-to modify a vector.
+Kyun ke hum ne initial `i32` values di hain, Rust infer kar sakta hai ke `v` ki type
+`Vec<i32>` hai, aur type annotation ki zaroorat nahi hai. Agley section mein, hum dekhenge
+ke vector ko kaise modify kiya jata hai.
 
-### Updating a Vector
 
-To create a vector and then add elements to it, we can use the `push` method,
-as shown in Listing 8-3.
+### Vector Ko Update Karna
 
-<Listing number="8-3" caption="Using the `push` method to add values to a vector">
+Ek vector create karne ke baad us mein elements add karne ke liye hum `push` method
+use kar sakte hain, jaisa ke Listing 8-3 mein dikhaya gaya hai.
+
+<Listing number="8-3" caption="Vector mein values add karne ke liye `push` method use karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-03/src/main.rs:here}}
@@ -61,21 +63,19 @@ as shown in Listing 8-3.
 
 </Listing>
 
-As with any variable, if we want to be able to change its value, we need to
-make it mutable using the `mut` keyword, as discussed in Chapter 3. The numbers
-we place inside are all of type `i32`, and Rust infers this from the data, so
-we don’t need the `Vec<i32>` annotation.
+Jaisa ke kisi bhi variable ke saath hota hai, agar hum uski value ko change karna
+chahte hain, to humein `mut` keyword use karke usay mutable banana hota hai, jaisa
+ke Chapter 3 mein discuss kiya gaya hai. Andar rakhe gaye numbers sab `i32` type ke
+hain, aur Rust data se is type ko infer kar leta hai, is liye humein `Vec<i32>`
+annotation ki zaroorat nahi hai.
 
-### Reading Elements of Vectors
+### Vectors Ke Elements Read Karna
 
-There are two ways to reference a value stored in a vector: via indexing or by
-using the `get` method. In the following examples, we’ve annotated the types of
-the values that are returned from these functions for extra clarity.
+Vector mein store ki gayi value ko reference karne ke do tareeqe hain: indexing ke zariye ya `get` method ko use karke. Neeche diye gaye examples mein, zyada clarity ke liye hum ne in functions se return hone wali values ki types bhi annotate ki hain.
 
-Listing 8-4 shows both methods of accessing a value in a vector, with indexing
-syntax and the `get` method.
+Listing 8-4 vector mein kisi value ko access karne ke dono methods dikhati hai, indexing syntax aur `get` method ke saath.
 
-<Listing number="8-4" caption="Using indexing syntax and using the `get` method to access an item in a vector">
+<Listing number="8-4" caption="Vector mein kisi item ko access karne ke liye indexing syntax aur `get` method use karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-04/src/main.rs:here}}
@@ -83,19 +83,11 @@ syntax and the `get` method.
 
 </Listing>
 
-Note a few details here. We use the index value of `2` to get the third element
-because vectors are indexed by number, starting at zero. Using `&` and `[]`
-gives us a reference to the element at the index value. When we use the `get`
-method with the index passed as an argument, we get an `Option<&T>` that we can
-use with `match`.
+Yahan kuch details note karein. Hum third element hasil karne ke liye index value `2` use karte hain kyun ke vectors ki indexing zero se shuru hoti hai. `&` aur `[]` use karne se humein diye gaye index value par element ka reference milta hai. Jab hum `get` method ko argument ke taur par index pass karke use karte hain, to humein ek `Option<&T>` milta hai jise hum `match` ke saath use kar sakte hain.
 
-Rust provides these two ways to reference an element so that you can choose how
-the program behaves when you try to use an index value outside the range of
-existing elements. As an example, let’s see what happens when we have a vector
-of five elements and then we try to access an element at index 100 with each
-technique, as shown in Listing 8-5.
+Rust kisi element ko reference karne ke ye dono tareeqe provide karta hai taa-ke aap ye choose kar saken ke jab aap existing elements ki range se bahar ki index value use karne ki koshish karein to program kis tarah behave kare. Misal ke taur par, aaiye dekhein ke kya hota hai jab hamare paas paanch elements wala vector ho aur phir hum har technique ke zariye index `100` par mojood element ko access karne ki koshish karein, jaisa ke Listing 8-5 mein dikhaya gaya hai.
 
-<Listing number="8-5" caption="Attempting to access the element at index 100 in a vector containing five elements">
+<Listing number="8-5" caption="Paanch elements wale vector mein index 100 par element ko access karne ki koshish karna">
 
 ```rust,should_panic,panics
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-05/src/main.rs:here}}
@@ -103,32 +95,13 @@ technique, as shown in Listing 8-5.
 
 </Listing>
 
-When we run this code, the first `[]` method will cause the program to panic
-because it references a nonexistent element. This method is best used when you
-want your program to crash if there’s an attempt to access an element past the
-end of the vector.
+Jab hum is code ko run karte hain, to pehla `[]` method program ko panic karwa dega kyun ke ye ek aise element ko reference karta hai jo mojood nahi hai. Ye method us waqt behtar use hota hai jab aap chahte hain ke vector ke end se aage kisi element ko access karne ki koshish hone par aapka program crash ho jaye.
 
-When the `get` method is passed an index that is outside the vector, it returns
-`None` without panicking. You would use this method if accessing an element
-beyond the range of the vector may happen occasionally under normal
-circumstances. Your code will then have logic to handle having either
-`Some(&element)` or `None`, as discussed in Chapter 6. For example, the index
-could be coming from a person entering a number. If they accidentally enter a
-number that’s too large and the program gets a `None` value, you could tell the
-user how many items are in the current vector and give them another chance to
-enter a valid value. That would be more user-friendly than crashing the program
-due to a typo!
+Jab `get` method ko aisi index pass ki jati hai jo vector ke bahar ho, to ye panic kiye baghair `None` return karta hai. Aap is method ko us waqt use karenge jab normal circumstances mein kabhi kabhar vector ki range se bahar kisi element ko access karna mumkin ho. Phir aapke code mein `Some(&element)` ya `None` mein se kisi ek ko handle karne ke liye logic hoga, jaisa ke Chapter 6 mein discuss kiya gaya hai. Misal ke taur par, index kisi person ke number enter karne se aa sakti hai. Agar woh ghalti se aisa number enter kare jo bohat bara ho aur program ko `None` value mile, to aap user ko bata sakte hain ke current vector mein kitne items hain aur unhein valid value enter karne ka ek aur mauqa de sakte hain. Ye typo ki wajah se program crash karne ke muqable mein user ke liye zyada friendly hoga!
 
-When the program has a valid reference, the borrow checker enforces the
-ownership and borrowing rules (covered in Chapter 4) to ensure that this
-reference and any other references to the contents of the vector remain valid.
-Recall the rule that states you can’t have mutable and immutable references in
-the same scope. That rule applies in Listing 8-6, where we hold an immutable
-reference to the first element in a vector and try to add an element to the
-end. This program won’t work if we also try to refer to that element later in
-the function.
+Jab program ke paas ek valid reference hota hai, to borrow checker ownership aur borrowing rules (jinhein Chapter 4 mein cover kiya gaya hai) enforce karta hai taa-ke ye ensure kiya ja sake ke ye reference aur vector ke contents ke doosre tamam references valid rahen. Woh rule yaad karein jo kehta hai ke aap ek hi scope mein mutable aur immutable references nahi rakh sakte. Ye rule Listing 8-6 par apply hota hai, jahan hum vector ke first element ka immutable reference hold karte hain aur end mein ek element add karne ki koshish karte hain. Agar hum function mein baad mein us element ko dobara reference karne ki koshish karein, to ye program kaam nahi karega.
 
-<Listing number="8-6" caption="Attempting to add an element to a vector while holding a reference to an item">
+<Listing number="8-6" caption="Kisi item ka reference hold karte hue vector mein ek element add karne ki koshish karna">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-06/src/main.rs:here}}
@@ -136,33 +109,22 @@ the function.
 
 </Listing>
 
-Compiling this code will result in this error:
+Is code ko compile karne par ye error milega:
 
 ```console
 {{#include ../listings/ch08-common-collections/listing-08-06/output.txt}}
 ```
 
-The code in Listing 8-6 might look like it should work: Why should a reference
-to the first element care about changes at the end of the vector? This error is
-due to the way vectors work: Because vectors put the values next to each other
-in memory, adding a new element onto the end of the vector might require
-allocating new memory and copying the old elements to the new space, if there
-isn’t enough room to put all the elements next to each other where the vector
-is currently stored. In that case, the reference to the first element would be
-pointing to deallocated memory. The borrowing rules prevent programs from
-ending up in that situation.
+Listing 8-6 ka code dekh kar lag sakta hai ke isay kaam karna chahiye: Aakhir first element ke reference ko vector ke end mein hone wali changes se kya lena dena hai? Ye error vectors ke kaam karne ke tareeqe ki wajah se hota hai: Kyun ke vectors values ko memory mein ek doosre ke paas rakhte hain, vector ke end par ek naya element add karne ke liye nayi memory allocate karna aur purane elements ko nayi jagah par copy karna zaroori ho sakta hai, agar vector ki current stored location par tamam elements ko ek doosre ke paas rakhne ke liye kafi space na ho. Aisi surat mein, first element ka reference deallocated memory ko point kar raha hota. Borrowing rules programs ko is situation mein pahunchne se rokte hain.
 
-> Note: For more on the implementation details of the `Vec<T>` type, see [“The
-> Rustonomicon”][nomicon].
+> Note: `Vec<T>` type ki implementation details ke baare mein mazeed jaanne ke liye [“The
+> Rustonomicon”][nomicon] dekhein.
 
-### Iterating Over the Values in a Vector
+### Vector Mein Mojood Values Par Iterate Karna
 
-To access each element in a vector in turn, we would iterate through all of the
-elements rather than use indices to access one at a time. Listing 8-7 shows how
-to use a `for` loop to get immutable references to each element in a vector of
-`i32` values and print them.
+Vector ke har element ko bari bari access karne ke liye, hum indices ko ek ek karke access karne ke bajaye tamam elements par iterate karenge. Listing 8-7 dikhati hai ke `i32` values wale vector ke har element ka immutable reference hasil karne aur unhein print karne ke liye `for` loop ko kaise use kiya jata hai.
 
-<Listing number="8-7" caption="Printing each element in a vector by iterating over the elements using a `for` loop">
+<Listing number="8-7" caption="`for` loop ke zariye elements par iterate karke vector ke har element ko print karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-07/src/main.rs:here}}
@@ -170,11 +132,9 @@ to use a `for` loop to get immutable references to each element in a vector of
 
 </Listing>
 
-We can also iterate over mutable references to each element in a mutable vector
-in order to make changes to all the elements. The `for` loop in Listing 8-8
-will add `50` to each element.
+Hum mutable vector ke har element ke mutable references par bhi iterate kar sakte hain taa-ke tamam elements mein changes kiye ja saken. Listing 8-8 mein `for` loop har element mein `50` add karega.
 
-<Listing number="8-8" caption="Iterating over mutable references to elements in a vector">
+<Listing number="8-8" caption="Vector ke elements ke mutable references par iterate karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-08/src/main.rs:here}}
@@ -182,34 +142,18 @@ will add `50` to each element.
 
 </Listing>
 
-To change the value that the mutable reference refers to, we have to use the
-`*` dereference operator to get to the value in `i` before we can use the `+=`
-operator. We’ll talk more about the dereference operator in the [“Following the
-Reference to the Value”][deref]<!-- ignore --> section of Chapter 15.
+Mutable reference jis value ko refer karta hai usay change karne ke liye, humein `+=` operator use karne se pehle `i` mein mojood value tak pohanchne ke liye `*` dereference operator use karna hota hai. Hum Chapter 15 ke [“Following the
+Reference to the Value”][deref]<!-- ignore --> section mein dereference operator ke baare mein mazeed baat karenge.
 
-Iterating over a vector, whether immutably or mutably, is safe because of the
-borrow checker’s rules. If we attempted to insert or remove items in the `for`
-loop bodies in Listing 8-7 and Listing 8-8, we would get a compiler error
-similar to the one we got with the code in Listing 8-6. The reference to the
-vector that the `for` loop holds prevents simultaneous modification of the
-whole vector.
+Vector par iterate karna, chahe immutably ho ya mutably, borrow checker ke rules ki wajah se safe hai. Agar hum Listing 8-7 aur Listing 8-8 ke `for` loop bodies mein items insert ya remove karne ki koshish karein, to humein us compiler error jaisa error milega jo humein Listing 8-6 ke code ke saath mila tha. `for` loop ke paas vector ka jo reference hota hai, woh poore vector mein ek hi waqt mein modification hone se rokta hai.
 
-### Using an Enum to Store Multiple Types
+### Multiple Types Store Karne Ke Liye Enum Use Karna
 
-Vectors can only store values that are of the same type. This can be
-inconvenient; there are definitely use cases for needing to store a list of
-items of different types. Fortunately, the variants of an enum are defined
-under the same enum type, so when we need one type to represent elements of
-different types, we can define and use an enum!
+Vectors sirf un values ko store kar sakte hain jo same type ki hon. Ye inconvenient ho sakta hai; aise use cases bilkul maujood hain jahan different types ke items ki list store karna zaroori hota hai. Khush qismati se, enum ke variants ek hi enum type ke under define kiye jate hain, is liye jab humein different types ke elements ko represent karne ke liye ek type ki zaroorat ho, to hum ek enum define aur use kar sakte hain!
 
-For example, say we want to get values from a row in a spreadsheet in which
-some of the columns in the row contain integers, some floating-point numbers,
-and some strings. We can define an enum whose variants will hold the different
-value types, and all the enum variants will be considered the same type: that
-of the enum. Then, we can create a vector to hold that enum and so, ultimately,
-hold different types. We’ve demonstrated this in Listing 8-9.
+Misal ke taur par, maan lein ke hum spreadsheet ki kisi row se values hasil karna chahte hain jismein row ke kuch columns mein integers, kuch mein floating-point numbers, aur kuch mein strings hon. Hum ek enum define kar sakte hain jiske variants different value types ko hold karenge, aur tamam enum variants ko same type samjha jayega: yani enum ka type. Phir hum ek vector create kar sakte hain jo us enum ko hold kare aur is tarah, aakhirkar, different types ko hold kar sake. Hum ne Listing 8-9 mein iski example di hai.
 
-<Listing number="8-9" caption="Defining an enum to store values of different types in one vector">
+<Listing number="8-9" caption="Ek vector mein different types ki values store karne ke liye enum define karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-09/src/main.rs:here}}
@@ -217,29 +161,17 @@ hold different types. We’ve demonstrated this in Listing 8-9.
 
 </Listing>
 
-Rust needs to know what types will be in the vector at compile time so that it
-knows exactly how much memory on the heap will be needed to store each element.
-We must also be explicit about what types are allowed in this vector. If Rust
-allowed a vector to hold any type, there would be a chance that one or more of
-the types would cause errors with the operations performed on the elements of
-the vector. Using an enum plus a `match` expression means that Rust will ensure
-at compile time that every possible case is handled, as discussed in Chapter 6.
+Rust ko compile time par ye pata hona zaroori hai ke vector mein kaun se types honge taa-ke woh exactly ye jaan sake ke har element ko store karne ke liye heap par kitni memory required hogi. Humein ye bhi explicitly batana hota hai ke is vector mein kaun se types allowed hain. Agar Rust kisi vector ko kisi bhi type ko hold karne ki ijazat deta, to mumkin tha ke ek ya zyada types vector ke elements par perform ki jane wali operations ke saath errors cause kar dete. Enum ke saath `match` expression use karne ka matlab hai ke Rust compile time par ensure karega ke har possible case handle kiya gaya hai, jaisa ke Chapter 6 mein discuss kiya gaya hai.
 
-If you don’t know the exhaustive set of types a program will get at runtime to
-store in a vector, the enum technique won’t work. Instead, you can use a trait
-object, which we’ll cover in Chapter 18.
+Agar aapko un types ka exhaustive set maloom nahi hai jo program runtime par vector mein store karne ke liye receive karega, to enum wali technique kaam nahi karegi. Is ke bajaye, aap trait object use kar sakte hain, jise hum Chapter 18 mein cover karenge.
 
-Now that we’ve discussed some of the most common ways to use vectors, be sure
-to review [the API documentation][vec-api]<!-- ignore --> for all of the many
-useful methods defined on `Vec<T>` by the standard library. For example, in
-addition to `push`, a `pop` method removes and returns the last element.
+Ab jab ke hum ne vectors ko use karne ke kuch sab se common tareeqon par baat kar li hai, to `Vec<T>` par standard library ki taraf se define kiye gaye tamam useful methods ke liye [API documentation][vec-api]<!-- ignore --> zaroor review karein. Misal ke taur par, `push` ke ilawa, ek `pop` method last element ko remove karke return karta hai.
 
-### Dropping a Vector Drops Its Elements
+### Vector Drop Hone Par Uske Elements Bhi Drop Ho Jate Hain
 
-Like any other `struct`, a vector is freed when it goes out of scope, as
-annotated in Listing 8-10.
+Kisi bhi doosre `struct` ki tarah, vector bhi us waqt free ho jata hai jab woh scope se bahar nikalta hai, jaisa ke Listing 8-10 mein annotate kiya gaya hai.
 
-<Listing number="8-10" caption="Showing where the vector and its elements are dropped">
+<Listing number="8-10" caption="Ye dikhana ke vector aur uske elements kahan drop hote hain">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-10/src/main.rs:here}}
@@ -247,12 +179,9 @@ annotated in Listing 8-10.
 
 </Listing>
 
-When the vector gets dropped, all of its contents are also dropped, meaning the
-integers it holds will be cleaned up. The borrow checker ensures that any
-references to contents of a vector are only used while the vector itself is
-valid.
+Jab vector drop hota hai, to uske tamam contents bhi drop ho jate hain, yani us mein store kiye gaye integers bhi clean up ho jate hain. Borrow checker ensure karta hai ke vector ke contents ke kisi bhi reference ko sirf us waqt use kiya jaye jab vector khud valid ho.
 
-Let’s move on to the next collection type: `String`!
+Aaiye ab next collection type ki taraf chalte hain: `String`!
 
 [data-types]: ch03-02-data-types.html#data-types
 [nomicon]: ../nomicon/vec/vec.html

@@ -1,30 +1,16 @@
-## Storing Keys with Associated Values in Hash Maps
+## Hash Maps Mein Keys Ko Unki Associated Values Ke Saath Store Karna
 
-The last of our common collections is the hash map. The type `HashMap<K, V>`
-stores a mapping of keys of type `K` to values of type `V` using a _hashing
-function_, which determines how it places these keys and values into memory.
-Many programming languages support this kind of data structure, but they often
-use a different name, such as _hash_, _map_, _object_, _hash table_,
-_dictionary_, or _associative array_, just to name a few.
+Hamari common collections mein aakhri collection hash map hai. `HashMap<K, V>` type `_hashing function_` ko use karte hue `K` type ki keys ko `V` type ki values ke saath map karti hai, jo ye determine karta hai ke ye keys aur values memory mein kis tarah place hongi. Bohat si programming languages is qisam ki data structure ko support karti hain, lekin aksar in ke liye different names use karti hain, jaise *hash*, *map*, *object*, *hash table*, *dictionary*, ya *associative array*, aur bhi kai names hain.
 
-Hash maps are useful when you want to look up data not by using an index, as
-you can with vectors, but by using a key that can be of any type. For example,
-in a game, you could keep track of each team’s score in a hash map in which
-each key is a team’s name and the values are each team’s score. Given a team
-name, you can retrieve its score.
+Hash maps us waqt useful hoti hain jab aap data ko vector ki tarah index use karke nahi, balki ek aisi key use karke lookup karna chahte hain jo kisi bhi type ki ho sakti hai. Misal ke taur par, ek game mein aap har team ka score ek hash map mein track kar sakte hain, jahan har key team ka naam ho aur values har team ka score hon. Team ka naam de kar aap us ka score retrieve kar sakte hain.
 
-We’ll go over the basic API of hash maps in this section, but many more goodies
-are hiding in the functions defined on `HashMap<K, V>` by the standard library.
-As always, check the standard library documentation for more information.
+Is section mein hum hash maps ki basic API dekhenge, lekin `HashMap<K, V>` par standard library ki taraf se define kiye gaye functions mein aur bhi bohat si useful cheezen maujood hain. Hamesha ki tarah, mazeed maloomat ke liye standard library ki documentation zaroor dekhein.
 
-### Creating a New Hash Map
+### Naya Hash Map Create Karna
 
-One way to create an empty hash map is to use `new` and to add elements with
-`insert`. In Listing 8-20, we’re keeping track of the scores of two teams whose
-names are _Blue_ and _Yellow_. The Blue team starts with 10 points, and the
-Yellow team starts with 50.
+Ek empty hash map create karne ka ek tareeqa `new` use karna aur `insert` ke zariye elements add karna hai. Listing 8-20 mein hum do teams ke scores track kar rahe hain, jin ke names *Blue* aur *Yellow* hain. Blue team 10 points ke saath start karti hai, aur Yellow team 50 points ke saath.
 
-<Listing number="8-20" caption="Creating a new hash map and inserting some keys and values">
+<Listing number="8-20" caption="Ek naya hash map create karna aur kuch keys aur values insert karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-20/src/main.rs:here}}
@@ -32,23 +18,15 @@ Yellow team starts with 50.
 
 </Listing>
 
-Note that we need to first `use` the `HashMap` from the collections portion of
-the standard library. Of our three common collections, this one is the least
-often used, so it’s not included in the features brought into scope
-automatically in the prelude. Hash maps also have less support from the
-standard library; there’s no built-in macro to construct them, for example.
+Note karein ke humein sab se pehle standard library ke collections wale portion se `HashMap` ko `use` karna padta hai. Hamari teen common collections mein se, ye sab se kam use hone wali collection hai, is liye ye un features mein shamil nahi hai jo prelude mein automatically scope mein laaye jate hain. Hash maps ko standard library ki taraf se bhi kam support hasil hai; misal ke taur par, inhein construct karne ke liye koi built-in macro nahi hai.
 
-Just like vectors, hash maps store their data on the heap. This `HashMap` has
-keys of type `String` and values of type `i32`. Like vectors, hash maps are
-homogeneous: All of the keys must have the same type, and all of the values
-must have the same type.
+Vectors ki tarah, hash maps bhi apna data heap par store karti hain. Is `HashMap` mein keys `String` type ki hain aur values `i32` type ki. Vectors ki tarah, hash maps homogeneous hoti hain: tamam keys ka type same hona zaroori hai, aur tamam values ka type bhi same hona zaroori hai.
 
-### Accessing Values in a Hash Map
+### Hash Map Mein Values Access Karna
 
-We can get a value out of the hash map by providing its key to the `get`
-method, as shown in Listing 8-21.
+Hum hash map se kisi value ko hasil karne ke liye uski key `get` method ko provide kar sakte hain, jaisa ke Listing 8-21 mein dikhaya gaya hai.
 
-<Listing number="8-21" caption="Accessing the score for the Blue team stored in the hash map">
+<Listing number="8-21" caption="Hash map mein store ki gayi Blue team ka score access karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-21/src/main.rs:here}}
@@ -56,21 +34,15 @@ method, as shown in Listing 8-21.
 
 </Listing>
 
-Here, `score` will have the value that’s associated with the Blue team, and the
-result will be `10`. The `get` method returns an `Option<&V>`; if there’s no
-value for that key in the hash map, `get` will return `None`. This program
-handles the `Option` by calling `copied` to get an `Option<i32>` rather than an
-`Option<&i32>`, then `unwrap_or` to set `score` to zero if `scores` doesn’t
-have an entry for the key.
+Yahan, `score` mein woh value hogi jo Blue team ke saath associated hai, aur result `10` hoga. `get` method ek `Option<&V>` return karti hai; agar hash map mein us key ke liye koi value na ho, to `get` `None` return karegi. Ye program `copied` ko call karke `Option<&i32>` ke bajaye `Option<i32>` hasil karta hai, phir `unwrap_or` use karke agar `scores` mein us key ki koi entry na ho to `score` ko zero set karta hai, aur is tarah `Option` ko handle karta hai.
 
-We can iterate over each key-value pair in a hash map in a similar manner as we
-do with vectors, using a `for` loop:
+Hum hash map mein maujood har key-value pair par bhi vectors ki tarah `for` loop use karke iterate kar sakte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/no-listing-03-iterate-over-hashmap/src/main.rs:here}}
 ```
 
-This code will print each pair in an arbitrary order:
+Ye code har pair ko kisi bhi arbitrary order mein print karega:
 
 ```text
 Yellow: 50
@@ -81,13 +53,11 @@ Blue: 10
 
 <a id="hash-maps-and-ownership"></a>
 
-### Managing Ownership in Hash Maps
+### Hash Maps Mein Ownership Manage Karna
 
-For types that implement the `Copy` trait, like `i32`, the values are copied
-into the hash map. For owned values like `String`, the values will be moved and
-the hash map will be the owner of those values, as demonstrated in Listing 8-22.
+Jo types `Copy` trait implement karti hain, jaise `i32`, unki values hash map mein copy ho jati hain. `String` jaisi owned values ke liye, values move ho jati hain aur hash map un values ki owner ban jata hai, jaisa ke Listing 8-22 mein dikhaya gaya hai.
 
-<Listing number="8-22" caption="Showing that keys and values are owned by the hash map once they’re inserted">
+<Listing number="8-22" caption="Ye dikhana ke insert hone ke baad keys aur values hash map ki ownership mein hoti hain">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-22/src/main.rs:here}}
@@ -95,67 +65,42 @@ the hash map will be the owner of those values, as demonstrated in Listing 8-22.
 
 </Listing>
 
-We aren’t able to use the variables `field_name` and `field_value` after
-they’ve been moved into the hash map with the call to `insert`.
+Hum variables `field_name` aur `field_value` ko us waqt use nahi kar sakte jab woh `insert` call ke zariye hash map mein move ho chuke hon.
 
-If we insert references to values into the hash map, the values won’t be moved
-into the hash map. The values that the references point to must be valid for at
-least as long as the hash map is valid. We’ll talk more about these issues in
-[“Validating References with
-Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> in Chapter 10.
+Agar hum hash map mein values ke references insert karein, to values hash map mein move nahi hongi. Jin values ki taraf references point karte hain, unka kam az kam utni dair valid rehna zaroori hai jitni dair hash map valid hai. Hum Chapter 10 mein [“Validating References with
+Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> mein in issues ke baare mein mazeed baat karenge.
 
-### Updating a Hash Map
+### Hash Map Ko Update Karna
 
-Although the number of key and value pairs is growable, each unique key can
-only have one value associated with it at a time (but not vice versa: For
-example, both the Blue team and the Yellow team could have the value `10`
-stored in the `scores` hash map).
+Key aur value pairs ki tadaad barh sakti hai, lekin har unique key ke saath ek waqt mein sirf ek value associated ho sakti hai (lekin iska ulta zaroori nahi: misal ke taur par, Blue team aur Yellow team dono ki value `10` ho sakti hai jo `scores` hash map mein stored ho).
 
-When you want to change the data in a hash map, you have to decide how to
-handle the case when a key already has a value assigned. You could replace the
-old value with the new value, completely disregarding the old value. You could
-keep the old value and ignore the new value, only adding the new value if the
-key _doesn’t_ already have a value. Or you could combine the old value and the
-new value. Let’s look at how to do each of these!
+Jab aap hash map mein data change karna chahte hain, to aapko ye decide karna hota hai ke us situation ko kis tarah handle karna hai jab kisi key ke saath pehle se ek value assigned ho. Aap purani value ko nayi value se replace kar sakte hain aur purani value ko bilkul ignore kar sakte hain. Aap purani value ko rakh kar nayi value ko ignore kar sakte hain, aur sirf us waqt nayi value add kar sakte hain jab key ke saath pehle se koi value *assigned na ho*. Ya aap purani aur nayi value ko combine kar sakte hain. Aaiye dekhein ke in mein se har ek kaise kiya jata hai!
 
-#### Overwriting a Value
+#### Value Ko Overwrite Karna
 
-If we insert a key and a value into a hash map and then insert that same key
-with a different value, the value associated with that key will be replaced.
-Even though the code in Listing 8-23 calls `insert` twice, the hash map will
-only contain one key-value pair because we’re inserting the value for the Blue
-team’s key both times.
+Agar hum hash map mein ek key aur value insert karein aur phir usi key ko kisi different value ke saath dobara insert karein, to us key ke saath associated value replace ho jayegi. Halanke Listing 8-23 mein code `insert` ko do baar call karta hai, hash map mein sirf ek key-value pair hoga, kyun ke dono baar hum Blue team ki key ke liye value insert kar rahe hain.
 
-<Listing number="8-23" caption="Replacing a value stored with a particular key">
+<Listing number="8-23" caption="Kisi specific key ke saath stored value ko replace karna">
 
-```rust
+```rust id="9a4k2m"
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-23/src/main.rs:here}}
 ```
 
 </Listing>
 
-This code will print `{"Blue": 25}`. The original value of `10` has been
-overwritten.
+Ye code `{"Blue": 25}` print karega. Original value `10` overwrite ho chuki hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="only-inserting-a-value-if-the-key-has-no-value"></a>
 
-#### Adding a Key and Value Only If a Key Isn’t Present
+#### Key Mojood Na Hone Ki Surat Mein Hi Key Aur Value Add Karna
 
-It’s common to check whether a particular key already exists in the hash map
-with a value and then to take the following actions: If the key does exist in
-the hash map, the existing value should remain the way it is; if the key
-doesn’t exist, insert it and a value for it.
+Aksar kisi specific key ke liye hash map mein pehle se value mojood hai ya nahi, ye check karna common hota hai aur phir us ke mutabiq ye actions liye jate hain: Agar key hash map mein mojood ho, to existing value ko jaisa hai waisa hi rehna chahiye; agar key mojood na ho, to us key ko aur uski value ko insert karna chahiye.
 
-Hash maps have a special API for this called `entry` that takes the key you
-want to check as a parameter. The return value of the `entry` method is an enum
-called `Entry` that represents a value that might or might not exist. Let’s say
-we want to check whether the key for the Yellow team has a value associated
-with it. If it doesn’t, we want to insert the value `50`, and the same for the
-Blue team. Using the `entry` API, the code looks like Listing 8-24.
+Hash maps mein is ke liye ek special API hoti hai jise `entry` kaha jata hai, jo us key ko parameter ke taur par leti hai jise aap check karna chahte hain. `entry` method ki return value ek enum hoti hai jise `Entry` kaha jata hai, jo represent karti hai ke koi value mojood ho bhi sakti hai aur nahi bhi. Maan lein ke hum check karna chahte hain ke Yellow team ki key ke saath koi value associated hai ya nahi. Agar nahi hai, to hum value `50` insert karna chahte hain, aur Blue team ke liye bhi aisa hi karna chahte hain. `entry` API ko use karte hue, code Listing 8-24 ki tarah dikhta hai.
 
-<Listing number="8-24" caption="Using the `entry` method to only insert if the key does not already have a value">
+<Listing number="8-24" caption="Sirf us waqt insert karne ke liye `entry` method use karna jab key ke saath pehle se koi value mojood na ho">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-24/src/main.rs:here}}
@@ -163,28 +108,16 @@ Blue team. Using the `entry` API, the code looks like Listing 8-24.
 
 </Listing>
 
-The `or_insert` method on `Entry` is defined to return a mutable reference to
-the value for the corresponding `Entry` key if that key exists, and if not, it
-inserts the parameter as the new value for this key and returns a mutable
-reference to the new value. This technique is much cleaner than writing the
-logic ourselves and, in addition, plays more nicely with the borrow checker.
+`Entry` par `or_insert` method is tarah define ki gayi hai ke agar corresponding `Entry` key mojood ho, to ye us key ki value ka mutable reference return karti hai, aur agar key mojood na ho, to ye parameter ko is key ki nayi value ke taur par insert karti hai aur nayi value ka mutable reference return karti hai. Ye technique khud logic likhne ke muqable mein kaafi clean hai aur, is ke ilawa, borrow checker ke saath bhi zyada achhi tarah kaam karti hai.
 
-Running the code in Listing 8-24 will print `{"Yellow": 50, "Blue": 10}`. The
-first call to `entry` will insert the key for the Yellow team with the value
-`50` because the Yellow team doesn’t have a value already. The second call to
-`entry` will not change the hash map, because the Blue team already has the
-value `10`.
+Listing 8-24 ka code run karne par `{"Yellow": 50, "Blue": 10}` print hoga. `entry` ki pehli call Yellow team ki key ko value `50` ke saath insert karegi kyun ke Yellow team ke paas pehle se koi value nahi hai. `entry` ki doosri call hash map ko change nahi karegi, kyun ke Blue team ke paas pehle se value `10` hai.
 
-#### Updating a Value Based on the Old Value
 
-Another common use case for hash maps is to look up a key’s value and then
-update it based on the old value. For instance, Listing 8-25 shows code that
-counts how many times each word appears in some text. We use a hash map with
-the words as keys and increment the value to keep track of how many times we’ve
-seen that word. If it’s the first time we’ve seen a word, we’ll first insert
-the value `0`.
+#### Purani Value Ki Bina Par Value Ko Update Karna
 
-<Listing number="8-25" caption="Counting occurrences of words using a hash map that stores words and counts">
+Hash maps ka ek aur common use case ye hai ke kisi key ki value ko lookup kiya jaye aur phir purani value ki bina par usay update kiya jaye. Misal ke taur par, Listing 8-25 mein aisa code dikhaya gaya hai jo kisi text mein har word ke appear hone ki tadaad count karta hai. Hum words ko keys ke taur par use karne wala hash map use karte hain aur value ko increment karke track karte hain ke hum ne us word ko kitni baar dekha hai. Agar hum ne kisi word ko pehli baar dekha ho, to hum pehle value `0` insert karenge.
+
+<Listing number="8-25" caption="Words aur counts store karne wale hash map ko use karke words ke occurrences count karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-25/src/main.rs:here}}
@@ -192,61 +125,29 @@ the value `0`.
 
 </Listing>
 
-This code will print `{"world": 2, "hello": 1, "wonderful": 1}`. You might see
-the same key-value pairs printed in a different order: Recall from [“Accessing
-Values in a Hash Map”][access]<!-- ignore --> that iterating over a hash map
-happens in an arbitrary order.
+Ye code `{"world": 2, "hello": 1, "wonderful": 1}` print karega. Aapko yehi key-value pairs different order mein print hote hue nazar aa sakte hain: [“Hash Map Mein Values Access Karna”][access]<!-- ignore --> se yaad karein ke hash map par iterate karna arbitrary order mein hota hai.
 
-The `split_whitespace` method returns an iterator over subslices, separated by
-whitespace, of the value in `text`. The `or_insert` method returns a mutable
-reference (`&mut V`) to the value for the specified key. Here, we store that
-mutable reference in the `count` variable, so in order to assign to that value,
-we must first dereference `count` using the asterisk (`*`). The mutable
-reference goes out of scope at the end of the `for` loop, so all of these
-changes are safe and allowed by the borrowing rules.
+`split_whitespace` method `text` mein mojood value ke subslices par ek iterator return karti hai, jo whitespace se separate hote hain. `or_insert` method specified key ki value ka mutable reference (`&mut V`) return karti hai. Yahan hum is mutable reference ko `count` variable mein store karte hain, is liye us value ko assign karne ke liye humein pehle asterisk (`*`) use karke `count` ko dereference karna padta hai. Mutable reference `for` loop ke end par scope se bahar nikal jata hai, is liye borrowing rules ki wajah se ye tamam changes safe aur allowed hain.
 
 ### Hashing Functions
 
-By default, `HashMap` uses a hashing function called _SipHash_ that can provide
-resistance to denial-of-service (DoS) attacks involving hash
-tables[^siphash]<!-- ignore -->. This is not the fastest hashing algorithm
-available, but the trade-off for better security that comes with the drop in
-performance is worth it. If you profile your code and find that the default
-hash function is too slow for your purposes, you can switch to another function
-by specifying a different hasher. A _hasher_ is a type that implements the
-`BuildHasher` trait. We’ll talk about traits and how to implement them in
-[Chapter 10][traits]<!-- ignore -->. You don’t necessarily have to implement
-your own hasher from scratch; [crates.io](https://crates.io/)<!-- ignore -->
-has libraries shared by other Rust users that provide hashers implementing many
-common hashing algorithms.
+Default taur par, `HashMap` ek hashing function use karta hai jise *SipHash* kaha jata hai, jo hash tables se related denial-of-service (DoS) attacks ke muqable mein resistance provide kar sakta hai[^siphash]<!-- ignore -->. Ye sab se fast hashing algorithm nahi hai, lekin performance mein is kami ke badle jo behtar security milti hai, woh is trade-off ko worth it banati hai. Agar aap apne code ko profile karein aur pata chale ke default hash function aapke purposes ke liye bohat slow hai, to aap different hasher specify karke kisi aur function par switch kar sakte hain. Ek *hasher* woh type hoti hai jo `BuildHasher` trait implement karti hai. Hum traits aur unhein implement karne ke tareeqe ke baare mein [Chapter 10][traits]<!-- ignore --> mein baat karenge. Zaroori nahi ke aap apna hasher bilkul scratch se implement karein; [crates.io](https://crates.io/)<!-- ignore --> par doosre Rust users ki share ki hui libraries mojood hain jo bohat se common hashing algorithms ko implement karne wale hashers provide karti hain.
 
-[^siphash]: [https://en.wikipedia.org/wiki/SipHash](https://en.wikipedia.org/wiki/SipHash)
+[^siphash]: https://en.wikipedia.org/wiki/SipHash
 
 ## Summary
 
-Vectors, strings, and hash maps will provide a large amount of functionality
-necessary in programs when you need to store, access, and modify data. Here are
-some exercises you should now be equipped to solve:
+Vectors, strings, aur hash maps programs mein us waqt bohat si zaroori functionality provide karti hain jab aapko data store, access, aur modify karna ho. Ab aapko in exercises ko solve karne ke liye tayyar hona chahiye:
 
-1. Given a list of integers, use a vector and return the median (when sorted,
-   the value in the middle position) and mode (the value that occurs most
-   often; a hash map will be helpful here) of the list.
-1. Convert strings to Pig Latin. The first consonant of each word is moved to
-   the end of the word and _ay_ is added, so _first_ becomes _irst-fay_. Words
-   that start with a vowel have _hay_ added to the end instead (_apple_ becomes
-   _apple-hay_). Keep in mind the details about UTF-8 encoding!
-1. Using a hash map and vectors, create a text interface to allow a user to add
-   employee names to a department in a company; for example, “Add Sally to
-   Engineering” or “Add Amir to Sales.” Then, let the user retrieve a list of
-   all people in a department or all people in the company by department, sorted
-   alphabetically.
+1. Integers ki ek list di gayi ho, to vector use karke list ka median (jab sorted ho, to beech wali position ki value) aur mode (jo value sab se zyada baar appear hoti hai; yahan hash map helpful hoga) return karein.
+2. Strings ko Pig Latin mein convert karein. Har word ka pehla consonant word ke end par move kiya jata hai aur *ay* add kiya jata hai, is liye *first* se *irst-fay* ban jata hai. Jo words vowel se start hote hain, unke end par *hay* add karein (*apple* se *apple-hay* ban jata hai). UTF-8 encoding ke details ko zehan mein rakhein!
+3. Hash map aur vectors ko use karke ek text interface create karein jo user ko company ke kisi department mein employees ke names add karne de; misal ke taur par, “Add Sally to Engineering” ya “Add Amir to Sales.” Phir user ko kisi department ke tamam logon ki list ya company mein department ke hisaab se tamam logon ki list retrieve karne dein, aur list ko alphabetically sort karein.
 
-The standard library API documentation describes methods that vectors, strings,
-and hash maps have that will be helpful for these exercises!
+Standard library ki API documentation mein vectors, strings, aur hash maps ke paas mojood woh methods describe kiye gaye hain jo in exercises ke liye helpful honge!
 
-We’re getting into more complex programs in which operations can fail, so it’s
-a perfect time to discuss error handling. We’ll do that next!
+Ab hum zyada complex programs ki taraf barh rahe hain jahan operations fail ho sakti hain, is liye error handling discuss karne ka ye perfect waqt hai. Hum agley chapter mein ye karenge!
 
 [validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [access]: #accessing-values-in-a-hash-map
 [traits]: ch10-02-traits.html
+
