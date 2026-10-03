@@ -1,65 +1,42 @@
-## Defining an Enum
+## Enum Define Karna
 
-Where structs give you a way of grouping together related fields and data, like
-a `Rectangle` with its `width` and `height`, enums give you a way of saying a
-value is one of a possible set of values. For example, we may want to say that
-`Rectangle` is one of a set of possible shapes that also includes `Circle` and
-`Triangle`. To do this, Rust allows us to encode these possibilities as an enum.
+Jahan structs aapko related fields aur data ko ek saath group karne ka tareeqa deti hain, jaise ek `Rectangle` jisme uski `width` aur `height` hoti hain, wahin enums aapko ye kehne ka tareeqa deti hain ke koi value mumkin values ke ek set mein se kisi ek value hai. Misal ke taur par, hum kehna chah sakte hain ke `Rectangle` mumkin shapes ke ek set mein se ek hai, jisme `Circle` aur `Triangle` bhi shamil hain. Is ke liye, Rust humein in possibilities ko enum ke taur par encode karne deti hai.
 
-Let’s look at a situation we might want to express in code and see why enums
-are useful and more appropriate than structs in this case. Say we need to work
-with IP addresses. Currently, two major standards are used for IP addresses:
-version four and version six. Because these are the only possibilities for an
-IP address that our program will come across, we can _enumerate_ all possible
-variants, which is where enumeration gets its name.
+Aaiye ek aisi situation dekhte hain jise hum code mein express karna chah sakte hain aur samajhte hain ke is case mein enums kyun useful aur structs ke muqable mein zyada munasib hain. Maan lein humein IP addresses ke saath kaam karna hai. Filhaal IP addresses ke liye do major standards use hote hain: version four aur version six. Kyun ke yehi woh possibilities hain jo hamara program kisi IP address ke liye encounter karega, hum tamam mumkin variants ko *enumerate* kar sakte hain, aur isi wajah se iska naam enumeration pada hai.
 
-Any IP address can be either a version four or a version six address, but not
-both at the same time. That property of IP addresses makes the enum data
-structure appropriate because an enum value can only be one of its variants.
-Both version four and version six addresses are still fundamentally IP
-addresses, so they should be treated as the same type when the code is handling
-situations that apply to any kind of IP address.
+Koi bhi IP address ya to version four address ho sakta hai ya version six address, lekin ek hi waqt mein dono nahi ho sakta. IP addresses ki ye property enum data structure ko munasib banati hai, kyun ke ek enum value sirf apne variants mein se ek ho sakti hai. Version four aur version six addresses bunyadi taur par phir bhi IP addresses hi hain, is liye jab code aisi situations handle kar raha ho jo kisi bhi qisam ke IP address par apply hoti hain, to unhein ek hi type ke taur par treat kiya jana chahiye.
 
-We can express this concept in code by defining an `IpAddrKind` enumeration and
-listing the possible kinds an IP address can be, `V4` and `V6`. These are the
-variants of the enum:
+Hum is concept ko code mein `IpAddrKind` enumeration define karke aur IP address ke mumkin kinds, `V4` aur `V6`, list karke express kar sakte hain. Ye enum ke variants hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:def}}
 ```
 
-`IpAddrKind` is now a custom data type that we can use elsewhere in our code.
+Ab `IpAddrKind` ek custom data type hai jise hum apne code mein doosri jagahon par use kar sakte hain.
 
 ### Enum Values
 
-We can create instances of each of the two variants of `IpAddrKind` like this:
+Hum `IpAddrKind` ke dono variants ke instances is tarah create kar sakte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:instance}}
 ```
 
-Note that the variants of the enum are namespaced under its identifier, and we
-use a double colon to separate the two. This is useful because now both values
-`IpAddrKind::V4` and `IpAddrKind::V6` are of the same type: `IpAddrKind`. We
-can then, for instance, define a function that takes any `IpAddrKind`:
+Note karein ke enum ke variants uske identifier ke andar namespaced hote hain, aur hum dono ko separate karne ke liye double colon use karte hain. Ye useful hai kyun ke ab dono values `IpAddrKind::V4` aur `IpAddrKind::V6` ek hi type ki hain: `IpAddrKind`. Ab hum, misal ke taur par, ek aisa function define kar sakte hain jo kisi bhi `IpAddrKind` ko leta ho:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:fn}}
 ```
 
-And we can call this function with either variant:
+Aur hum is function ko kisi bhi variant ke saath call kar sakte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:fn_call}}
 ```
 
-Using enums has even more advantages. Thinking more about our IP address type,
-at the moment we don’t have a way to store the actual IP address _data_; we
-only know what _kind_ it is. Given that you just learned about structs in
-Chapter 5, you might be tempted to tackle this problem with structs as shown in
-Listing 6-1.
+Enums ko use karne ke aur bhi zyada faide hain. Apni IP address type ke baare mein mazeed sochte hue, filhaal hamare paas actual IP address *data* store karne ka koi tareeqa nahi hai; humein sirf ye maloom hai ke ye kis *kind* ka hai. Chapter 5 mein structs ke baare mein abhi seekhne ke baad, aap shayad is problem ko structs ke zariye solve karne ki koshish karein, jaisa ke Listing 6-1 mein dikhaya gaya hai.
 
-<Listing number="6-1" caption="Storing the data and `IpAddrKind` variant of an IP address using a `struct`">
+<Listing number="6-1" caption="Ek IP address ke data aur `IpAddrKind` variant ko `struct` ke zariye store karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-01/src/main.rs:here}}
@@ -67,51 +44,23 @@ Listing 6-1.
 
 </Listing>
 
-Here, we’ve defined a struct `IpAddr` that has two fields: a `kind` field that
-is of type `IpAddrKind` (the enum we defined previously) and an `address` field
-of type `String`. We have two instances of this struct. The first is `home`,
-and it has the value `IpAddrKind::V4` as its `kind` with associated address
-data of `127.0.0.1`. The second instance is `loopback`. It has the other
-variant of `IpAddrKind` as its `kind` value, `V6`, and has address `::1`
-associated with it. We’ve used a struct to bundle the `kind` and `address`
-values together, so now the variant is associated with the value.
+Yahan hum ne `IpAddr` naam ki ek struct define ki hai jisme do fields hain: ek `kind` field jo `IpAddrKind` type ki hai (yani woh enum jo hum ne pehle define ki thi), aur ek `address` field jo `String` type ki hai. Hamare paas is struct ke do instances hain. Pehla `home` hai, aur iske `kind` ki value `IpAddrKind::V4` hai, jiske saath address data `127.0.0.1` associated hai. Doosra instance `loopback` hai. Iske `kind` ki value `IpAddrKind` ka doosra variant, `V6`, hai, aur iske saath `::1` address associated hai. Hum ne `kind` aur `address` values ko ek saath bundle karne ke liye struct use ki hai, is liye ab variant value ke saath associated hai.
 
-However, representing the same concept using just an enum is more concise:
-Rather than an enum inside a struct, we can put data directly into each enum
-variant. This new definition of the `IpAddr` enum says that both `V4` and `V6`
-variants will have associated `String` values:
+Lekin isi concept ko sirf ek enum use karke represent karna zyada concise hai: Struct ke andar enum rakhne ke bajaye, hum data ko directly har enum variant mein rakh sakte hain. `IpAddr` enum ki ye nayi definition kehti hai ke `V4` aur `V6` dono variants ke saath `String` values associated hongi:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-02-enum-with-data/src/main.rs:here}}
 ```
 
-We attach data to each variant of the enum directly, so there is no need for an
-extra struct. Here, it’s also easier to see another detail of how enums work:
-The name of each enum variant that we define also becomes a function that
-constructs an instance of the enum. That is, `IpAddr::V4()` is a function call
-that takes a `String` argument and returns an instance of the `IpAddr` type. We
-automatically get this constructor function defined as a result of defining the
-enum.
+Hum data ko directly enum ke har variant ke saath attach kar dete hain, is liye kisi extra struct ki zaroorat nahi rehti. Yahan enums ke kaam karne ke tareeqe ki ek aur detail dekhna bhi aasaan hai: Har enum variant ka woh name jo hum define karte hain, ek aisa function bhi ban jata hai jo enum ka ek instance construct karta hai. Yani, `IpAddr::V4()` ek function call hai jo ek `String` argument leti hai aur `IpAddr` type ka ek instance return karti hai. Enum define karne ke result mein humein ye constructor function automatically mil jata hai.
 
-There’s another advantage to using an enum rather than a struct: Each variant
-can have different types and amounts of associated data. Version four IP
-addresses will always have four numeric components that will have values
-between 0 and 255. If we wanted to store `V4` addresses as four `u8` values but
-still express `V6` addresses as one `String` value, we wouldn’t be able to with
-a struct. Enums handle this case with ease:
+Struct ke bajaye enum use karne ka ek aur faida hai: Har variant ke saath different types aur different amount ka associated data ho sakta hai. Version four IP addresses mein hamesha chaar numeric components honge jin ki values 0 aur 255 ke darmiyan hongi. Agar hum `V4` addresses ko chaar `u8` values ke taur par store karna chahte hon, lekin `V6` addresses ko ek `String` value ke taur par express karna chahte hon, to hum struct ke saath aisa nahi kar sakte. Enums is situation ko aasani se handle karti hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-03-variants-with-different-data/src/main.rs:here}}
 ```
 
-We’ve shown several different ways to define data structures to store version
-four and version six IP addresses. However, as it turns out, wanting to store
-IP addresses and encode which kind they are is so common that [the standard
-library has a definition we can use!][IpAddr]<!-- ignore --> Let’s look at how
-the standard library defines `IpAddr`. It has the exact enum and variants that
-we’ve defined and used, but it embeds the address data inside the variants in
-the form of two different structs, which are defined differently for each
-variant:
+Hum ne version four aur version six IP addresses ko store karne ke liye data structures define karne ke kai different tareeqe dekhe hain. Lekin, jaisa ke pata chalta hai, IP addresses ko store karna aur ye encode karna ke woh kis kind ke hain itna common hai ke [standard library mein ek definition mojood hai jise hum use kar sakte hain!][IpAddr]<!-- ignore --> Aaiye dekhte hain ke standard library `IpAddr` ko kaise define karti hai. Is mein bilkul wohi enum aur variants hain jo hum ne define aur use kiye hain, lekin ye address data ko variants ke andar do different structs ki form mein embed karti hai, jo har variant ke liye differently define kiye gaye hain:
 
 ```rust
 struct Ipv4Addr {
@@ -128,20 +77,13 @@ enum IpAddr {
 }
 ```
 
-This code illustrates that you can put any kind of data inside an enum variant:
-strings, numeric types, or structs, for example. You can even include another
-enum! Also, standard library types are often not much more complicated than
-what you might come up with.
+Ye code illustrate karta hai ke aap enum variant ke andar kisi bhi qisam ka data rakh sakte hain: misal ke taur par strings, numeric types, ya structs. Aap ek aur enum bhi include kar sakte hain! Is ke ilawa, standard library ki types aksar us se zyada complicated nahi hoti jo aap khud create kar sakte hain.
 
-Note that even though the standard library contains a definition for `IpAddr`,
-we can still create and use our own definition without conflict because we
-haven’t brought the standard library’s definition into our scope. We’ll talk
-more about bringing types into scope in Chapter 7.
+Note karein ke halanke standard library mein `IpAddr` ki ek definition mojood hai, hum phir bhi apni definition create aur use kar sakte hain baghair kisi conflict ke, kyun ke hum ne standard library ki definition ko apne scope mein nahi laya. Types ko scope mein lane ke baare mein hum Chapter 7 mein mazeed baat karenge.
 
-Let’s look at another example of an enum in Listing 6-2: This one has a wide
-variety of types embedded in its variants.
+Aaiye Listing 6-2 mein enum ki ek aur example dekhte hain: Is mein iske variants ke andar bohat mukhtalif types embedded hain.
 
-<Listing number="6-2" caption="A `Message` enum whose variants each store different amounts and types of values">
+<Listing number="6-2" caption="Ek `Message` enum jiske variants mein different amounts aur types ki values store hoti hain">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-02/src/main.rs:here}}
@@ -149,42 +91,30 @@ variety of types embedded in its variants.
 
 </Listing>
 
-This enum has four variants with different types:
+Is enum mein different types ke chaar variants hain:
 
-- `Quit`: Has no data associated with it at all
-- `Move`: Has named fields, like a struct does
-- `Write`: Includes a single `String`
-- `ChangeColor`: Includes three `i32` values
+* `Quit`: Is ke saath koi data associated nahi hai.
+* `Move`: Is mein named fields hain, bilkul struct ki tarah.
+* `Write`: Is mein ek `String` shamil hai.
+* `ChangeColor`: Is mein teen `i32` values shamil hain.
 
-Defining an enum with variants such as the ones in Listing 6-2 is similar to
-defining different kinds of struct definitions, except the enum doesn’t use the
-`struct` keyword and all the variants are grouped together under the `Message`
-type. The following structs could hold the same data that the preceding enum
-variants hold:
+Listing 6-2 mein diye gaye variants jaisi enum define karna different qisam ki struct definitions define karne ke similar hai, siwaye is ke ke enum `struct` keyword use nahi karti aur tamam variants ko `Message` type ke andar ek saath group kiya jata hai. Following structs wohi data hold kar sakti hain jo pichli enum ke variants hold karte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-04-structs-similar-to-message-enum/src/main.rs:here}}
 ```
 
-But if we used the different structs, each of which has its own type, we
-couldn’t as easily define a function to take any of these kinds of messages as
-we could with the `Message` enum defined in Listing 6-2, which is a single type.
+Lekin agar hum different structs use karte, jin mein se har ek ki apni type hoti, to hum in mein se kisi bhi qisam ke message ko lene wala function utni aasani se define nahi kar pate jitni aasani se Listing 6-2 mein define ki gayi `Message` enum ke saath kar sakte hain, kyun ke `Message` ek single type hai.
 
-There is one more similarity between enums and structs: Just as we’re able to
-define methods on structs using `impl`, we’re also able to define methods on
-enums. Here’s a method named `call` that we could define on our `Message` enum:
+Enums aur structs ke darmiyan ek aur similarity hai: Jis tarah hum `impl` use karke structs par methods define kar sakte hain, usi tarah hum enums par bhi methods define kar sakte hain. Yahan `call` naam ka ek method hai jo hum apni `Message` enum par define kar sakte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-05-methods-on-enums/src/main.rs:here}}
 ```
 
-The body of the method would use `self` to get the value that we called the
-method on. In this example, we’ve created a variable `m` that has the value
-`Message::Write(String::from("hello"))`, and that is what `self` will be in the
-body of the `call` method when `m.call()` runs.
+Method ka body `self` ko use karega taa-ke woh value hasil ki ja sake jis par hum ne method call kiya tha. Is example mein, hum ne ek variable `m` create kiya hai jis ki value `Message::Write(String::from("hello"))` hai, aur jab `m.call()` run hoga to `call` method ke body mein `self` ki value yahi hogi.
 
-Let’s look at another enum in the standard library that is very common and
-useful: `Option`.
+Aaiye ab standard library mein mojood ek aur enum ko dekhte hain jo bohat common aur useful hai: `Option`.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -192,47 +122,21 @@ useful: `Option`.
 
 ### The `Option` Enum
 
-This section explores a case study of `Option`, which is another enum defined
-by the standard library. The `Option` type encodes the very common scenario in
-which a value could be something, or it could be nothing.
+Is section mein hum `Option` ka case study explore karenge, jo standard library ki taraf se define ki gayi ek aur enum hai. `Option` type ek bohat common situation ko encode karti hai jisme koi value ya to kuch ho sakti hai, ya phir kuch bhi nahi ho sakti.
 
-For example, if you request the first item in a non-empty list, you would get
-a value. If you request the first item in an empty list, you would get nothing.
-Expressing this concept in terms of the type system means the compiler can
-check whether you’ve handled all the cases you should be handling; this
-functionality can prevent bugs that are extremely common in other programming
-languages.
+Misal ke taur par, agar aap ek non-empty list mein pehli item request karein, to aapko ek value milegi. Agar aap ek empty list mein pehli item request karein, to aapko kuch nahi milega. Is concept ko type system ke hawale se express karne ka matlab hai ke compiler check kar sakta hai ke aap ne tamam un cases ko handle kiya hai jinhein aapko handle karna chahiye; ye functionality un bugs ko prevent kar sakti hai jo doosri programming languages mein bohat common hain.
 
-Programming language design is often thought of in terms of which features you
-include, but the features you exclude are important too. Rust doesn’t have the
-null feature that many other languages have. _Null_ is a value that means there
-is no value there. In languages with null, variables can always be in one of
-two states: null or not-null.
+Programming language design ke baare mein aksar ye socha jata hai ke aap kaun se features include karte hain, lekin jin features ko aap exclude karte hain woh bhi important hote hain. Rust mein woh `null` feature nahi hai jo bohat si doosri languages mein hota hai. *Null* ek aisi value hai jo ye mean karti hai ke wahan koi value mojood nahi hai. Null wali languages mein variables hamesha do states mein se kisi ek mein ho sakte hain: null ya not-null.
 
-In his 2009 presentation “Null References: The Billion Dollar Mistake,” Tony
-Hoare, the inventor of null, had this to say:
+2009 ki apni presentation “Null References: The Billion Dollar Mistake” mein, Tony Hoare, jo null ke inventor hain, ne kaha:
 
-> I call it my billion-dollar mistake. At that time, I was designing the first
-> comprehensive type system for references in an object-oriented language. My
-> goal was to ensure that all use of references should be absolutely safe, with
-> checking performed automatically by the compiler. But I couldn’t resist the
-> temptation to put in a null reference, simply because it was so easy to
-> implement. This has led to innumerable errors, vulnerabilities, and system
-> crashes, which have probably caused a billion dollars of pain and damage in
-> the last forty years.
+> Main ise apni billion-dollar mistake kehta hoon. Us waqt, main object-oriented language mein references ke liye pehla comprehensive type system design kar raha tha. Mera goal ye ensure karna tha ke references ka tamam use bilkul safe ho, aur checking compiler ke zariye automatically perform ho. Lekin main null reference shamil karne ke temptation ko resist nahi kar saka, sirf is liye ke ise implement karna bohat aasaan tha. Is ki wajah se be-shumar errors, vulnerabilities, aur system crashes hue hain, jin ki wajah se pichlay chalis saalon mein shayad ek billion dollars ka dard aur nuqsan hua hai.
 
-The problem with null values is that if you try to use a null value as a
-not-null value, you’ll get an error of some kind. Because this null or not-null
-property is pervasive, it’s extremely easy to make this kind of error.
+Null values ke saath problem ye hai ke agar aap null value ko not-null value ki tarah use karne ki koshish karein, to aapko kisi qisam ka error milega. Kyun ke ye null ya not-null property har jagah mojood hoti hai, is qisam ki ghalti karna bohat aasaan hai.
 
-However, the concept that null is trying to express is still a useful one: A
-null is a value that is currently invalid or absent for some reason.
+Lekin jo concept null express karne ki koshish karta hai, woh phir bhi useful hai: Null ek aisi value hai jo kisi wajah se filhaal invalid ya absent hai.
 
-The problem isn’t really with the concept but with the particular
-implementation. As such, Rust does not have nulls, but it does have an enum
-that can encode the concept of a value being present or absent. This enum is
-`Option<T>`, and it is [defined by the standard library][option]<!-- ignore -->
-as follows:
+Masla asal mein concept ke saath nahi, balki uski particular implementation ke saath hai. Isi liye Rust mein nulls nahi hain, lekin Rust mein ek enum hai jo value ke present ya absent hone ke concept ko encode kar sakti hai. Ye enum `Option<T>` hai, aur ye [standard library ki taraf se define][option]<!-- ignore --> ki gayi hai:
 
 ```rust
 enum Option<T> {
@@ -241,89 +145,39 @@ enum Option<T> {
 }
 ```
 
-The `Option<T>` enum is so useful that it’s even included in the prelude; you
-don’t need to bring it into scope explicitly. Its variants are also included in
-the prelude: You can use `Some` and `None` directly without the `Option::`
-prefix. The `Option<T>` enum is still just a regular enum, and `Some(T)` and
-`None` are still variants of type `Option<T>`.
+`Option<T>` enum itni useful hai ke ye prelude mein bhi included hai; aapko ise explicitly scope mein lane ki zaroorat nahi hai. Is ke variants bhi prelude mein included hain: Aap `Option::` prefix ke baghair directly `Some` aur `None` use kar sakte hain. `Option<T>` enum phir bhi ek regular enum hi hai, aur `Some(T)` aur `None` ab bhi `Option<T>` type ke variants hain.
 
-The `<T>` syntax is a feature of Rust we haven’t talked about yet. It’s a
-generic type parameter, and we’ll cover generics in more detail in Chapter 10.
-For now, all you need to know is that `<T>` means that the `Some` variant of
-the `Option` enum can hold one piece of data of any type, and that each
-concrete type that gets used in place of `T` makes the overall `Option<T>` type
-a different type. Here are some examples of using `Option` values to hold
-number types and char types:
+`<T>` syntax Rust ka ek feature hai jis ke baare mein hum ne abhi tak baat nahi ki. Ye ek generic type parameter hai, aur hum Chapter 10 mein generics ko mazeed detail mein cover karenge. Filhaal aapko sirf itna maloom hona chahiye ke `<T>` ka matlab hai ke `Option` enum ka `Some` variant kisi bhi type ka ek piece of data hold kar sakta hai, aur `T` ki jagah use hone wali har concrete type overall `Option<T>` type ko ek different type bana deti hai. Yahan `Option` values ko number types aur char types hold karne ke liye use karne ki kuch examples hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-06-option-examples/src/main.rs:here}}
 ```
 
-The type of `some_number` is `Option<i32>`. The type of `some_char` is
-`Option<char>`, which is a different type. Rust can infer these types because
-we’ve specified a value inside the `Some` variant. For `absent_number`, Rust
-requires us to annotate the overall `Option` type: The compiler can’t infer the
-type that the corresponding `Some` variant will hold by looking only at a
-`None` value. Here, we tell Rust that we mean for `absent_number` to be of type
-`Option<i32>`.
+`some_number` ki type `Option<i32>` hai. `some_char` ki type `Option<char>` hai, jo ek different type hai. Rust in types ko infer kar sakta hai kyun ke hum ne `Some` variant ke andar ek value specify ki hai. `absent_number` ke liye Rust hum se overall `Option` type annotate karne ka taqaza karta hai: Compiler sirf `None` value ko dekh kar ye infer nahi kar sakta ke corresponding `Some` variant kis type ki value hold karega. Yahan hum Rust ko batate hain ke hum chahte hain `absent_number` ki type `Option<i32>` ho.
 
-When we have a `Some` value, we know that a value is present, and the value is
-held within the `Some`. When we have a `None` value, in some sense it means the
-same thing as null: We don’t have a valid value. So, why is having `Option<T>`
-any better than having null?
+Jab hamare paas `Some` value hoti hai, to humein maloom hota hai ke ek value present hai, aur woh value `Some` ke andar held hoti hai. Jab hamare paas `None` value hoti hai, to ek maayne mein iska matlab null jaisa hi hai: Hamare paas ek valid value nahi hai. To phir `Option<T>` rakhna null rakhne se behtar kyun hai?
 
-In short, because `Option<T>` and `T` (where `T` can be any type) are different
-types, the compiler won’t let us use an `Option<T>` value as if it were
-definitely a valid value. For example, this code won’t compile, because it’s
-trying to add an `i8` to an `Option<i8>`:
+Mukhtasar jawab ye hai ke `Option<T>` aur `T` (jahan `T` koi bhi type ho sakti hai) different types hain, is liye compiler humein `Option<T>`value ko aise use nahi karne dega jaise woh definitely ek valid value ho. Misal ke taur par, ye code compile nahi hoga, kyun ke ye ek`i8`ko`Option<i8>` ke saath add karne ki koshish kar raha hai:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-07-cant-use-option-directly/src/main.rs:here}}
 ```
 
-If we run this code, we get an error message like this one:
+Agar hum ye code run karein, to humein is tarah ka error message milega:
 
 ```console
 {{#include ../listings/ch06-enums-and-pattern-matching/no-listing-07-cant-use-option-directly/output.txt}}
 ```
 
-Intense! In effect, this error message means that Rust doesn’t understand how
-to add an `i8` and an `Option<i8>`, because they’re different types. When we
-have a value of a type like `i8` in Rust, the compiler will ensure that we
-always have a valid value. We can proceed confidently without having to check
-for null before using that value. Only when we have an `Option<i8>` (or
-whatever type of value we’re working with) do we have to worry about possibly
-not having a value, and the compiler will make sure we handle that case before
-using the value.
+Intense! Asal mein, is error message ka matlab hai ke Rust ko samajh nahi aa raha ke ek `i8` aur ek `Option<i8>` ko kaise add kiya jaye, kyun ke ye different types hain. Jab Rust mein hamare paas `i8` jaisi type ki value hoti hai, to compiler ensure karega ke hamare paas hamesha ek valid value ho. Hum us value ko use karne se pehle null check kiye baghair confidence ke saath aage barh sakte hain. Sirf us waqt jab hamare paas `Option<i8>` (ya jo bhi type ki value hum use kar rahe hon) ho, humein is baat ki fikr karni hoti hai ke shayad koi value mojood na ho, aur compiler ensure karega ke value ko use karne se pehle hum us case ko handle karein.
 
-In other words, you have to convert an `Option<T>` to a `T` before you can
-perform `T` operations with it. Generally, this helps catch one of the most
-common issues with null: assuming that something isn’t null when it actually is.
+Doosre alfaaz mein, `Option<T>` ke saath `T` operations perform karne se pehle aapko `Option<T>` ko `T` mein convert karna hota hai. Aam tor par, ye null ke saath hone wale sab se common issues mein se ek ko pakarne mein madad karta hai: Ye assume kar lena ke koi cheez null nahi hai jabke asal mein woh null ho.
 
-Eliminating the risk of incorrectly assuming a not-null value helps you be more
-confident in your code. In order to have a value that can possibly be null, you
-must explicitly opt in by making the type of that value `Option<T>`. Then, when
-you use that value, you are required to explicitly handle the case when the
-value is null. Everywhere that a value has a type that isn’t an `Option<T>`,
-you _can_ safely assume that the value isn’t null. This was a deliberate design
-decision for Rust to limit null’s pervasiveness and increase the safety of Rust
-code.
+Not-null value ko ghalat tareeqe se assume karne ke risk ko khatam karna aapko apne code ke baare mein zyada confident hone mein madad karta hai. Agar aap aisi value rakhna chahte hain jo mumkin taur par null ho sakti hai, to aapko explicitly opt in karna hota hai aur us value ki type `Option<T>` banani hoti hai. Phir, jab aap us value ko use karte hain, to aapko explicitly us case ko handle karna hota hai jab value null ho. Jahan bhi kisi value ki type `Option<T>` nahi hai, aap *safely* assume kar sakte hain ke value null nahi hai. Rust ke liye ye ek deliberate design decision tha taa-ke null ki pervasiveness ko limit kiya ja sake aur Rust code ki safety ko barhaya ja sake.
 
-So how do you get the `T` value out of a `Some` variant when you have a value
-of type `Option<T>` so that you can use that value? The `Option<T>` enum has a
-large number of methods that are useful in a variety of situations; you can
-check them out in [its documentation][docs]<!-- ignore -->. Becoming familiar
-with the methods on `Option<T>` will be extremely useful in your journey with
-Rust.
+To phir jab aapke paas `Option<T>` type ki value ho, to aap `Some` variant ke andar se `T` value kaise hasil karte hain taa-ke aap us value ko use kar saken? `Option<T>` enum mein bohat badi tadaad mein methods hain jo mukhtalif situations mein useful hoti hain; aap inhein [iski documentation][docs]<!-- ignore --> mein dekh sakte hain. `Option<T>` ke methods se waqif hona aapke Rust ke safar mein bohat useful hoga.
 
-In general, in order to use an `Option<T>` value, you want to have code that
-will handle each variant. You want some code that will run only when you have a
-`Some(T)` value, and this code is allowed to use the inner `T`. You want some
-other code to run only if you have a `None` value, and that code doesn’t have a
-`T` value available. The `match` expression is a control flow construct that
-does just this when used with enums: It will run different code depending on
-which variant of the enum it has, and that code can use the data inside the
-matching value.
+Aam tor par, `Option<T>` value ko use karne ke liye aap aisa code rakhna chahenge jo har variant ko handle kare. Aapke paas kuch aisa code hona chahiye jo sirf us waqt run ho jab aapke paas `Some(T)` value ho, aur ye code andar mojood `T` ko use kar sake. Aapke paas kuch doosra code bhi hona chahiye jo sirf us waqt run ho jab aapke paas `None` value ho, aur us code ke paas koi `T` value available nahi hoti. `match` expression ek control flow construct hai jo enums ke saath use kiye jane par bilkul yahi kaam karti hai: Ye is baat ke mutabiq different code run karti hai ke enum ka kaunsa variant uske paas hai, aur woh code matching value ke andar mojood data ko use kar sakta hai.
 
 [IpAddr]: ../std/net/enum.IpAddr.html
 [option]: ../std/option/enum.Option.html
