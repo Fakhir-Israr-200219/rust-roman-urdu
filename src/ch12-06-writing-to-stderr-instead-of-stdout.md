@@ -4,60 +4,33 @@
 
 ## Redirecting Errors to Standard Error
 
-At the moment, we’re writing all of our output to the terminal using the
-`println!` macro. In most terminals, there are two kinds of output: _standard
-output_ (`stdout`) for general information and _standard error_ (`stderr`) for
-error messages. This distinction enables users to choose to direct the
-successful output of a program to a file but still print error messages to the
-screen.
+Filhaal, hum apne tamam output ko terminal par `println!` macro ka use karke likh rahe hain. Aksar terminals mein do qisam ka output hota hai: *standard output* (`stdout`) general information ke liye aur *standard error* (`stderr`) error messages ke liye. Yeh distinction users ko yeh choose karne ki sahulat deti hai ke woh program ke successful output ko ek file mein direct karein, lekin error messages ko phir bhi screen par print karein.
 
-The `println!` macro is only capable of printing to standard output, so we have
-to use something else to print to standard error.
+`println!` macro sirf standard output par print karne ki capability rakhta hai, is liye standard error par print karne ke liye humein kuch aur use karna hoga.
 
 ### Checking Where Errors Are Written
 
-First, let’s observe how the content printed by `minigrep` is currently being
-written to standard output, including any error messages we want to write to
-standard error instead. We’ll do that by redirecting the standard output stream
-to a file while intentionally causing an error. We won’t redirect the standard
-error stream, so any content sent to standard error will continue to display on
-the screen.
+Sab se pehle, aaiye observe karte hain ke `minigrep` se print hone wala content filhaal standard output mein kaise write ho raha hai, jin error messages ko hum iske bajaye standard error mein write karna chahte hain unhein bhi include karte hue. Hum yeh standard output stream ko ek file par redirect karke karenge, jabke jaan boojh kar ek error cause karenge. Hum standard error stream ko redirect nahi karenge, is liye standard error ko bheja gaya koi bhi content screen par display hota rahega.
 
-Command line programs are expected to send error messages to the standard error
-stream so that we can still see error messages on the screen even if we
-redirect the standard output stream to a file. Our program is not currently
-well behaved: We’re about to see that it saves the error message output to a
-file instead!
+Command line programs se expect kiya jata hai ke woh error messages standard error stream ko bhejein taake agar hum standard output stream ko ek file par redirect bhi kar dein, tab bhi hum screen par error messages dekh sakein. Hamara program filhaal theek tarah behave nahi kar raha: hum ab dekhenge ke yeh error message ke output ko bhi ek file mein save kar deta hai!
 
-To demonstrate this behavior, we’ll run the program with `>` and the file path,
-_output.txt_, that we want to redirect the standard output stream to. We won’t
-pass any arguments, which should cause an error:
+Is behavior ko demonstrate karne ke liye, hum program ko `>` aur file path *output.txt* ke saath run karenge, jahan hum standard output stream ko redirect karna chahte hain. Hum koi arguments pass nahi karenge, jis se ek error cause hona chahiye:
 
 ```console
 $ cargo run > output.txt
 ```
 
-The `>` syntax tells the shell to write the contents of standard output to
-_output.txt_ instead of the screen. We didn’t see the error message we were
-expecting printed to the screen, so that means it must have ended up in the
-file. This is what _output.txt_ contains:
+`>` syntax shell ko batata hai ke standard output ke contents ko screen ke bajaye *output.txt* mein write kare. Humein woh error message screen par print hota hua nazar nahi aaya jiski hum expectation kar rahe thay, is liye iska matlab hai ke woh file mein chala gaya hoga. *output.txt* mein yeh content hai:
 
 ```text
 Problem parsing arguments: not enough arguments
 ```
 
-Yup, our error message is being printed to standard output. It’s much more
-useful for error messages like this to be printed to standard error so that
-only data from a successful run ends up in the file. We’ll change that.
+Yup, hamara error message standard output par print ho raha hai. Aise error messages ka standard error par print hona zyada useful hai taake sirf successful run ka data hi file mein jaye. Hum isay change karenge.
 
 ### Printing Errors to Standard Error
 
-We’ll use the code in Listing 12-24 to change how error messages are printed.
-Because of the refactoring we did earlier in this chapter, all the code that
-prints error messages is in one function, `main`. The standard library provides
-the `eprintln!` macro that prints to the standard error stream, so let’s change
-the two places we were calling `println!` to print errors to use `eprintln!`
-instead.
+Hum error messages ko print karne ke tareeqe ko change karne ke liye Listing 12-24 mein diye gaye code ko use karenge. Is chapter mein pehle ki gayi refactoring ki wajah se, error messages print karne wala tamam code ek hi function, `main`, mein hai. Standard library `eprintln!` macro provide karti hai jo standard error stream par print karta hai, is liye jahan hum errors print karne ke liye `println!` call kar rahe thay, un dono jagahon ko `eprintln!` use karne ke liye change karte hain.
 
 <Listing number="12-24" file-name="src/main.rs" caption="Writing error messages to standard error instead of standard output using `eprintln!`">
 
@@ -67,26 +40,22 @@ instead.
 
 </Listing>
 
-Let’s now run the program again in the same way, without any arguments and
-redirecting standard output with `>`:
+Ab aaiye program ko dobara isi tarah run karte hain, bina kisi arguments ke aur `>` ke zariye standard output ko redirect karte hue:
 
 ```console
 $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-Now we see the error onscreen and _output.txt_ contains nothing, which is the
-behavior we expect of command line programs.
+Ab humein error screen par nazar aa raha hai aur *output.txt* mein kuch bhi nahi hai, jo command line programs se hamari expectation ke mutabiq behavior hai.
 
-Let’s run the program again with arguments that don’t cause an error but still
-redirect standard output to a file, like so:
+Ab aaiye program ko dobara aise arguments ke saath run karte hain jo error cause nahi karte lekin phir bhi standard output ko ek file mein redirect karte hain, jaise:
 
 ```console
 $ cargo run -- to poem.txt > output.txt
 ```
 
-We won’t see any output to the terminal, and _output.txt_ will contain our
-results:
+Humein terminal par koi output nazar nahi aayega, aur *output.txt* mein hamare results honge:
 
 <span class="filename">Filename: output.txt</span>
 
@@ -95,18 +64,10 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-This demonstrates that we’re now using standard output for successful output
-and standard error for error output as appropriate.
+Yeh demonstrate karta hai ke ab hum successful output ke liye standard output aur error output ke liye standard error ko appropriate taur par use kar rahe hain.
 
 ## Summary
 
-This chapter recapped some of the major concepts you’ve learned so far and
-covered how to perform common I/O operations in Rust. By using command line
-arguments, files, environment variables, and the `eprintln!` macro for printing
-errors, you’re now prepared to write command line applications. Combined with
-the concepts in previous chapters, your code will be well organized, store data
-effectively in the appropriate data structures, handle errors nicely, and be
-well tested.
+Is chapter mein humne ab tak seekhe gaye kuch major concepts ko recap kiya aur dekha ke Rust mein common I/O operations kaise perform kiye jate hain. Command line arguments, files, environment variables, aur errors print karne ke liye `eprintln!` macro ko use karke, ab aap command line applications likhne ke liye tayyar hain. Previous chapters ke concepts ke saath milkar, aapka code achhi tarah organized hoga, data ko appropriate data structures mein effectively store karega, errors ko achhi tarah handle karega, aur achhi tarah tested hoga.
 
-Next, we’ll explore some Rust features that were influenced by functional
-languages: closures and iterators.
+Next, hum Rust ke kuch aise features explore karenge jo functional languages se influenced hain: closures aur iterators.

@@ -1,43 +1,22 @@
 # An I/O Project: Building a Command Line Program
 
-This chapter is a recap of the many skills you’ve learned so far and an
-exploration of a few more standard library features. We’ll build a command line
-tool that interacts with file and command line input/output to practice some of
-the Rust concepts you now have under your belt.
+Yeh chapter un bohat si skills ka recap hai jo aap ab tak seekh chuke hain aur standard library ki kuch mazeed features ki exploration bhi hai. Hum ek command line tool build karenge jo file aur command line input/output ke saath interact karega, taake Rust ke un concepts ki practice ki ja sake jo ab aap seekh chuke hain.
 
-Rust’s speed, safety, single binary output, and cross-platform support make it
-an ideal language for creating command line tools, so for our project, we’ll
-make our own version of the classic command line search tool `grep`
-(**g**lobally search a **r**egular **e**xpression and **p**rint). In the
-simplest use case, `grep` searches a specified file for a specified string. To
-do so, `grep` takes as its arguments a file path and a string. Then, it reads
-the file, finds lines in that file that contain the string argument, and prints
-those lines.
+Rust ki speed, safety, single binary output, aur cross-platform support ise command line tools banane ke liye ek ideal language banate hain, is liye apne project ke liye hum classic command line search tool `grep` ka apna version banayenge (**g**lobally search a **r**egular **e**xpression and **p**rint). Sab se simple use case mein, `grep` ek specified file mein specified string ko search karta hai. Aisa karne ke liye, `grep` apne arguments ke taur par ek file path aur ek string leta hai. Phir yeh file ko read karta hai, file mein un lines ko find karta hai jin mein argument wali string maujood hoti hai, aur un lines ko print karta hai.
 
-Along the way, we’ll show how to make our command line tool use the terminal
-features that many other command line tools use. We’ll read the value of an
-environment variable to allow the user to configure the behavior of our tool.
-We’ll also print error messages to the standard error console stream (`stderr`)
-instead of standard output (`stdout`) so that, for example, the user can
-redirect successful output to a file while still seeing error messages onscreen.
+Is process mein, hum yeh bhi dikhayenge ke apne command line tool ko un terminal features ko kaise use karwaya ja sakta hai jo bohat se doosre command line tools use karte hain. Hum ek environment variable ki value read karenge taake user hamare tool ke behavior ko configure kar sake. Hum error messages ko standard output (`stdout`) ke bajaye standard error console stream (`stderr`) par bhi print karenge, taake, misal ke taur par, user successful output ko ek file mein redirect kar sake aur saath hi screen par error messages dekh sake.
 
-One Rust community member, Andrew Gallant, has already created a fully
-featured, very fast version of `grep`, called `ripgrep`. By comparison, our
-version will be fairly simple, but this chapter will give you some of the
-background knowledge you need to understand a real-world project such as
-`ripgrep`.
+Rust community ke ek member, Andrew Gallant, ne pehle hi `grep` ka ek fully featured, bohat fast version create kiya hai, jise `ripgrep` kaha jata hai. Comparison mein, hamara version kaafi simple hoga, lekin yeh chapter aapko woh background knowledge dega jo aapko `ripgrep` jaise real-world project ko samajhne ke liye darkar hai.
 
-Our `grep` project will combine a number of concepts you’ve learned so far:
+Hamara `grep` project ab tak seekhe gaye kai concepts ko combine karega:
 
-- Organizing code ([Chapter 7][ch7]<!-- ignore -->)
-- Using vectors and strings ([Chapter 8][ch8]<!-- ignore -->)
-- Handling errors ([Chapter 9][ch9]<!-- ignore -->)
-- Using traits and lifetimes where appropriate ([Chapter 10][ch10]<!-- ignore -->)
-- Writing tests ([Chapter 11][ch11]<!-- ignore -->)
+* Code ko organize karna ([Chapter 7][ch7]<!-- ignore -->)
+* Vectors aur strings use karna ([Chapter 8][ch8]<!-- ignore -->)
+* Errors handle karna ([Chapter 9][ch9]<!-- ignore -->)
+* Jahan appropriate ho, traits aur lifetimes use karna ([Chapter 10][ch10]<!-- ignore -->)
+* Tests likhna ([Chapter 11][ch11]<!-- ignore -->)
 
-We’ll also briefly introduce closures, iterators, and trait objects, which
-[Chapter 13][ch13]<!-- ignore --> and [Chapter 18][ch18]<!-- ignore --> will
-cover in detail.
+Hum closures, iterators, aur trait objects ka bhi mukhtasar introduction denge, jinhein [Chapter 13][ch13]<!-- ignore --> aur [Chapter 18][ch18]<!-- ignore --> detail mein cover karenge.
 
 [ch7]: ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [ch8]: ch08-00-common-collections.html

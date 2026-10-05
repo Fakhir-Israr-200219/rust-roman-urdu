@@ -1,61 +1,37 @@
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="developing-the-librarys-functionality-with-test-driven-development"></a>
 
 ## Adding Functionality with Test-Driven Development
 
-Now that we have the search logic in _src/lib.rs_ separate from the `main`
-function, it’s much easier to write tests for the core functionality of our
-code. We can call functions directly with various arguments and check return
-values without having to call our binary from the command line.
+Ab jab hamare paas *src/lib.rs* mein `main` function se separate search logic hai, to hamare code ki core functionality ke liye tests likhna kaafi asaan ho gaya hai. Hum functions ko mukhtalif arguments ke saath directly call kar sakte hain aur return values ko check kar sakte hain, bina command line se apni binary ko call kiye.
 
-In this section, we’ll add the searching logic to the `minigrep` program using
-the test-driven development (TDD) process with the following steps:
+Is section mein, hum following test-driven development (TDD) process ko use karte hue `minigrep` program mein searching logic add karenge:
 
-1. Write a test that fails and run it to make sure it fails for the reason you
-   expect.
-2. Write or modify just enough code to make the new test pass.
-3. Refactor the code you just added or changed and make sure the tests continue
-   to pass.
-4. Repeat from step 1!
+1. Ek aisa test likhein jo fail ho aur use run karein taake yakeen ho jaye ke woh usi reason ki wajah se fail hota hai jiski aap expectation kar rahe hain.
+2. Naye test ko pass karwane ke liye sirf itna code likhein ya modify karein jitna zaroori ho.
+3. Abhi jo code aapne add ya change kiya hai uski refactor karein aur yakeen karein ke tests pass karte rahen.
+4. Step 1 se dobara repeat karein!
 
-Though it’s just one of many ways to write software, TDD can help drive code
-design. Writing the test before you write the code that makes the test pass
-helps maintain high test coverage throughout the process.
+Software likhne ke bohat se tareeqon mein se TDD sirf ek tareeqa hai, lekin yeh code design ko drive karne mein madad kar sakta hai. Test ko us code se pehle likhna jo test ko pass karwata hai, poore process ke dauran high test coverage maintain karne mein madad karta hai.
 
-We’ll test-drive the implementation of the functionality that will actually do
-the searching for the query string in the file contents and produce a list of
-lines that match the query. We’ll add this functionality in a function called
-`search`.
+Hum us functionality ki implementation ko test-drive karenge jo asal mein file ke contents mein query string ko search karegi aur un lines ki list produce karegi jo query se match karti hain. Hum yeh functionality `search` naam ke ek function mein add karenge.
 
 ### Writing a Failing Test
 
-In _src/lib.rs_, we’ll add a `tests` module with a test function, as we did in
-[Chapter 11][ch11-anatomy]<!-- ignore -->. The test function specifies the
-behavior we want the `search` function to have: It will take a query and the
-text to search, and it will return only the lines from the text that contain
-the query. Listing 12-15 shows this test.
+*src/lib.rs* mein, hum ek `tests` module add karenge jismein ek test function hoga, jaisa ke humne [Chapter 11][ch11-anatomy]<!-- ignore --> mein kiya tha. Test function woh behavior specify karta hai jo hum `search` function se chahte hain: yeh ek query aur search karne ke liye text lega, aur sirf woh lines return karega jo text mein query contain karti hain. Listing 12-15 is test ko dikhati hai.
 
 <Listing number="12-15" file-name="src/lib.rs" caption="Creating a failing test for the `search` function for the functionality we wish we had">
 
-```rust,ignore,does_not_compile
+```rust,ignore,does_not_compile id="2xk8sf"
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-15/src/lib.rs:here}}
 ```
 
 </Listing>
 
-This test searches for the string `"duct"`. The text we’re searching is three
-lines, only one of which contains `"duct"` (note that the backslash after the
-opening double quote tells Rust not to put a newline character at the beginning
-of the contents of this string literal). We assert that the value returned from
-the `search` function contains only the line we expect.
+Yeh test `"duct"` string ko search karta hai. Jis text ko hum search kar rahe hain woh teen lines par mushtamil hai, jin mein se sirf ek mein `"duct"` maujood hai (note karein ke opening double quote ke baad backslash Rust ko batata hai ke is string literal ke contents ke start mein newline character na dale). Hum assert karte hain ke `search` function se return hone wali value mein sirf woh line ho jiski humein expectation hai.
 
-If we run this test, it will currently fail because the `unimplemented!` macro
-panics with the message “not implemented”. In accordance with TDD principles,
-we’ll take a small step of adding just enough code to get the test to not panic
-when calling the function by defining the `search` function to always return an
-empty vector, as shown in Listing 12-16. Then, the test should compile and fail
-because an empty vector doesn’t match a vector containing the line `"safe,
-fast, productive."`.
+Agar hum is test ko run karein, to yeh filhaal fail hoga kyun ke `unimplemented!` macro “not implemented” message ke saath panic karta hai. TDD principles ke mutabiq, hum sirf itna code add karne ka chhota step lenge ke function ko call karte waqt test panic na kare. Iske liye hum `search` function ko aise define karenge ke woh hamesha ek empty vector return kare, jaisa ke Listing 12-16 mein dikhaya gaya hai. Phir test compile ho jana chahiye aur fail hona chahiye kyun ke ek empty vector us vector se match nahi karta jismein `"safe, fast, productive."` line ho.
 
 <Listing number="12-16" file-name="src/lib.rs" caption="Defining just enough of the `search` function so that calling it won’t panic">
 
@@ -65,60 +41,36 @@ fast, productive."`.
 
 </Listing>
 
-Now let’s discuss why we need to define an explicit lifetime `'a` in the
-signature of `search` and use that lifetime with the `contents` argument and
-the return value. Recall in [Chapter 10][ch10-lifetimes]<!-- ignore --> that
-the lifetime parameters specify which argument lifetime is connected to the
-lifetime of the return value. In this case, we indicate that the returned
-vector should contain string slices that reference slices of the argument
-`contents` (rather than the argument `query`).
+Ab aaiye discuss karte hain ke humein `search` ke signature mein ek explicit lifetime `'a` define karne aur us lifetime ko `contents` argument aur return value ke saath use karne ki zarurat kyun hai. Yaad karein ke [Chapter 10][ch10-lifetimes]<!-- ignore --> mein lifetime parameters specify karte hain ke kaunsa argument lifetime return value ke lifetime ke saath connected hai. Is case mein, hum indicate karte hain ke returned vector mein aise string slices hone chahiye jo argument `contents` ke slices ko reference karte hon (`query` argument ko nahi).
 
-In other words, we tell Rust that the data returned by the `search` function
-will live as long as the data passed into the `search` function in the
-`contents` argument. This is important! The data referenced _by_ a slice needs
-to be valid for the reference to be valid; if the compiler assumes we’re making
-string slices of `query` rather than `contents`, it will do its safety checking
-incorrectly.
+Doosre lafzon mein, hum Rust ko batate hain ke `search` function se return hone wala data utni der tak live rahega jitni der `search` function mein `contents` argument ke zariye pass kiya gaya data live rahega. Yeh important hai! Jis data ko ek slice *reference* karta hai, woh reference ke valid hone ke liye valid hona chahiye; agar compiler yeh assume kare ke hum `contents` ke bajaye `query` ke string slices bana rahe hain, to woh apni safety checking incorrectly karega.
 
-If we forget the lifetime annotations and try to compile this function, we’ll
-get this error:
+Agar hum lifetime annotations bhool jayein aur is function ko compile karne ki koshish karein, to humein yeh error milega:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-02-missing-lifetimes/output.txt}}
 ```
 
-Rust can’t know which of the two parameters we need for the output, so we need
-to tell it explicitly. Note that the help text suggests specifying the same
-lifetime parameter for all the parameters and the output type, which is
-incorrect! Because `contents` is the parameter that contains all of our text
-and we want to return the parts of that text that match, we know `contents` is
-the only parameter that should be connected to the return value using the
-lifetime syntax.
+Rust nahi jaan sakta ke output ke liye humein dono parameters mein se kis parameter ki zarurat hai, is liye humein ise explicitly batana padta hai. Note karein ke help text suggest karta hai ke tamam parameters aur output type ke liye same lifetime parameter specify kiya jaye, jo incorrect hai! Kyun ke `contents` woh parameter hai jo hamara tamam text contain karta hai aur hum us text ke woh parts return karna chahte hain jo match karte hain, is liye hum jaante hain ke `contents` hi woh single parameter hai jise lifetime syntax ke zariye return value ke saath connected hona chahiye.
 
-Other programming languages don’t require you to connect arguments to return
-values in the signature, but this practice will get easier over time. You might
-want to compare this example with the examples in the [“Validating References
-with Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> section
-in Chapter 10.
+Doosri programming languages mein signature ke andar arguments ko return values ke saath connect karna required nahi hota, lekin waqt ke saath yeh practice asaan hoti jayegi. Aap is example ko Chapter 10 ke [“Validating References with Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> section ke examples ke saath compare karna chah sakte hain.
+
 
 ### Writing Code to Pass the Test
 
-Currently, our test is failing because we always return an empty vector. To fix
-that and implement `search`, our program needs to follow these steps:
+Filhaal, hamara test fail ho raha hai kyun ke hum hamesha ek empty vector return karte hain. Isko fix karne aur `search` ko implement karne ke liye, hamare program ko yeh steps follow karne honge:
 
-1. Iterate through each line of the contents.
-2. Check whether the line contains our query string.
-3. If it does, add it to the list of values we’re returning.
-4. If it doesn’t, do nothing.
-5. Return the list of results that match.
+1. `contents` ki har line ke through iterate karein.
+2. Check karein ke kya line mein hamari query string maujood hai.
+3. Agar hai, to usay un values ki list mein add karein jo hum return kar rahe hain.
+4. Agar nahi hai, to kuch na karein.
+5. Un tamam results ki list return karein jo match karte hain.
 
-Let’s work through each step, starting with iterating through lines.
+Aaiye har step ko samajhte hain, sab se pehle lines ke through iterate karne se shuru karte hain.
 
 #### Iterating Through Lines with the `lines` Method
 
-Rust has a helpful method to handle line-by-line iteration of strings,
-conveniently named `lines`, that works as shown in Listing 12-17. Note that
-this won’t compile yet.
+Rust mein strings ki line-by-line iteration ko handle karne ke liye ek helpful method hai, jiska naam conveniently `lines` hai, aur jo Listing 12-17 mein dikhaye gaye tareeqe se kaam karta hai. Note karein ke yeh abhi compile nahi hoga.
 
 <Listing number="12-17" file-name="src/lib.rs" caption="Iterating through each line in `contents`">
 
@@ -128,17 +80,11 @@ this won’t compile yet.
 
 </Listing>
 
-The `lines` method returns an iterator. We’ll talk about iterators in depth in
-[Chapter 13][ch13-iterators]<!-- ignore -->. But recall that you saw this way
-of using an iterator in [Listing 3-5][ch3-iter]<!-- ignore -->, where we used a
-`for` loop with an iterator to run some code on each item in a collection.
+`lines` method ek iterator return karta hai. Hum [Chapter 13][ch13-iterators]<!-- ignore --> mein iterators ke baare mein detail mein baat karenge. Lekin yaad karein ke aapne [Listing 3-5][ch3-iter]<!-- ignore --> mein iterator ko is tarah use karte hue dekha tha, jahan humne collection ke har item par kuch code run karne ke liye `for` loop ko iterator ke saath use kiya tha.
 
 #### Searching Each Line for the Query
 
-Next, we’ll check whether the current line contains our query string.
-Fortunately, strings have a helpful method named `contains` that does this for
-us! Add a call to the `contains` method in the `search` function, as shown in
-Listing 12-18. Note that this still won’t compile yet.
+Next, hum check karenge ke kya current line mein hamari query string maujood hai. Khush qismati se, strings mein `contains` naam ka ek helpful method hota hai jo yeh kaam hamare liye karta hai! `search` function mein `contains` method ki call add karein, jaisa ke Listing 12-18 mein dikhaya gaya hai. Note karein ke yeh abhi bhi compile nahi hoga.
 
 <Listing number="12-18" file-name="src/lib.rs" caption="Adding functionality to see whether the line contains the string in `query`">
 
@@ -148,16 +94,11 @@ Listing 12-18. Note that this still won’t compile yet.
 
 </Listing>
 
-At the moment, we’re building up functionality. To get the code to compile, we
-need to return a value from the body as we indicated we would in the function
-signature.
+Filhaal, hum functionality build kar rahe hain. Code ko compile karne ke liye, humein function signature mein jaisa indicate kiya tha, uske mutabiq body se ek value return karni hogi.
 
 #### Storing Matching Lines
 
-To finish this function, we need a way to store the matching lines that we want
-to return. For that, we can make a mutable vector before the `for` loop and
-call the `push` method to store a `line` in the vector. After the `for` loop,
-we return the vector, as shown in Listing 12-19.
+Is function ko complete karne ke liye, humein matching lines ko store karne ka koi tareeqa chahiye jinhein hum return karna chahte hain. Iske liye, hum `for` loop se pehle ek mutable vector bana sakte hain aur vector mein ek `line` ko store karne ke liye `push` method call kar sakte hain. `for` loop ke baad, hum vector return karte hain, jaisa ke Listing 12-19 mein dikhaya gaya hai.
 
 <Listing number="12-19" file-name="src/lib.rs" caption="Storing the lines that match so that we can return them">
 
@@ -167,49 +108,37 @@ we return the vector, as shown in Listing 12-19.
 
 </Listing>
 
-Now the `search` function should return only the lines that contain `query`,
-and our test should pass. Let’s run the test:
+Ab `search` function ko sirf woh lines return karni chahiye jo `query` contain karti hain, aur hamara test pass hona chahiye. Aaiye test run karte hain:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-19/output.txt}}
 ```
 
-Our test passed, so we know it works!
+Hamara test pass ho gaya, is liye humein pata hai ke yeh kaam karta hai!
 
-At this point, we could consider opportunities for refactoring the
-implementation of the search function while keeping the tests passing to
-maintain the same functionality. The code in the search function isn’t too bad,
-but it doesn’t take advantage of some useful features of iterators. We’ll
-return to this example in [Chapter 13][ch13-iterators]<!-- ignore -->, where
-we’ll explore iterators in detail, and look at how to improve it.
+Is point par, hum test ko pass rakhte hue `search` function ki implementation ko refactor karne ke opportunities par ghour kar sakte hain, taake wahi functionality maintain rahe. `search` function ka code itna bura nahi hai, lekin yeh iterators ke kuch useful features ka faida nahi uthata. Hum [Chapter 13][ch13-iterators]<!-- ignore --> mein is example ki taraf wapas aayenge, jahan hum iterators ko detail mein explore karenge aur dekhenge ke isay kaise improve kiya ja sakta hai.
 
-Now the entire program should work! Let’s try it out, first with a word that
-should return exactly one line from the Emily Dickinson poem: _frog_.
+Ab poora program kaam karna chahiye! Aaiye isay try karte hain, sab se pehle aise word ke saath jo Emily Dickinson ki poem se exactly ek line return karna chahiye: *frog*.
 
 ```console
 {{#include ../listings/ch12-an-io-project/no-listing-02-using-search-in-run/output.txt}}
 ```
 
-Cool! Now let’s try a word that will match multiple lines, like _body_:
+Cool! Ab aaiye aisa word try karte hain jo multiple lines se match karega, jaise *body*:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-03-multiple-matches/output.txt}}
 ```
 
-And finally, let’s make sure that we don’t get any lines when we search for a
-word that isn’t anywhere in the poem, such as _monomorphization_:
+Aur aakhir mein, aaiye ensure karte hain ke jab hum aise word ko search karein jo poem mein kahin bhi maujood nahi hai, jaise *monomorphization*, to humein koi line na mile:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-04-no-matches/output.txt}}
 ```
 
-Excellent! We’ve built our own mini version of a classic tool and learned a lot
-about how to structure applications. We’ve also learned a bit about file input
-and output, lifetimes, testing, and command line parsing.
+Excellent! Humne classic tool ka apna mini version build kar liya hai aur applications ko structure karne ke tareeqe ke baare mein bohat kuch seekha hai. Humne file input aur output, lifetimes, testing, aur command line parsing ke baare mein bhi kuch seekha hai.
 
-To round out this project, we’ll briefly demonstrate how to work with
-environment variables and how to print to standard error, both of which are
-useful when you’re writing command line programs.
+Is project ko complete karne ke liye, hum briefly demonstrate karenge ke environment variables ke saath kaise kaam karna hai aur standard error par kaise print karna hai; dono cheezen command line programs likhte waqt useful hoti hain.
 
 [validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [ch11-anatomy]: ch11-01-writing-tests.html#the-anatomy-of-a-test-function

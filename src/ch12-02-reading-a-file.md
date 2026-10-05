@@ -1,11 +1,6 @@
 ## Reading a File
 
-Now we’ll add functionality to read the file specified in the `file_path`
-argument. First, we need a sample file to test it with: We’ll use a file with a
-small amount of text over multiple lines with some repeated words. Listing 12-3
-has an Emily Dickinson poem that will work well! Create a file called
-_poem.txt_ at the root level of your project, and enter the poem “I’m Nobody!
-Who are you?”
+Ab hum `file_path` argument mein specified file ko read karne ki functionality add karenge. Sab se pehle, humein ise test karne ke liye ek sample file ki zaroorat hai: Hum ek aisi file use karenge jismein multiple lines par thori si text ho aur kuch repeated words hon. Listing 12-3 mein Emily Dickinson ki ek poem hai jo is kaam ke liye achhi rahegi! Apne project ke root level par *poem.txt* naam ki ek file create karein, aur us mein poem “I’m Nobody! Who are you?” enter karein.
 
 <Listing number="12-3" file-name="poem.txt" caption="A poem by Emily Dickinson makes a good test case.">
 
@@ -15,8 +10,7 @@ Who are you?”
 
 </Listing>
 
-With the text in place, edit _src/main.rs_ and add code to read the file, as
-shown in Listing 12-4.
+Text ko place karne ke baad, *src/main.rs* ko edit karein aur file ko read karne ke liye code add karein, jaisa ke Listing 12-4 mein dikhaya gaya hai.
 
 <Listing number="12-4" file-name="src/main.rs" caption="Reading the contents of the file specified by the second argument">
 
@@ -26,31 +20,16 @@ shown in Listing 12-4.
 
 </Listing>
 
-First, we bring in a relevant part of the standard library with a `use`
-statement: We need `std::fs` to handle files.
+Sab se pehle, hum `use` statement ke zariye standard library ka ek relevant hissa scope mein laate hain: Files ko handle karne ke liye humein `std::fs` ki zaroorat hai.
 
-In `main`, the new statement `fs::read_to_string` takes the `file_path`, opens
-that file, and returns a value of type `std::io::Result<String>` that contains
-the file’s contents.
+`main` mein, naya statement `fs::read_to_string` `file_path` ko leta hai, us file ko open karta hai, aur `std::io::Result<String>` type ki ek value return karta hai jo file ke contents ko contain karti hai.
 
-After that, we again add a temporary `println!` statement that prints the value
-of `contents` after the file is read so that we can check that the program is
-working so far.
+Iske baad, hum dobara ek temporary `println!` statement add karte hain jo file read hone ke baad `contents` ki value ko print karta hai, taake hum check kar saken ke program ab tak sahi kaam kar raha hai.
 
-Let’s run this code with any string as the first command line argument (because
-we haven’t implemented the searching part yet) and the _poem.txt_ file as the
-second argument:
+Aaiye is code ko pehle command line argument ke taur par kisi bhi string ke saath (kyun ke humne abhi searching wala hissa implement nahi kiya) aur doosre argument ke taur par *poem.txt* file ke saath run karte hain:
 
 ```console
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-04/output.txt}}
 ```
 
-Great! The code read and then printed the contents of the file. But the code
-has a few flaws. At the moment, the `main` function has multiple
-responsibilities: Generally, functions are clearer and easier to maintain if
-each function is responsible for only one idea. The other problem is that we’re
-not handling errors as well as we could. The program is still small, so these
-flaws aren’t a big problem, but as the program grows, it will be harder to fix
-them cleanly. It’s a good practice to begin refactoring early on when
-developing a program because it’s much easier to refactor smaller amounts of
-code. We’ll do that next.
+Great! Code ne file ke contents ko read kiya aur phir print kar diya. Lekin code mein kuch flaws hain. Filhaal, `main` function ki multiple responsibilities hain: Aam taur par, functions zyada clear aur maintain karne mein aasaan hote hain agar har function sirf ek idea ke liye responsible ho. Doosra problem yeh hai ke hum errors ko utni achhi tarah handle nahi kar rahe jitna hum kar sakte hain. Program abhi chhota hai, is liye yeh flaws koi bara problem nahi hain, lekin jaise jaise program grow karega, inhein cleanly fix karna mushkil hoga. Program develop karte waqt early stage par refactoring shuru karna ek achhi practice hai, kyun ke chhoti miktar mein code ko refactor karna kaafi aasaan hota hai. Ab hum yahi karenge.

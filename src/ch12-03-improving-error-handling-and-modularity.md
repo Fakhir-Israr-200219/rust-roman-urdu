@@ -1,37 +1,14 @@
 ## Refactoring to Improve Modularity and Error Handling
 
-To improve our program, we’ll fix four problems that have to do with the
-program’s structure and how it’s handling potential errors. First, our `main`
-function now performs two tasks: It parses arguments and reads files. As our
-program grows, the number of separate tasks the `main` function handles will
-increase. As a function gains responsibilities, it becomes more difficult to
-reason about, harder to test, and harder to change without breaking one of its
-parts. It’s best to separate functionality so that each function is responsible
-for one task.
+Apne program ko improve karne ke liye, hum chaar problems ko fix karenge jo program ki structure aur potential errors ko handle karne ke tareeqe se related hain. Sab se pehle, hamara `main` function ab do tasks perform karta hai: arguments ko parse karna aur files ko read karna. Jaise jaise hamara program grow karega, `main` function ke handle kiye jane wale separate tasks ki tadaad barhti jayegi. Jaise hi ek function ki responsibilities barhti hain, uske baare mein reasoning karna zyada mushkil ho jata hai, usay test karna mushkil ho jata hai, aur uske kisi ek part ko break kiye baghair usay change karna bhi mushkil ho jata hai. Behtar yeh hai ke functionality ko separate kiya jaye taake har function sirf ek task ke liye responsible ho.
 
-This issue also ties into the second problem: Although `query` and `file_path`
-are configuration variables to our program, variables like `contents` are used
-to perform the program’s logic. The longer `main` becomes, the more variables
-we’ll need to bring into scope; the more variables we have in scope, the harder
-it will be to keep track of the purpose of each. It’s best to group the
-configuration variables into one structure to make their purpose clear.
+Yeh issue doosri problem se bhi related hai: Agarche `query` aur `file_path` hamare program ke configuration variables hain, lekin `contents` jaise variables program ki logic perform karne ke liye use hote hain. Jitna `main` lamba hota jayega, utne hi zyada variables humein scope mein lane padenge; aur jitne zyada variables scope mein honge, utna hi mushkil hoga ke har variable ke purpose ko track kiya ja sake. Behtar yeh hai ke configuration variables ko ek structure mein group kar diya jaye taake unka purpose clear ho.
 
-The third problem is that we’ve used `expect` to print an error message when
-reading the file fails, but the error message just prints `Should have been
-able to read the file`. Reading a file can fail in a number of ways: For
-example, the file could be missing, or we might not have permission to open it.
-Right now, regardless of the situation, we’d print the same error message for
-everything, which wouldn’t give the user any information!
+Teesri problem yeh hai ke file read karne mein failure hone par error message print karne ke liye humne `expect` use kiya hai, lekin error message sirf `Should have been able to read the file` print karta hai. File read karna kai ways mein fail ho sakta hai: Misal ke taur par, file missing ho sakti hai, ya shayad hamare paas use open karne ki permission na ho. Filhaal, situation chahe jo bhi ho, hum har cheez ke liye same error message print karenge, jo user ko koi information nahi dega!
 
-Fourth, we use `expect` to handle an error, and if the user runs our program
-without specifying enough arguments, they’ll get an `index out of bounds` error
-from Rust that doesn’t clearly explain the problem. It would be best if all the
-error-handling code were in one place so that future maintainers had only one
-place to consult the code if the error-handling logic needed to change. Having
-all the error-handling code in one place will also ensure that we’re printing
-messages that will be meaningful to our end users.
+Chauthi problem yeh hai ke hum error handle karne ke liye `expect` use karte hain, aur agar user hamare program ko sufficient arguments specify kiye baghair run kare, to use Rust ki taraf se `index out of bounds` error milega jo problem ko clearly explain nahi karta. Behtar yeh hoga ke tamam error-handling code ek hi jagah ho taake future maintainers ke paas sirf ek jagah ho jahan woh code ko consult kar saken agar error-handling logic ko change karne ki zaroorat pade. Tamam error-handling code ko ek hi jagah rakhne se yeh bhi ensure hoga ke hum aise messages print kar rahe hon jo hamare end users ke liye meaningful hon.
 
-Let’s address these four problems by refactoring our project.
+Aaiye apne project ko refactor karke in chaar problems ko address karte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -39,39 +16,24 @@ Let’s address these four problems by refactoring our project.
 
 ### Separating Concerns in Binary Projects
 
-The organizational problem of allocating responsibility for multiple tasks to
-the `main` function is common to many binary projects. As a result, many Rust
-programmers find it useful to split up the separate concerns of a binary
-program when the `main` function starts getting large. This process has the
-following steps:
+`main` function ko multiple tasks ki responsibility dene ka organizational problem bohat se binary projects mein common hai. Isi wajah se, bohat se Rust programmers ke liye binary program ke separate concerns ko split karna useful hota hai jab `main` function bara hona shuru ho jata hai. Is process ke following steps hain:
 
-- Split your program into a _main.rs_ file and a _lib.rs_ file and move your
-  program’s logic to _lib.rs_.
-- As long as your command line parsing logic is small, it can remain in
-  the `main` function.
-- When the command line parsing logic starts getting complicated, extract it
-  from the `main` function into other functions or types.
+* Apne program ko ek *main.rs* file aur ek *lib.rs* file mein split karein aur apne program ki logic ko *lib.rs* mein move karein.
+* Jab tak aapki command line parsing logic chhoti hai, yeh `main` function mein reh sakti hai.
+* Jab command line parsing logic complicated hona shuru ho jaye, to ise `main` function se extract karke doosre functions ya types mein move karein.
 
-The responsibilities that remain in the `main` function after this process
-should be limited to the following:
+Is process ke baad `main` function mein jo responsibilities baqi reh jati hain, woh following tak limited honi chahiye:
 
-- Calling the command line parsing logic with the argument values
-- Setting up any other configuration
-- Calling a `run` function in _lib.rs_
-- Handling the error if `run` returns an error
+* Argument values ke saath command line parsing logic ko call karna
+* Koi bhi doosri configuration set up karna
+* *lib.rs* mein ek `run` function ko call karna
+* Agar `run` error return kare to us error ko handle karna
 
-This pattern is about separating concerns: _main.rs_ handles running the
-program and _lib.rs_ handles all the logic of the task at hand. Because you
-can’t test the `main` function directly, this structure lets you test all of
-your program’s logic by moving it out of the `main` function. The code that
-remains in the `main` function will be small enough to verify its correctness
-by reading it. Let’s rework our program by following this process.
+Yeh pattern concerns ko separate karne ke baare mein hai: *main.rs* program ko run karne ko handle karta hai aur *lib.rs* us task ki tamam logic ko handle karta hai jo program perform kar raha hai. Kyun ke aap `main` function ko directly test nahi kar sakte, yeh structure aapko apne program ki tamam logic ko `main` function se bahar move karke test karne deta hai. `main` function mein jo code baqi reh jata hai woh itna chhota hoga ke uski correctness ko sirf use read karke verify kiya ja sakta hai. Aaiye is process ko follow karte hue apne program ko dobara rework karte hain.
 
 #### Extracting the Argument Parser
 
-We’ll extract the functionality for parsing arguments into a function that
-`main` will call. Listing 12-5 shows the new start of the `main` function that
-calls a new function `parse_config`, which we’ll define in _src/main.rs_.
+Hum arguments ko parse karne ki functionality ko ek function mein extract karenge jise `main` call karega. Listing 12-5 `main` function ka naya start dikhati hai jo ek naye function `parse_config` ko call karta hai, jise hum *src/main.rs* mein define karenge.
 
 <Listing number="12-5" file-name="src/main.rs" caption="Extracting a `parse_config` function from `main`">
 
@@ -81,38 +43,17 @@ calls a new function `parse_config`, which we’ll define in _src/main.rs_.
 
 </Listing>
 
-We’re still collecting the command line arguments into a vector, but instead of
-assigning the argument value at index 1 to the variable `query` and the
-argument value at index 2 to the variable `file_path` within the `main`
-function, we pass the whole vector to the `parse_config` function. The
-`parse_config` function then holds the logic that determines which argument
-goes in which variable and passes the values back to `main`. We still create
-the `query` and `file_path` variables in `main`, but `main` no longer has the
-responsibility of determining how the command line arguments and variables
-correspond.
+Hum ab bhi command line arguments ko ek vector mein collect kar rahe hain, lekin `main` function ke andar index 1 par maujood argument value ko `query` variable aur index 2 par maujood argument value ko `file_path` variable mein assign karne ke bajaye, hum poore vector ko `parse_config` function mein pass karte hain. Phir `parse_config` function woh logic hold karta hai jo determine karta hai ke kaunsa argument kis variable mein jana chahiye aur values ko wapas `main` mein pass karta hai. Hum ab bhi `main` mein `query` aur `file_path` variables create karte hain, lekin ab `main` ke paas yeh responsibility nahi hoti ke command line arguments aur variables ek doosre se kis tarah correspond karte hain.
 
-This rework may seem like overkill for our small program, but we’re refactoring
-in small, incremental steps. After making this change, run the program again to
-verify that the argument parsing still works. It’s good to check your progress
-often, to help identify the cause of problems when they occur.
+Yeh rework hamare chhote program ke liye overkill lag sakta hai, lekin hum chhote, incremental steps mein refactoring kar rahe hain. Yeh change karne ke baad, program ko dobara run karein taake verify kiya ja sake ke argument parsing ab bhi kaam kar rahi hai. Apni progress ko frequently check karna achha hota hai, taake jab problems occur hon to unki cause identify karne mein madad mile.
 
 #### Grouping Configuration Values
 
-We can take another small step to improve the `parse_config` function further.
-At the moment, we’re returning a tuple, but then we immediately break that
-tuple into individual parts again. This is a sign that perhaps we don’t have
-the right abstraction yet.
+Hum `parse_config` function ko aur improve karne ke liye ek aur chhota step le sakte hain. Filhaal, hum ek tuple return kar rahe hain, lekin phir hum foran us tuple ko dobara individual parts mein break kar dete hain. Yeh is baat ki nishani hai ke shayad abhi hamare paas sahi abstraction nahi hai.
 
-Another indicator that shows there’s room for improvement is the `config` part
-of `parse_config`, which implies that the two values we return are related and
-are both part of one configuration value. We’re not currently conveying this
-meaning in the structure of the data other than by grouping the two values into
-a tuple; we’ll instead put the two values into one struct and give each of the
-struct fields a meaningful name. Doing so will make it easier for future
-maintainers of this code to understand how the different values relate to each
-other and what their purpose is.
+Ek aur indicator jo dikhata hai ke improvement ki gunjaish hai, woh `parse_config` ka `config` wala hissa hai, jo imply karta hai ke jo do values hum return karte hain woh aapas mein related hain aur dono ek hi configuration value ka hissa hain. Filhaal hum data ke structure mein is meaning ko convey nahi kar rahe, siwaye iske ke dono values ko ek tuple mein group kar diya gaya hai; iske bajaye hum dono values ko ek struct mein rakhenge aur struct ke har field ko ek meaningful name denge. Aisa karne se future mein is code ko maintain karne walon ke liye yeh samajhna asaan hoga ke different values ek doosre se kis tarah related hain aur unka purpose kya hai.
 
-Listing 12-6 shows the improvements to the `parse_config` function.
+Listing 12-6 `parse_config` function mein ki gayi improvements ko dikhati hai.
 
 <Listing number="12-6" file-name="src/main.rs" caption="Refactoring `parse_config` to return an instance of a `Config` struct">
 
@@ -122,63 +63,23 @@ Listing 12-6 shows the improvements to the `parse_config` function.
 
 </Listing>
 
-We’ve added a struct named `Config` defined to have fields named `query` and
-`file_path`. The signature of `parse_config` now indicates that it returns a
-`Config` value. In the body of `parse_config`, where we used to return
-string slices that reference `String` values in `args`, we now define `Config`
-to contain owned `String` values. The `args` variable in `main` is the owner of
-the argument values and is only letting the `parse_config` function borrow
-them, which means we’d violate Rust’s borrowing rules if `Config` tried to take
-ownership of the values in `args`.
+Humne `Config` naam ka ek struct add kiya hai jise `query` aur `file_path` naam ke fields rakhne ke liye define kiya gaya hai. Ab `parse_config` ka signature indicate karta hai ke yeh ek `Config` value return karta hai. `parse_config` ke body mein, jahan hum pehle `args` mein maujood `String` values ko reference karne wale string slices return karte the, ab hum `Config` ko owned `String` values contain karne ke liye define karte hain. `main` mein `args` variable argument values ka owner hai aur sirf `parse_config` function ko unhein borrow karne de raha hai, jis ka matlab hai ke agar `Config` `args` ki values ki ownership lene ki koshish kare to hum Rust ke borrowing rules ki khilaf-warzi karenge.
 
-There are a number of ways we could manage the `String` data; the easiest,
-though somewhat inefficient, route is to call the `clone` method on the values.
-This will make a full copy of the data for the `Config` instance to own, which
-takes more time and memory than storing a reference to the string data.
-However, cloning the data also makes our code very straightforward because we
-don’t have to manage the lifetimes of the references; in this circumstance,
-giving up a little performance to gain simplicity is a worthwhile trade-off.
+Hum `String` data ko manage karne ke kai tareeqe apna sakte hain; lekin sab se asaan, agarche kuch had tak inefficient, tareeqa values par `clone` method call karna hai. Is se data ki ek complete copy banegi jise `Config` instance own karega, jo string data ka reference store karne ke muqable mein zyada time aur memory lega. Lekin data ko clone karna hamare code ko kaafi straightforward bhi bana deta hai kyun ke humein references ki lifetimes manage nahi karni padtin; is situation mein simplicity hasil karne ke liye thori performance sacrifice karna ek worthwhile trade-off hai.
 
 > ### The Trade-Offs of Using `clone`
 >
-> There’s a tendency among many Rustaceans to avoid using `clone` to fix
-> ownership problems because of its runtime cost. In
-> [Chapter 13][ch13]<!-- ignore -->, you’ll learn how to use more efficient
-> methods in this type of situation. But for now, it’s okay to copy a few
-> strings to continue making progress because you’ll make these copies only
-> once and your file path and query string are very small. It’s better to have
-> a working program that’s a bit inefficient than to try to hyperoptimize code
-> on your first pass. As you become more experienced with Rust, it’ll be
-> easier to start with the most efficient solution, but for now, it’s
-> perfectly acceptable to call `clone`.
+> Bohat se Rustaceans mein `clone` ko ownership problems fix karne ke liye use karne se bachne ka rujhan hota hai, kyun ke iski runtime cost hoti hai. [Chapter 13][ch13]<!-- ignore --> mein, aap seekhenge ke is tarah ki situation mein zyada efficient methods kaise use kiye jate hain. Lekin filhaal, progress continue rakhne ke liye kuch strings ko copy karna theek hai, kyun ke aap yeh copies sirf ek baar banayenge aur aapka file path aur query string bohat chhote hain. Aisa working program rakhna jo thora inefficient ho, is baat se behtar hai ke aap apni first pass mein code ko hyperoptimize karne ki koshish karein. Jaise jaise aap Rust ke saath zyada experienced hote jayenge, sab se efficient solution ke saath start karna asaan ho jayega, lekin filhaal `clone` call karna bilkul acceptable hai.
 
-We’ve updated `main` so that it places the instance of `Config` returned by
-`parse_config` into a variable named `config`, and we updated the code that
-previously used the separate `query` and `file_path` variables so that it now
-uses the fields on the `Config` struct instead.
+Humne `main` ko update kiya hai taake woh `parse_config` se return hone wale `Config` instance ko `config` naam ke variable mein rakhe, aur humne pehle separate `query` aur `file_path` variables ko use karne wale code ko bhi update kiya hai taake ab woh `Config` struct ke fields ko use kare.
 
-Now our code more clearly conveys that `query` and `file_path` are related and
-that their purpose is to configure how the program will work. Any code that
-uses these values knows to find them in the `config` instance in the fields
-named for their purpose.
+Ab hamara code zyada clearly convey karta hai ke `query` aur `file_path` aapas mein related hain aur unka purpose program ke kaam karne ke tareeqe ko configure karna hai. Jo bhi code in values ko use karta hai, woh janta hai ke unhein unke purpose ke naam par rakhe gaye fields mein `config` instance ke andar find karna hai.
 
 #### Creating a Constructor for `Config`
 
-So far, we’ve extracted the logic responsible for parsing the command line
-arguments from `main` and placed it in the `parse_config` function. Doing so
-helped us see that the `query` and `file_path` values were related, and that
-relationship should be conveyed in our code. We then added a `Config` struct to
-name the related purpose of `query` and `file_path` and to be able to return the
-values’ names as struct field names from the `parse_config` function.
+Ab tak, humne command line arguments ko parse karne ki logic ko `main` se extract karke `parse_config` function mein rakh diya hai. Aisa karne se humein yeh samajhne mein madad mili ke `query` aur `file_path` values aapas mein related hain, aur yeh relationship hamare code mein convey honi chahiye. Phir humne `Config` struct add kiya taake `query` aur `file_path` ke related purpose ko name kiya ja sake aur `parse_config` function se values ke names ko struct field names ke taur par return kiya ja sake.
 
-So, now that the purpose of the `parse_config` function is to create a `Config`
-instance, we can change `parse_config` from a plain function to a function
-named `new` that is associated with the `Config` struct. Making this change
-will make the code more idiomatic. We can create instances of types in the
-standard library, such as `String`, by calling `String::new`. Similarly, by
-changing `parse_config` into a `new` function associated with `Config`, we’ll
-be able to create instances of `Config` by calling `Config::new`. Listing 12-7
-shows the changes we need to make.
+Ab, kyun ke `parse_config` function ka purpose `Config` instance create karna hai, hum `parse_config` ko ek plain function se change karke `new` naam ka function bana sakte hain jo `Config` struct ke saath associated ho. Yeh change karne se code zyada idiomatic ho jayega. Hum standard library mein types ke instances, jaise `String`, ko `String::new` call karke create kar sakte hain. Isi tarah, `parse_config` ko `Config` ke saath associated `new` function mein change karke, hum `Config` ke instances `Config::new` call karke create kar sakenge. Listing 12-7 un changes ko dikhati hai jo humein karne ki zarurat hai.
 
 <Listing number="12-7" file-name="src/main.rs" caption="Changing `parse_config` into `Config::new`">
 
@@ -188,31 +89,21 @@ shows the changes we need to make.
 
 </Listing>
 
-We’ve updated `main` where we were calling `parse_config` to instead call
-`Config::new`. We’ve changed the name of `parse_config` to `new` and moved it
-within an `impl` block, which associates the `new` function with `Config`. Try
-compiling this code again to make sure it works.
+Humne `main` mein us jagah ko update kiya hai jahan hum `parse_config` call kar rahe the, taake ab `Config::new` call kiya jaye. Humne `parse_config` ka name `new` kar diya hai aur ise ek `impl` block ke andar move kar diya hai, jo `new` function ko `Config` ke saath associate karta hai. Is code ko dobara compile karke dekhein taake yakeen ho jaye ke yeh kaam karta hai.
 
 ### Fixing the Error Handling
 
-Now we’ll work on fixing our error handling. Recall that attempting to access
-the values in the `args` vector at index 1 or index 2 will cause the program to
-panic if the vector contains fewer than three items. Try running the program
-without any arguments; it will look like this:
+Ab hum apni error handling ko fix karne par kaam karenge. Yaad karein ke `args` vector mein index 1 ya index 2 par maujood values ko access karne ki koshish karne par program panic kar jayega agar vector mein teen se kam items hon. Program ko bina kisi arguments ke run karke dekhein; yeh kuch is tarah nazar aayega:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-07/output.txt}}
 ```
 
-The line `index out of bounds: the len is 1 but the index is 1` is an error
-message intended for programmers. It won’t help our end users understand what
-they should do instead. Let’s fix that now.
+`index out of bounds: the len is 1 but the index is 1` wali line ek error message hai jo programmers ke liye intended hai. Yeh hamare end users ko yeh samajhne mein madad nahi karega ke unhein iske bajaye kya karna chahiye. Aaiye ab ise fix karte hain.
 
 #### Improving the Error Message
 
-In Listing 12-8, we add a check in the `new` function that will verify that the
-slice is long enough before accessing index 1 and index 2. If the slice isn’t
-long enough, the program panics and displays a better error message.
+Listing 12-8 mein, hum `new` function mein ek check add karte hain jo verify karega ke index 1 aur index 2 ko access karne se pehle slice ki length kaafi hai. Agar slice ki length kaafi nahi hai, to program panic karega aur ek behtar error message display karega.
 
 <Listing number="12-8" file-name="src/main.rs" caption="Adding a check for the number of arguments">
 
@@ -222,28 +113,15 @@ long enough, the program panics and displays a better error message.
 
 </Listing>
 
-This code is similar to [the `Guess::new` function we wrote in Listing
-9-13][ch9-custom-types]<!-- ignore -->, where we called `panic!` when the
-`value` argument was out of the range of valid values. Instead of checking for
-a range of values here, we’re checking that the length of `args` is at least
-`3` and the rest of the function can operate under the assumption that this
-condition has been met. If `args` has fewer than three items, this condition
-will be `true`, and we call the `panic!` macro to end the program immediately.
+Yeh code [Listing 9-13 mein likhe gaye `Guess::new` function][ch9-custom-types]<!-- ignore --> jaisa hai, jahan humne `panic!` call kiya tha jab `value` argument valid values ki range se bahar tha. Yahan values ki range check karne ke bajaye, hum yeh check kar rahe hain ke `args` ki length kam az kam `3` hai aur function ka baqi hissa is assumption ke under operate kar sakta hai ke yeh condition puri hoti hai. Agar `args` mein teen se kam items hon, to yeh condition `true` hogi, aur hum program ko foran end karne ke liye `panic!` macro call karenge.
 
-With these extra few lines of code in `new`, let’s run the program without any
-arguments again to see what the error looks like now:
+`new` mein in chand extra lines of code ke saath, aaiye program ko dobara bina kisi arguments ke run karte hain taake dekhein ke ab error kaisa nazar aata hai:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-08/output.txt}}
 ```
 
-This output is better: We now have a reasonable error message. However, we also
-have extraneous information we don’t want to give to our users. Perhaps the
-technique we used in Listing 9-13 isn’t the best one to use here: A call to
-`panic!` is more appropriate for a programming problem than a usage problem,
-[as discussed in Chapter 9][ch9-error-guidelines]<!-- ignore -->. Instead,
-we’ll use the other technique you learned about in Chapter 9—[returning a
-`Result`][ch9-result]<!-- ignore --> that indicates either success or an error.
+Yeh output behtar hai: Ab hamare paas ek reasonable error message hai. Lekin is mein kuch extra information bhi hai jo hum apne users ko nahi dena chahte. Shayad jo technique humne Listing 9-13 mein use ki thi, woh yahan use karne ke liye best nahi hai: `panic!` ki call programming problem ke liye usage problem ki nisbat zyada appropriate hai, [jaisa ke Chapter 9 mein discuss kiya gaya hai][ch9-error-guidelines]<!-- ignore -->. Iske bajaye, hum woh doosri technique use karenge jo aapne Chapter 9 mein seekhi thi—ek [`Result` return karna][ch9-result]<!-- ignore --> jo ya to success ya error ko indicate karta hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -251,19 +129,9 @@ we’ll use the other technique you learned about in Chapter 9—[returning a
 
 #### Returning a `Result` Instead of Calling `panic!`
 
-We can instead return a `Result` value that will contain a `Config` instance in
-the successful case and will describe the problem in the error case. We’re also
-going to change the function name from `new` to `build` because many
-programmers expect `new` functions to never fail. When `Config::build` is
-communicating to `main`, we can use the `Result` type to signal there was a
-problem. Then, we can change `main` to convert an `Err` variant into a more
-practical error for our users without the surrounding text about `thread
-'main'` and `RUST_BACKTRACE` that a call to `panic!` causes.
+Iske bajaye hum ek `Result` value return kar sakte hain jo successful case mein ek `Config` instance contain karegi aur error case mein problem ko describe karegi. Hum function ka name bhi `new` se change karke `build` karenge kyun ke bohat se programmers `new` functions se expect karte hain ke woh kabhi fail nahi hote. Jab `Config::build` `main` ko communicate kar raha hoga, to hum `Result` type ko yeh signal dene ke liye use kar sakte hain ke koi problem hui hai. Phir hum `main` ko change kar sakte hain taake woh `Err` variant ko hamare users ke liye zyada practical error mein convert kare, bina us surrounding text ke jo `panic!` ki call `thread 'main'` aur `RUST_BACKTRACE` ke baare mein generate karti hai.
 
-Listing 12-9 shows the changes we need to make to the return value of the
-function we’re now calling `Config::build` and the body of the function needed
-to return a `Result`. Note that this won’t compile until we update `main` as
-well, which we’ll do in the next listing.
+Listing 12-9 un changes ko dikhati hai jo humein ab `Config::build` kehlane wale function ki return value aur function ke us body mein karne hain jo `Result` return karegi. Note karein ke jab tak hum `main` ko bhi update nahi karte, yeh compile nahi hoga, jo hum next listing mein karenge.
 
 <Listing number="12-9" file-name="src/main.rs" caption="Returning a `Result` from `Config::build`">
 
@@ -273,18 +141,11 @@ well, which we’ll do in the next listing.
 
 </Listing>
 
-Our `build` function returns a `Result` with a `Config` instance in the success
-case and a string literal in the error case. Our error values will always be
-string literals that have the `'static` lifetime.
+Hamara `build` function ek `Result` return karta hai jismein successful case mein ek `Config` instance aur error case mein ek string literal hota hai. Hamari error values hamesha aise string literals hongi jin ki `'static` lifetime hogi.
 
-We’ve made two changes in the body of the function: Instead of calling `panic!`
-when the user doesn’t pass enough arguments, we now return an `Err` value, and
-we’ve wrapped the `Config` return value in an `Ok`. These changes make the
-function conform to its new type signature.
+Humne function ki body mein do changes kiye hain: User jab kaafi arguments pass nahi karta to `panic!` call karne ke bajaye, ab hum ek `Err` value return karte hain, aur humne `Config` return value ko ek `Ok` mein wrap kar diya hai. Yeh changes function ko uske naye type signature ke mutabiq bana dete hain.
 
-Returning an `Err` value from `Config::build` allows the `main` function to
-handle the `Result` value returned from the `build` function and exit the
-process more cleanly in the error case.
+`Config::build` se ek `Err` value return karne se `main` function ko `build` function se return hone wali `Result` value ko handle karne aur error case mein process ko zyada cleanly exit karne ka mauqa milta hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -292,12 +153,7 @@ process more cleanly in the error case.
 
 #### Calling `Config::build` and Handling Errors
 
-To handle the error case and print a user-friendly message, we need to update
-`main` to handle the `Result` being returned by `Config::build`, as shown in
-Listing 12-10. We’ll also take the responsibility of exiting the command line
-tool with a nonzero error code away from `panic!` and instead implement it by
-hand. A nonzero exit status is a convention to signal to the process that
-called our program that the program exited with an error state.
+Error case ko handle karne aur user-friendly message print karne ke liye, humein `main` ko update karna hoga taake woh `Config::build` se return hone wali `Result` ko handle kare, jaisa ke Listing 12-10 mein dikhaya gaya hai. Hum command line tool ko nonzero error code ke saath exit karne ki responsibility bhi `panic!` se le lenge aur iske bajaye ise khud implement karenge. Nonzero exit status ek convention hai jo us process ko signal karta hai jis ne hamare program ko call kiya ke program error state ke saath exit hua hai.
 
 <Listing number="12-10" file-name="src/main.rs" caption="Exiting with an error code if building a `Config` fails">
 
@@ -307,33 +163,15 @@ called our program that the program exited with an error state.
 
 </Listing>
 
-In this listing, we’ve used a method we haven’t covered in detail yet:
-`unwrap_or_else`, which is defined on `Result<T, E>` by the standard library.
-Using `unwrap_or_else` allows us to define some custom, non-`panic!` error
-handling. If the `Result` is an `Ok` value, this method’s behavior is similar
-to `unwrap`: It returns the inner value that `Ok` is wrapping. However, if the
-value is an `Err` value, this method calls the code in the closure, which is
-an anonymous function we define and pass as an argument to `unwrap_or_else`.
-We’ll cover closures in more detail in [Chapter 13][ch13]<!-- ignore -->. For
-now, you just need to know that `unwrap_or_else` will pass the inner value of
-the `Err`, which in this case is the static string `"not enough arguments"`
-that we added in Listing 12-9, to our closure in the argument `err` that
-appears between the vertical pipes. The code in the closure can then use the
-`err` value when it runs.
+Is listing mein, humne ek aisa method use kiya hai jise humne abhi tak detail mein cover nahi kiya: `unwrap_or_else`, jo standard library ki taraf se `Result<T, E>` par defined hai. `unwrap_or_else` ko use karne se humein kuch custom, non-`panic!` error handling define karne ka mauqa milta hai. Agar `Result` ek `Ok` value hai, to is method ka behavior `unwrap` jaisa hai: yeh woh inner value return karta hai jise `Ok` wrap kar raha hai. Lekin agar value ek `Err` value hai, to yeh method closure ke andar maujood code ko call karta hai, jo ek anonymous function hai jise hum define karke `unwrap_or_else` ko argument ke taur par pass karte hain. Hum closures ko [Chapter 13][ch13]<!-- ignore --> mein zyada detail mein cover karenge. Filhaal, aapko sirf itna jaanne ki zarurat hai ke `unwrap_or_else` `Err` ki inner value ko, jo is case mein static string `"not enough arguments"` hai jo humne Listing 12-9 mein add ki thi, argument `err` mein hamari closure ko pass karega jo vertical pipes ke darmiyan nazar aata hai. Phir closure ke andar ka code run hone par `err` value ko use kar sakta hai.
 
-We’ve added a new `use` line to bring `process` from the standard library into
-scope. The code in the closure that will be run in the error case is only two
-lines: We print the `err` value and then call `process::exit`. The
-`process::exit` function will stop the program immediately and return the
-number that was passed as the exit status code. This is similar to the
-`panic!`-based handling we used in Listing 12-8, but we no longer get all the
-extra output. Let’s try it:
+Humne ek nayi `use` line add ki hai taake standard library se `process` ko scope mein laya ja sake. Error case mein run hone wali closure ka code sirf do lines ka hai: hum `err` value ko print karte hain aur phir `process::exit` call karte hain. `process::exit` function program ko foran rok dega aur woh number return karega jo exit status code ke taur par pass kiya gaya tha. Yeh Listing 12-8 mein use ki gayi `panic!`-based handling jaisa hai, lekin ab humein woh tamam extra output nahi milta. Aaiye ise try karte hain:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-10/output.txt}}
 ```
 
-Great! This output is much friendlier for our users.
+Great! Yeh output hamare users ke liye kaafi zyada friendly hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -341,28 +179,19 @@ Great! This output is much friendlier for our users.
 
 ### Extracting Logic from `main`
 
-Now that we’ve finished refactoring the configuration parsing, let’s turn to
-the program’s logic. As we stated in [“Separating Concerns in Binary
-Projects”](#separation-of-concerns-for-binary-projects)<!-- ignore -->, we’ll
-extract a function named `run` that will hold all the logic currently in the
-`main` function that isn’t involved with setting up configuration or handling
-errors. When we’re done, the `main` function will be concise and easy to verify
-by inspection, and we’ll be able to write tests for all the other logic.
+Ab jab hum configuration parsing ki refactoring complete kar chuke hain, to aaiye program ki logic ki taraf aate hain. Jaisa ke humne [“Separating Concerns in Binary Projects”](#separation-of-concerns-for-binary-projects)<!-- ignore --> mein bataya tha, hum ek `run` naam ka function extract karenge jo `main` function mein currently maujood tamam logic ko hold karega jo configuration set up karne ya errors handle karne se related nahi hai. Jab hum complete kar lenge, to `main` function concise aur inspection ke zariye verify karna asaan hoga, aur hum baqi tamam logic ke liye tests likh sakenge.
 
-Listing 12-11 shows the small, incremental improvement of extracting a `run`
-function.
+Listing 12-11 `run` function ko extract karne ki chhoti, incremental improvement dikhati hai.
 
 <Listing number="12-11" file-name="src/main.rs" caption="Extracting a `run` function containing the rest of the program logic">
 
-```rust,ignore
+```rust,ignore id="9uhjv7"
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-11/src/main.rs:here}}
 ```
 
 </Listing>
 
-The `run` function now contains all the remaining logic from `main`, starting
-from reading the file. The `run` function takes the `Config` instance as an
-argument.
+Ab `run` function mein `main` ki baqi tamam logic maujood hai, jo file read karne se start hoti hai. `run` function `Config` instance ko ek argument ke taur par leta hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -370,13 +199,7 @@ argument.
 
 #### Returning Errors from `run`
 
-With the remaining program logic separated into the `run` function, we can
-improve the error handling, as we did with `Config::build` in Listing 12-9.
-Instead of allowing the program to panic by calling `expect`, the `run`
-function will return a `Result<T, E>` when something goes wrong. This will let
-us further consolidate the logic around handling errors into `main` in a
-user-friendly way. Listing 12-12 shows the changes we need to make to the
-signature and body of `run`.
+Ab jab baqi program logic ko `run` function mein separate kar diya gaya hai, hum error handling ko improve kar sakte hain, jaisa ke humne Listing 12-9 mein `Config::build` ke saath kiya tha. Program ko `expect` call karke panic karne dene ke bajaye, `run` function jab kuch ghalat hoga to ek `Result<T, E>` return karega. Is se humein errors handle karne ki logic ko `main` mein ek user-friendly tareeqe se aur zyada consolidate karne ka mauqa milega. Listing 12-12 un changes ko dikhati hai jo humein `run` ke signature aur body mein karne hain.
 
 <Listing number="12-12" file-name="src/main.rs" caption="Changing the `run` function to return `Result`">
 
@@ -386,78 +209,43 @@ signature and body of `run`.
 
 </Listing>
 
-We’ve made three significant changes here. First, we changed the return type of
-the `run` function to `Result<(), Box<dyn Error>>`. This function previously
-returned the unit type, `()`, and we keep that as the value returned in the
-`Ok` case.
+Yahan humne teen significant changes kiye hain. Sab se pehle, humne `run` function ka return type `Result<(), Box<dyn Error>>` kar diya hai. Pehle yeh function unit type, `()`, return karta tha, aur hum ise `Ok` case mein return hone wali value ke taur par rakhte hain.
 
-For the error type, we used the trait object `Box<dyn Error>` (and we brought
-`std::error::Error` into scope with a `use` statement at the top). We’ll cover
-trait objects in [Chapter 18][ch18]<!-- ignore -->. For now, just know that
-`Box<dyn Error>` means the function will return a type that implements the
-`Error` trait, but we don’t have to specify what particular type the return
-value will be. This gives us flexibility to return error values that may be of
-different types in different error cases. The `dyn` keyword is short for
-_dynamic_.
+Error type ke liye, humne trait object `Box<dyn Error>` use kiya hai (aur top par `use` statement ke zariye `std::error::Error` ko scope mein laya hai). Hum trait objects ko [Chapter 18][ch18]<!-- ignore --> mein cover karenge. Filhaal, bas itna jaan lein ke `Box<dyn Error>` ka matlab hai ke function ek aisi type return karega jo `Error` trait ko implement karti hai, lekin humein yeh specify karne ki zarurat nahi ke return value ki particular type kya hogi. Is se humein aise error values return karne ki flexibility milti hai jo different error cases mein different types ki ho sakti hain. `dyn` keyword *dynamic* ka short form hai.
 
-Second, we’ve removed the call to `expect` in favor of the `?` operator, as we
-talked about in [Chapter 9][ch9-question-mark]<!-- ignore -->. Rather than
-`panic!` on an error, `?` will return the error value from the current function
-for the caller to handle.
+Doosra, humne `expect` ki call ko hata kar `?` operator use kiya hai, jaisa ke humne [Chapter 9][ch9-question-mark]<!-- ignore --> mein discuss kiya tha. Error par `panic!` karne ke bajaye, `?` current function se error value return kar dega taake caller use handle kar sake.
 
-Third, the `run` function now returns an `Ok` value in the success case.
-We’ve declared the `run` function’s success type as `()` in the signature,
-which means we need to wrap the unit type value in the `Ok` value. This
-`Ok(())` syntax might look a bit strange at first. But using `()` like this is
-the idiomatic way to indicate that we’re calling `run` for its side effects
-only; it doesn’t return a value we need.
+Teesra, ab `run` function success case mein ek `Ok` value return karta hai. Humne signature mein `run` function ka success type `()` declare kiya hai, jis ka matlab hai ke humein unit type value ko `Ok` value mein wrap karna hoga. Yeh `Ok(())` syntax shuru mein thora ajeeb lag sakta hai. Lekin `()` ko is tarah use karna yeh indicate karne ka idiomatic tareeqa hai ke hum `run` ko sirf uske side effects ke liye call kar rahe hain; yeh koi aisi value return nahi karta jiski humein zarurat ho.
 
-When you run this code, it will compile but will display a warning:
+Jab aap is code ko run karenge, to yeh compile ho jayega lekin ek warning display karega:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-12/output.txt}}
 ```
 
-Rust tells us that our code ignored the `Result` value and the `Result` value
-might indicate that an error occurred. But we’re not checking to see whether or
-not there was an error, and the compiler reminds us that we probably meant to
-have some error-handling code here! Let’s rectify that problem now.
+Rust humein batata hai ke hamare code ne `Result` value ko ignore kar diya hai aur `Result` value yeh indicate kar sakti hai ke koi error occur hua hai. Lekin hum yeh check nahi kar rahe ke error hua hai ya nahi, aur compiler humein yaad dilata hai ke shayad humein yahan kuch error-handling code rakhna tha! Aaiye ab is problem ko theek karte hain.
 
 #### Handling Errors Returned from `run` in `main`
 
-We’ll check for errors and handle them using a technique similar to one we used
-with `Config::build` in Listing 12-10, but with a slight difference:
+Hum errors ko check karenge aur unhein ek aisi technique ke zariye handle karenge jo Listing 12-10 mein `Config::build` ke saath use ki gayi technique jaisi hai, lekin is mein ek halka sa difference hai:
 
 <span class="filename">Filename: src/main.rs</span>
 
-```rust,ignore
+```rust,ignore id="g8x0qa"
 {{#rustdoc_include ../listings/ch12-an-io-project/no-listing-01-handling-errors-in-main/src/main.rs:here}}
 ```
 
-We use `if let` rather than `unwrap_or_else` to check whether `run` returns an
-`Err` value and to call `process::exit(1)` if it does. The `run` function
-doesn’t return a value that we want to `unwrap` in the same way that
-`Config::build` returns the `Config` instance. Because `run` returns `()` in
-the success case, we only care about detecting an error, so we don’t need
-`unwrap_or_else` to return the unwrapped value, which would only be `()`.
+Hum `if let` ko `unwrap_or_else` ke bajaye use karte hain taake check kiya ja sake ke `run` ek `Err` value return karta hai ya nahi, aur agar karta hai to `process::exit(1)` call kiya ja sake. `run` koi aisi value return nahi karta jise hum `unwrap` karna chahte hon, jis tarah `Config::build` `Config` instance return karta hai. Kyun ke success case mein `run` `()` return karta hai, hum sirf error detect karne mein interested hain, is liye humein `unwrap_or_else` ki zarurat nahi hai jo unwrapped value return kare, jo sirf `()` hoti.
 
-The bodies of the `if let` and the `unwrap_or_else` functions are the same in
-both cases: We print the error and exit.
+Dono cases mein `if let` aur `unwrap_or_else` functions ki bodies same hain: hum error print karte hain aur exit karte hain.
 
 ### Splitting Code into a Library Crate
 
-Our `minigrep` project is looking good so far! Now we’ll split the
-_src/main.rs_ file and put some code into the _src/lib.rs_ file. That way, we
-can test the code and have a _src/main.rs_ file with fewer responsibilities.
+Hamara `minigrep` project ab tak achha lag raha hai! Ab hum *src/main.rs* file ko split karenge aur kuch code ko *src/lib.rs* file mein rakhenge. Is tarah, hum code ko test kar sakenge aur hamare paas kam responsibilities wali *src/main.rs* file hogi.
 
-Let’s define the code responsible for searching text in _src/lib.rs_ rather
-than in _src/main.rs_, which will let us (or anyone else using our
-`minigrep` library) call the searching function from more contexts than our
-`minigrep` binary.
+Aaiye text search karne ki responsibility wale code ko *src/main.rs* ke bajaye *src/lib.rs* mein define karte hain, jo humein (ya hamari `minigrep` library ko use karne wale kisi bhi doosre shakhs ko) searching function ko hamari `minigrep` binary se zyada contexts mein call karne dega.
 
-First, let’s define the `search` function signature in _src/lib.rs_ as shown in
-Listing 12-13, with a body that calls the `unimplemented!` macro. We’ll explain
-the signature in more detail when we fill in the implementation.
+Sab se pehle, aaiye *src/lib.rs* mein `search` function ka signature define karte hain, jaisa ke Listing 12-13 mein dikhaya gaya hai, aur iski body mein `unimplemented!` macro call karte hain. Jab hum implementation fill karenge to hum signature ko zyada detail mein explain karenge.
 
 <Listing number="12-13" file-name="src/lib.rs" caption="Defining the `search` function in *src/lib.rs*">
 
@@ -467,12 +255,9 @@ the signature in more detail when we fill in the implementation.
 
 </Listing>
 
-We’ve used the `pub` keyword on the function definition to designate `search`
-as part of our library crate’s public API. We now have a library crate that we
-can use from our binary crate and that we can test!
+Humne function definition par `pub` keyword use kiya hai taake `search` ko hamare library crate ke public API ke hissa ke taur par designate kiya ja sake. Ab hamare paas ek library crate hai jise hum apne binary crate se use kar sakte hain aur jise hum test kar sakte hain!
 
-Now we need to bring the code defined in _src/lib.rs_ into the scope of the
-binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
+Ab humein *src/lib.rs* mein define kiye gaye code ko binary crate mein *src/main.rs* ke scope mein lana hai aur use call karna hai, jaisa ke Listing 12-14 mein dikhaya gaya hai.
 
 <Listing number="12-14" file-name="src/main.rs" caption="Using the `minigrep` library crate’s `search` function in *src/main.rs*">
 
@@ -482,32 +267,17 @@ binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
 
 </Listing>
 
-We add a `use minigrep::search` line to bring the `search` function from
-the library crate into the binary crate’s scope. Then, in the `run` function,
-rather than printing out the contents of the file, we call the `search`
-function and pass the `config.query` value and `contents` as arguments. Then,
-`run` will use a `for` loop to print each line returned from `search` that
-matched the query. This is also a good time to remove the `println!` calls in
-the `main` function that displayed the query and the file path so that our
-program only prints the search results (if no errors occur).
+Hum `use minigrep::search` line add karte hain taake library crate se `search` function ko binary crate ke scope mein laya ja sake. Phir, `run` function mein file ke contents ko print karne ke bajaye, hum `search` function ko call karte hain aur `config.query` value aur `contents` ko arguments ke taur par pass karte hain. Phir, `run` `for` loop use karke `search` se return hone wali har us line ko print karega jo query se match karti hai. Yeh `main` function mein maujood un `println!` calls ko remove karne ka bhi achha waqt hai jo query aur file path display karti thin, taake hamara program sirf search results print kare (agar koi errors occur na hon).
 
-Note that the search function will be collecting all the results into a vector
-it returns before any printing happens. This implementation could be slow to
-display results when searching large files, because results aren’t printed as
-they’re found; we’ll discuss a possible way to fix this using iterators in
-Chapter 13.
+Note karein ke search function printing shuru hone se pehle tamam results ko ek vector mein collect karega aur phir us vector ko return karega. Bari files mein search karte waqt yeh implementation results display karne mein slow ho sakti hai, kyun ke results milte hi print nahi kiye jate; hum Chapter 13 mein iterators ko use karke isay fix karne ke ek possible tareeqe par baat karenge.
 
-Whew! That was a lot of work, but we’ve set ourselves up for success in the
-future. Now it’s much easier to handle errors, and we’ve made the code more
-modular. Almost all of our work will be done in _src/lib.rs_ from here on out.
+Whew! Yeh kaafi kaam tha, lekin humne khud ko future mein success ke liye set up kar diya hai. Ab errors handle karna kaafi asaan hai, aur humne code ko zyada modular bana diya hai. Yahan se aage hamara lagbhag tamam kaam *src/lib.rs* mein hoga.
 
-Let’s take advantage of this newfound modularity by doing something that would
-have been difficult with the old code but is easy with the new code: We’ll
-write some tests!
+Aaiye is nayi hasil hui modularity ka faida uthate hain aur woh kaam karte hain jo purane code ke saath mushkil hota, lekin naye code ke saath asaan hai: hum kuch tests likhenge!
 
 [ch13]: ch13-00-functional-features.html
 [ch9-custom-types]: ch09-03-to-panic-or-not-to-panic.html#creating-custom-types-for-validation
 [ch9-error-guidelines]: ch09-03-to-panic-or-not-to-panic.html#guidelines-for-error-handling
 [ch9-result]: ch09-02-recoverable-errors-with-result.html
 [ch18]: ch18-00-oop.html
-[ch9-question-mark]: ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator
+
