@@ -1,28 +1,31 @@
 ## Building a Single-Threaded Web Server
 
-We’ll start by getting a single-threaded web server working. Before we begin,
-let’s look at a quick overview of the protocols involved in building web
-servers. The details of these protocols are beyond the scope of this book, but
-a brief overview will give you the information you need.
+Hum ek single-threaded web server ko working banane se shuru karenge. Shuru
+karne se pehle, aao web servers build karne mein shamil protocols ka ek quick
+overview dekh lete hain. In protocols ki details is book ke scope se bahar hain,
+lekin ek brief overview aapko woh information dega jo aapko chahiye.
 
-The two main protocols involved in web servers are _Hypertext Transfer
-Protocol_ _(HTTP)_ and _Transmission Control Protocol_ _(TCP)_. Both protocols
-are _request-response_ protocols, meaning a _client_ initiates requests and a
-_server_ listens to the requests and provides a response to the client. The
-contents of those requests and responses are defined by the protocols.
+Web servers mein shamil do main protocols *Hypertext Transfer
+Protocol* *(HTTP)* aur *Transmission Control Protocol* *(TCP)* hain. Dono
+protocols *request-response* protocols hain, yani ek *client* requests initiate
+karta hai aur ek *server* requests ko listen karta hai aur client ko response
+provide karta hai. Un requests aur responses ka content protocols ke zariye
+define hota hai.
 
-TCP is the lower-level protocol that describes the details of how information
-gets from one server to another but doesn’t specify what that information is.
-HTTP builds on top of TCP by defining the contents of the requests and
-responses. It’s technically possible to use HTTP with other protocols, but in
-the vast majority of cases, HTTP sends its data over TCP. We’ll work with the
-raw bytes of TCP and HTTP requests and responses.
+TCP lower-level protocol hai jo is baat ki details describe karta hai ke
+information ek server se doosre server tak kaise pohanchti hai, lekin yeh
+specify nahi karta ke woh information kya hai. HTTP TCP ke upar build hota hai
+aur requests aur responses ke content ko define karta hai. Technically HTTP ko
+doosre protocols ke saath use karna possible hai, lekin bohat zyada cases mein
+HTTP apna data TCP ke zariye send karta hai. Hum TCP aur HTTP requests aur
+responses ke raw bytes ke saath kaam karenge.
 
 ### Listening to the TCP Connection
 
-Our web server needs to listen to a TCP connection, so that’s the first part
-we’ll work on. The standard library offers a `std::net` module that lets us do
-this. Let’s make a new project in the usual fashion:
+Hamare web server ko TCP connection ko listen karna hoga, is liye yahi woh
+pehla hissa hai jis par hum kaam karenge. Standard library ek `std::net`
+module provide karti hai jo humein yeh karne deti hai. Aao usual tareeqe se
+ek naya project banate hain:
 
 ```console
 $ cargo new hello
@@ -30,11 +33,12 @@ $ cargo new hello
 $ cd hello
 ```
 
-Now enter the code in Listing 21-1 in _src/main.rs_ to start. This code will
-listen at the local address `127.0.0.1:7878` for incoming TCP streams. When it
-gets an incoming stream, it will print `Connection established!`.
+Ab shuru karne ke liye Listing 21-1 ka code *src/main.rs* mein enter karein.
+Yeh code incoming TCP streams ke liye local address `127.0.0.1:7878` par listen
+karega. Jab ise koi incoming stream milegi, yeh `Connection established!`
+print karega.
 
-<Listing number="21-1" file-name="src/main.rs" caption="Listening for incoming streams and printing a message when we receive a stream">
+<Listing number="21-1" file-name="src/main.rs" caption="Incoming streams ke liye listen karna aur stream receive hone par ek message print karna">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-01/src/main.rs}}
@@ -42,53 +46,56 @@ gets an incoming stream, it will print `Connection established!`.
 
 </Listing>
 
-Using `TcpListener`, we can listen for TCP connections at the address
-`127.0.0.1:7878`. In the address, the section before the colon is an IP address
-representing your computer (this is the same on every computer and doesn’t
-represent the authors’ computer specifically), and `7878` is the port. We’ve
-chosen this port for two reasons: HTTP isn’t normally accepted on this port, so
-our server is unlikely to conflict with any other web server you might have
-running on your machine, and 7878 is _rust_ typed on a telephone.
+`TcpListener` ko use karke, hum address `127.0.0.1:7878` par TCP connections
+ke liye listen kar sakte hain. Address mein colon se pehle wala section ek IP
+address hai jo aapke computer ko represent karta hai (yeh har computer par
+same hai aur specifically authors ke computer ko represent nahi karta), aur
+`7878` port hai. Humne yeh port do reasons ki wajah se choose kiya hai: HTTP
+normally is port par accept nahi hota, is liye hamara server aapki machine par
+chalne wale kisi doosre web server ke saath conflict karne ka imkaan kam hai,
+aur 7878 telephone par *rust* type hota hai.
 
-The `bind` function in this scenario works like the `new` function in that it
-will return a new `TcpListener` instance. The function is called `bind`
-because, in networking, connecting to a port to listen to is known as “binding
-to a port.”
+Is scenario mein `bind` function `new` function ki tarah kaam karta hai, yani
+yeh ek naya `TcpListener` instance return karega. Function ko `bind` is liye
+kehte hain kyun ke networking mein, listen karne ke liye kisi port se connect
+karna “binding to a port” kehlata hai.
 
-The `bind` function returns a `Result<T, E>`, which indicates that it’s
-possible for binding to fail, for example, if we ran two instances of our
-program and so had two programs listening to the same port. Because we’re
-writing a basic server just for learning purposes, we won’t worry about
-handling these kinds of errors; instead, we use `unwrap` to stop the program if
-errors happen.
+`bind` function ek `Result<T, E>` return karta hai, jo indicate karta hai ke
+binding fail ho sakti hai, misal ke taur par agar hum apne program ke do
+instances run kar dein aur is tarah do programs same port ko listen kar rahe
+hon. Kyun ke hum learning purposes ke liye sirf ek basic server likh rahe hain,
+hum is tarah ke errors ko handle karne ki fikr nahi karenge; is ke bajaye, agar
+errors hoti hain to program ko rokne ke liye hum `unwrap` use karte hain.
 
-The `incoming` method on `TcpListener` returns an iterator that gives us a
-sequence of streams (more specifically, streams of type `TcpStream`). A single
-_stream_ represents an open connection between the client and the server.
-_Connection_ is the name for the full request and response process in which a
-client connects to the server, the server generates a response, and the server
-closes the connection. As such, we will read from the `TcpStream` to see what
-the client sent and then write our response to the stream to send data back to
-the client. Overall, this `for` loop will process each connection in turn and
-produce a series of streams for us to handle.
+`TcpListener` par `incoming` method ek iterator return karta hai jo humein
+streams ki ek sequence deta hai (zyada specifically, `TcpStream` type ke
+streams). Ek single *stream* client aur server ke darmiyan ek open connection
+ko represent karta hai. *Connection* us poore request aur response process ka
+naam hai jismein client server se connect karta hai, server response generate
+karta hai, aur server connection close karta hai. Is liye, client ne kya send
+kiya hai yeh dekhne ke liye hum `TcpStream` se read karenge aur phir client ko
+data wapas send karne ke liye stream par apna response write karenge. Overall,
+yeh `for` loop har connection ko bari bari process karega aur hamare handle
+karne ke liye streams ki ek series produce karega.
 
-For now, our handling of the stream consists of calling `unwrap` to terminate
-our program if the stream has any errors; if there aren’t any errors, the
-program prints a message. We’ll add more functionality for the success case in
-the next listing. The reason we might receive errors from the `incoming` method
-when a client connects to the server is that we’re not actually iterating over
-connections. Instead, we’re iterating over _connection attempts_. The
-connection might not be successful for a number of reasons, many of them
-operating system specific. For example, many operating systems have a limit to
-the number of simultaneous open connections they can support; new connection
-attempts beyond that number will produce an error until some of the open
-connections are closed.
+Filhaal, stream ko handle karne mein hum `unwrap` call kar rahe hain taake agar
+stream mein koi errors hon to hamara program terminate ho jaye; agar koi errors
+na hon, to program ek message print karta hai. Agli listing mein hum success
+case ke liye aur functionality add karenge. `incoming` method se client ke
+server se connect hone par errors milne ki wajah yeh hai ke hum asal mein
+connections par iterate nahi kar rahe. Is ke bajaye, hum *connection attempts*
+par iterate kar rahe hain. Connection kai reasons ki wajah se successful nahi
+ho sakta, jin mein se bohat se operating system specific hote hain. Misal ke
+taur par, bohat se operating systems simultaneous open connections ki tadaad
+par ek limit rakhte hain; is tadaad se zyada new connection attempts ek error
+produce karenge jab tak kuch open connections close nahi ho jate.
 
-Let’s try running this code! Invoke `cargo run` in the terminal and then load
-_127.0.0.1:7878_ in a web browser. The browser should show an error message
-like “Connection reset” because the server isn’t currently sending back any
-data. But when you look at your terminal, you should see several messages that
-were printed when the browser connected to the server!
+Aao is code ko run karke dekhte hain! Terminal mein `cargo run` invoke karein aur
+phir web browser mein *127.0.0.1:7878* load karein. Browser ko “Connection
+reset” jaisa error message dikhna chahiye kyun ke server filhaal koi data
+wapas send nahi kar raha. Lekin jab aap apna terminal dekhenge, to aapko kai
+messages nazar aane chahiye jo browser ke server se connect hone par print hue
+hain!
 
 ```text
      Running `target/debug/hello`
@@ -97,42 +104,45 @@ Connection established!
 Connection established!
 ```
 
-Sometimes you’ll see multiple messages printed for one browser request; the
-reason might be that the browser is making a request for the page as well as a
-request for other resources, like the _favicon.ico_ icon that appears in the
-browser tab.
+Kabhi kabhi aapko ek browser request ke liye multiple messages print hote hue
+nazr aayenge; is ki wajah yeh ho sakti hai ke browser page ke liye ek request
+ke saath doosre resources ke liye bhi request kar raha ho, jaise *favicon.ico*
+icon jo browser tab mein nazar aata hai.
 
-It could also be that the browser is trying to connect to the server multiple
-times because the server isn’t responding with any data. When `stream` goes out
-of scope and is dropped at the end of the loop, the connection is closed as
-part of the `drop` implementation. Browsers sometimes deal with closed
-connections by retrying, because the problem might be temporary.
+Yeh bhi ho sakta hai ke browser server se multiple baar connect karne ki koshish
+kar raha ho kyun ke server kisi bhi data ke saath respond nahi kar raha. Jab
+`stream` scope se bahar chala jata hai aur loop ke end par drop hota hai, to
+`drop` implementation ke hisse ke taur par connection close ho jata hai.
+Browsers kabhi kabhi closed connections ko retry karke handle karte hain, kyun
+ke problem temporary ho sakti hai.
 
-Browsers also sometimes open multiple connections to the server without sending
-any requests so that if they *do* later send requests, those requests can
-happen more quickly. When this occurs, our server will see each connection,
-regardless of whether there are any requests over that connection. Many
-versions of Chrome-based browsers do this, for example; you can disable that
-optimization by using private browsing mode or using a different browser.
+Browsers kabhi kabhi server ke saath multiple connections bhi open karte hain
+bina koi requests send kiye, taake agar baad mein woh *do* requests send karein,
+to woh requests zyada quickly ho saken. Jab aisa hota hai, hamara server har
+connection ko dekhega, chahe us connection par koi requests hon ya na hon.
+Chrome-based browsers ke kai versions, misal ke taur par, aisa karte hain; aap
+private browsing mode use karke ya koi different browser use karke is
+optimization ko disable kar sakte hain.
 
-The important factor is that we’ve successfully gotten a handle to a TCP
-connection!
+Important baat yeh hai ke humne successfully ek TCP connection ka handle hasil
+kar liya hai!
 
-Remember to stop the program by pressing <kbd>ctrl</kbd>-<kbd>C</kbd> when
-you’re done running a particular version of the code. Then, restart the program
-by invoking the `cargo run` command after you’ve made each set of code changes
-to make sure you’re running the newest code.
+Yaad rakhein ke jab aap kisi particular version of the code ko run karna
+mukammal kar lein to <kbd>ctrl</kbd>-<kbd>C</kbd> press karke program ko stop
+kar dein. Phir, har set of code changes karne ke baad `cargo run` command
+invoke karke program ko restart karein taake yeh ensure ho ke aap newest code
+run kar rahe hain.
 
 ### Reading the Request
 
-Let’s implement the functionality to read the request from the browser! To
-separate the concerns of first getting a connection and then taking some action
-with the connection, we’ll start a new function for processing connections. In
-this new `handle_connection` function, we’ll read data from the TCP stream and
-print it so that we can see the data being sent from the browser. Change the
-code to look like Listing 21-2.
+Aao browser se request read karne ki functionality implement karte hain! Pehle
+connection hasil karne aur phir us connection ke saath koi action lene ki
+responsibilities ko alag karne ke liye, hum connections ko process karne ke liye
+ek naya function start karenge. Is naye `handle_connection` function mein, hum
+TCP stream se data read karenge aur use print karenge taake hum browser se send
+hone wala data dekh saken. Code ko Listing 21-2 ki tarah change karein.
 
-<Listing number="21-2" file-name="src/main.rs" caption="Reading from the `TcpStream` and printing the data">
+<Listing number="21-2" file-name="src/main.rs" caption="`TcpStream` se read karna aur data print karna">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-02/src/main.rs}}
@@ -140,38 +150,41 @@ code to look like Listing 21-2.
 
 </Listing>
 
-We bring `std::io::BufReader` and `std::io::prelude` into scope to get access
-to traits and types that let us read from and write to the stream. In the `for`
-loop in the `main` function, instead of printing a message that says we made a
-connection, we now call the new `handle_connection` function and pass the
-`stream` to it.
+Hum `std::io::BufReader` aur `std::io::prelude` ko scope mein laate hain taake
+un traits aur types tak access mil sake jo humein stream se read aur us par
+write karne dete hain. `main` function mein `for` loop ke andar, connection
+banne ka message print karne ke bajaye, ab hum naye `handle_connection`
+function ko call karte hain aur `stream` usay pass karte hain.
 
-In the `handle_connection` function, we create a new `BufReader` instance that
-wraps a reference to the `stream`. The `BufReader` adds buffering by managing
-calls to the `std::io::Read` trait methods for us.
+`handle_connection` function mein, hum ek naya `BufReader` instance create
+karte hain jo `stream` ke reference ko wrap karta hai. `BufReader` hamare liye
+`std::io::Read` trait ke methods ko calls manage karke buffering add karta hai.
 
-We create a variable named `http_request` to collect the lines of the request
-the browser sends to our server. We indicate that we want to collect these
-lines in a vector by adding the `Vec<_>` type annotation.
+Hum `http_request` naam ka ek variable create karte hain jo browser ki taraf se
+hamare server ko bheji gayi request ki lines ko collect karega. Hum `Vec<_>` type
+annotation add karke indicate karte hain ke hum in lines ko ek vector mein
+collect karna chahte hain.
 
-`BufReader` implements the `std::io::BufRead` trait, which provides the `lines`
-method. The `lines` method returns an iterator of `Result<String,
-std::io::Error>` by splitting the stream of data whenever it sees a newline
-byte. To get each `String`, we `map` and `unwrap` each `Result`. The `Result`
-might be an error if the data isn’t valid UTF-8 or if there was a problem
-reading from the stream. Again, a production program should handle these errors
-more gracefully, but we’re choosing to stop the program in the error case for
-simplicity.
+`BufReader`, `std::io::BufRead` trait ko implement karta hai, jo `lines` method
+provide karta hai. `lines` method `Result<String, std::io::Error>` ka ek
+iterator return karta hai, jo data ke stream ko har baar newline byte dekhne par
+split karta hai. Har `String` hasil karne ke liye hum har `Result` par `map` aur
+`unwrap` karte hain. Agar data valid UTF-8 na ho ya stream se read karte waqt
+koi problem ho to `Result` mein error ho sakta hai. Dobara, ek production
+program ko in errors ko zyada gracefully handle karna chahiye, lekin simplicity
+ke liye hum error ki situation mein program ko stop karne ka faisla kar rahe
+hain.
 
-The browser signals the end of an HTTP request by sending two newline
-characters in a row, so to get one request from the stream, we take lines until
-we get a line that is the empty string. Once we’ve collected the lines into the
-vector, we’re printing them out using pretty debug formatting so that we can
-take a look at the instructions the web browser is sending to our server.
+Browser ek HTTP request ke end ko do newline characters ek ke baad ek send
+karke signal karta hai, is liye stream se ek request hasil karne ke liye hum
+lines ko us waqt tak lete hain jab tak humein ek aisi line na mil jaye jo empty
+string ho. Jab hum lines ko vector mein collect kar lete hain, to hum unhein
+pretty debug formatting use karke print karte hain taake hum dekh saken ke web
+browser hamare server ko kya instructions send kar raha hai.
 
-Let’s try this code! Start the program and make a request in a web browser
-again. Note that we’ll still get an error page in the browser, but our
-program’s output in the terminal will now look similar to this:
+Aao is code ko try karte hain! Program start karein aur dobara web browser mein
+ek request karein. Note karein ke browser mein humein ab bhi ek error page milega,
+lekin terminal mein hamare program ka output ab kuch is tarah nazar aayega:
 
 <!-- manual-regeneration
 cd listings/ch21-web-server/listing-21-02
@@ -203,24 +216,24 @@ Request: [
 ]
 ```
 
-Depending on your browser, you might get slightly different output. Now that
-we’re printing the request data, we can see why we get multiple connections
-from one browser request by looking at the path after `GET` in the first line
-of the request. If the repeated connections are all requesting _/_, we know the
-browser is trying to fetch _/_ repeatedly because it’s not getting a response
-from our program.
+Aapke browser ke mutabiq, output thora different ho sakta hai. Ab jab hum
+request data print kar rahe hain, to request ki pehli line mein `GET` ke baad
+wale path ko dekh kar hum samajh sakte hain ke ek browser request se humein
+multiple connections kyun milti hain. Agar repeated connections sab */* ko
+request kar rahi hain, to hum jaante hain ke browser */* ko repeatedly fetch
+karne ki koshish kar raha hai kyun ke use hamare program se response nahi mil
+raha.
 
-Let’s break down this request data to understand what the browser is asking of
-our program.
+Aao is request data ko break down karte hain taake samajh saken ke browser hamare
+program se kya maang raha hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="a-closer-look-at-an-http-request"></a>
-<a id="looking-closer-at-an-http-request"></a>
+<a id="a-closer-look-at-an-http-request"></a> <a id="looking-closer-at-an-http-request"></a>
 
 ### Looking More Closely at an HTTP Request
 
-HTTP is a text-based protocol, and a request takes this format:
+HTTP ek text-based protocol hai, aur ek request is format mein hoti hai:
 
 ```text
 Method Request-URI HTTP-Version CRLF
@@ -228,41 +241,45 @@ headers CRLF
 message-body
 ```
 
-The first line is the _request line_ that holds information about what the
-client is requesting. The first part of the request line indicates the method
-being used, such as `GET` or `POST`, which describes how the client is making
-this request. Our client used a `GET` request, which means it is asking for
-information.
+Pehli line *request line* hoti hai jo is baat ki information rakhti hai ke
+client kya request kar raha hai. Request line ka pehla hissa use hone wale
+method ko indicate karta hai, jaise `GET` ya `POST`, jo describe karta hai ke
+client yeh request kaise kar raha hai. Hamare client ne `GET` request use ki,
+jis ka matlab hai ke woh information maang raha hai.
 
-The next part of the request line is _/_, which indicates the _uniform resource
-identifier_ _(URI)_ the client is requesting: A URI is almost, but not quite,
-the same as a _uniform resource locator_ _(URL)_. The difference between URIs
-and URLs isn’t important for our purposes in this chapter, but the HTTP spec
-uses the term _URI_, so we can just mentally substitute _URL_ for _URI_ here.
+Request line ka agla hissa */* hai, jo *uniform resource
+identifier* *(URI)* ko indicate karta hai jise client request kar raha hai: URI
+lagbhag, lekin bilkul nahi, *uniform resource locator* *(URL)* ke jaisa hota
+hai. URIs aur URLs ke darmiyan farq is chapter mein hamare purposes ke liye
+important nahi hai, lekin HTTP spec term *URI* use karti hai, is liye yahan hum
+zehni taur par *URI* ko *URL* se substitute kar sakte hain.
 
-The last part is the HTTP version the client uses, and then the request line
-ends in a CRLF sequence. (_CRLF_ stands for _carriage return_ and _line feed_,
-which are terms from the typewriter days!) The CRLF sequence can also be
-written as `\r\n`, where `\r` is a carriage return and `\n` is a line feed. The
-_CRLF sequence_ separates the request line from the rest of the request data.
-Note that when the CRLF is printed, we see a new line start rather than `\r\n`.
+Aakhri hissa HTTP version hota hai jo client use karta hai, aur phir request
+line CRLF sequence par end hoti hai. (*CRLF* ka matlab *carriage return* aur
+*line feed* hai, jo typewriter ke zamane ki terms hain!) CRLF sequence ko
+`\r\n` ke taur par bhi likha ja sakta hai, jahan `\r` carriage return hai aur
+`\n` line feed hai. *CRLF sequence* request line ko baqi request data se
+separate karti hai. Note karein ke jab CRLF print hota hai, to humein `\r\n`
+ke bajaye ek new line start hoti hui nazar aati hai.
 
-Looking at the request line data we received from running our program so far,
-we see that `GET` is the method, _/_ is the request URI, and `HTTP/1.1` is the
-version.
+Ab tak apne program ko run karke jo request line data humne receive kiya hai,
+use dekhte hue, hum dekhte hain ke `GET` method hai, */* request URI hai, aur
+`HTTP/1.1` version hai.
 
-After the request line, the remaining lines starting from `Host:` onward are
-headers. `GET` requests have no body.
+Request line ke baad, `Host:` se shuru hone wali baqi lines headers hain. `GET`
+requests ki koi body nahi hoti.
 
-Try making a request from a different browser or asking for a different
-address, such as _127.0.0.1:7878/test_, to see how the request data changes.
+Kisi different browser se request karne ki koshish karein ya kisi different
+address ke liye request karein, jaise *127.0.0.1:7878/test*, taake dekhein ke
+request data kaise change hota hai.
 
-Now that we know what the browser is asking for, let’s send back some data!
+Ab jab hum jaante hain ke browser kya maang raha hai, aao kuch data wapas send
+karte hain!
 
 ### Writing a Response
 
-We’re going to implement sending data in response to a client request.
-Responses have the following format:
+Hum client ki request ke response mein data send karne ki functionality
+implement karenge. Responses ka format yeh hota hai:
 
 ```text
 HTTP-Version Status-Code Reason-Phrase CRLF
@@ -270,26 +287,26 @@ headers CRLF
 message-body
 ```
 
-The first line is a _status line_ that contains the HTTP version used in the
-response, a numeric status code that summarizes the result of the request, and
-a reason phrase that provides a text description of the status code. After the
-CRLF sequence are any headers, another CRLF sequence, and the body of the
-response.
+Pehli line *status line* hoti hai jo response mein use hone wale HTTP version,
+request ke result ko summarize karne wala numeric status code, aur status code
+ki text description provide karne wala reason phrase contain karti hai. CRLF
+sequence ke baad koi bhi headers, ek aur CRLF sequence, aur response ki body
+hoti hai.
 
-Here is an example response that uses HTTP version 1.1 and has a status code of
-200, an OK reason phrase, no headers, and no body:
+Yahan ek example response hai jo HTTP version 1.1 use karta hai aur jis mein
+200 ka status code, OK reason phrase, koi headers nahi, aur koi body nahi hai:
 
 ```text
 HTTP/1.1 200 OK\r\n\r\n
 ```
 
-The status code 200 is the standard success response. The text is a tiny
-successful HTTP response. Let’s write this to the stream as our response to a
-successful request! From the `handle_connection` function, remove the
-`println!` that was printing the request data and replace it with the code in
-Listing 21-3.
+Status code 200 standard success response hai. Yeh text ek chhota sa successful
+HTTP response hai. Aao successful request ke response ke taur par ise stream
+mein write karte hain! `handle_connection` function se woh `println!` remove
+karein jo request data print kar raha tha aur uski jagah Listing 21-3 ka code
+use karein.
 
-<Listing number="21-3" file-name="src/main.rs" caption="Writing a tiny successful HTTP response to the stream">
+<Listing number="21-3" file-name="src/main.rs" caption="Stream mein ek chhota sa successful HTTP response write karna">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-03/src/main.rs:here}}
@@ -297,27 +314,29 @@ Listing 21-3.
 
 </Listing>
 
-The first new line defines the `response` variable that holds the success
-message’s data. Then, we call `as_bytes` on our `response` to convert the
-string data to bytes. The `write_all` method on `stream` takes a `&[u8]` and
-sends those bytes directly down the connection. Because the `write_all`
-operation could fail, we use `unwrap` on any error result as before. Again, in
-a real application, you would add error handling here.
+Pehli nayi line `response` variable define karti hai jo success message ka
+data hold karta hai. Phir, hum apne `response` par `as_bytes` call karte hain
+taake string data ko bytes mein convert kar saken. `stream` par `write_all`
+method ek `&[u8]` leti hai aur un bytes ko directly connection ke zariye send
+karti hai. Kyun ke `write_all` operation fail ho sakta hai, hum pehle ki tarah
+kisi bhi error result par `unwrap` use karte hain. Dobara, ek real application
+mein aap yahan error handling add karenge.
 
-With these changes, let’s run our code and make a request. We’re no longer
-printing any data to the terminal, so we won’t see any output other than the
-output from Cargo. When you load _127.0.0.1:7878_ in a web browser, you should
-get a blank page instead of an error. You’ve just handcoded receiving an HTTP
-request and sending a response!
+In changes ke saath, aao apna code run karein aur ek request karein. Ab hum
+terminal par koi data print nahi kar rahe, is liye Cargo ke output ke ilawa
+humein koi output nazar nahi aayega. Jab aap web browser mein
+*127.0.0.1:7878* load karenge, to aapko error ke bajaye ek blank page milna
+chahiye. Aapne abhi handcode karke HTTP request receive karna aur response send
+karna seekh liya hai!
 
 ### Returning Real HTML
 
-Let’s implement the functionality for returning more than a blank page. Create
-the new file _hello.html_ in the root of your project directory, not in the
-_src_ directory. You can input any HTML you want; Listing 21-4 shows one
-possibility.
+Aao blank page se zyada kuch return karne ki functionality implement karte hain.
+Apni project directory ke root mein nayi file *hello.html* create karein, *src*
+directory mein nahi. Aap koi bhi HTML input kar sakte hain; Listing 21-4 ek
+possibility dikhati hai.
 
-<Listing number="21-4" file-name="hello.html" caption="A sample HTML file to return in a response">
+<Listing number="21-4" file-name="hello.html" caption="Response mein return karne ke liye ek sample HTML file">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-05/hello.html}}
@@ -325,12 +344,12 @@ possibility.
 
 </Listing>
 
-This is a minimal HTML5 document with a heading and some text. To return this
-from the server when a request is received, we’ll modify `handle_connection` as
-shown in Listing 21-5 to read the HTML file, add it to the response as a body,
-and send it.
+Yeh ek minimal HTML5 document hai jis mein ek heading aur kuch text hai. Jab
+request receive ho to server se isay return karne ke liye, hum `handle_connection`
+ko Listing 21-5 mein dikhaye gaye tareeqe se modify karenge taake HTML file ko
+read kare, use response mein body ke taur par add kare, aur send kare.
 
-<Listing number="21-5" file-name="src/main.rs" caption="Sending the contents of *hello.html* as the body of the response">
+<Listing number="21-5" file-name="src/main.rs" caption="*hello.html* ke contents ko response ki body ke taur par send karna">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-05/src/main.rs:here}}
@@ -338,38 +357,40 @@ and send it.
 
 </Listing>
 
-We’ve added `fs` to the `use` statement to bring the standard library’s
-filesystem module into scope. The code for reading the contents of a file to a
-string should look familiar; we used it when we read the contents of a file for
-our I/O project in Listing 12-4.
+Humne `use` statement mein `fs` add kiya hai taake standard library ka
+filesystem module scope mein aa jaye. File ke contents ko string mein read
+karne ka code aapko familiar lagna chahiye; humne Listing 12-4 mein apne I/O
+project ke liye file ke contents read karte waqt isay use kiya tha.
 
-Next, we use `format!` to add the file’s contents as the body of the success
-response. To ensure a valid HTTP response, we add the `Content-Length` header,
-which is set to the size of our response body—in this case, the size of
-`hello.html`.
+Agla step, hum `format!` use karke file ke contents ko success response ki body
+ke taur par add karte hain. Valid HTTP response ensure karne ke liye, hum
+`Content-Length` header add karte hain, jo hamari response body ke size par set
+hota hai—is case mein, `hello.html` ka size.
 
-Run this code with `cargo run` and load _127.0.0.1:7878_ in your browser; you
-should see your HTML rendered!
+Is code ko `cargo run` ke saath run karein aur apne browser mein
+*127.0.0.1:7878* load karein; aapko apna HTML rendered nazar aana chahiye!
 
-Currently, we’re ignoring the request data in `http_request` and just sending
-back the contents of the HTML file unconditionally. That means if you try
-requesting _127.0.0.1:7878/something-else_ in your browser, you’ll still get
-back this same HTML response. At the moment, our server is very limited and
-does not do what most web servers do. We want to customize our responses
-depending on the request and only send back the HTML file for a well-formed
-request to _/_.
+Filhaal, hum `http_request` mein request data ko ignore kar rahe hain aur bina
+kisi condition ke sirf HTML file ke contents wapas send kar rahe hain. Is ka
+matlab hai ke agar aap apne browser mein *127.0.0.1:7878/something-else* request
+karne ki koshish karein, to aapko phir bhi yahi same HTML response wapas milega.
+Is waqt hamara server bohat limited hai aur woh woh kaam nahi karta jo zyada
+tar web servers karte hain. Hum request ke mutabiq apne responses ko customize
+karna chahte hain aur HTML file sirf */* ke ek well-formed request ke liye wapas
+send karna chahte hain.
 
 ### Validating the Request and Selectively Responding
 
-Right now, our web server will return the HTML in the file no matter what the
-client requested. Let’s add functionality to check that the browser is
-requesting _/_ before returning the HTML file and to return an error if the
-browser requests anything else. For this we need to modify `handle_connection`,
-as shown in Listing 21-6. This new code checks the content of the request
-received against what we know a request for _/_ looks like and adds `if` and
-`else` blocks to treat requests differently.
+Filhaal, hamara web server client ki request chahe jo bhi ho, file mein maujood
+HTML return karega. Aao functionality add karte hain jo HTML file return karne
+se pehle check kare ke browser */* request kar raha hai, aur agar browser koi
+aur cheez request kare to ek error return kare. Is ke liye humein
+`handle_connection` ko modify karna hoga, jaisa ke Listing 21-6 mein dikhaya
+gaya hai. Yeh naya code received request ke content ko us request ke saath
+check karta hai jiske */* ke liye hone ka humein pata hai, aur requests ko
+different tareeqe se treat karne ke liye `if` aur `else` blocks add karta hai.
 
-<Listing number="21-6" file-name="src/main.rs" caption="Handling requests to */* differently from other requests">
+<Listing number="21-6" file-name="src/main.rs" caption="*/ * ke requests ko doosre requests se mukhtalif tareeqe se handle karna">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-06/src/main.rs:here}}
@@ -377,32 +398,33 @@ received against what we know a request for _/_ looks like and adds `if` and
 
 </Listing>
 
-We’re only going to be looking at the first line of the HTTP request, so rather
-than reading the entire request into a vector, we’re calling `next` to get the
-first item from the iterator. The first `unwrap` takes care of the `Option` and
-stops the program if the iterator has no items. The second `unwrap` handles the
-`Result` and has the same effect as the `unwrap` that was in the `map` added in
-Listing 21-2.
+Hum sirf HTTP request ki pehli line dekhenge, is liye poori request ko vector
+mein read karne ke bajaye, hum `next` call karke iterator ka pehla item hasil
+kar rahe hain. Pehla `unwrap` `Option` ko handle karta hai aur agar iterator
+mein koi items na hon to program ko stop kar deta hai. Doosra `unwrap` `Result`
+ko handle karta hai aur iska effect us `unwrap` jaisa hi hai jo Listing 21-2
+mein add kiye gaye `map` mein tha.
 
-Next, we check the `request_line` to see if it equals the request line of a GET
-request to the _/_ path. If it does, the `if` block returns the contents of our
-HTML file.
+Agla step, hum `request_line` ko check karte hain ke kya yeh */* path par GET
+request ki request line ke barabar hai. Agar aisa hai, to `if` block hamari HTML
+file ke contents return karta hai.
 
-If the `request_line` does _not_ equal the GET request to the _/_ path, it
-means we’ve received some other request. We’ll add code to the `else` block in
-a moment to respond to all other requests.
+Agar `request_line` */* path par GET request ke barabar *nahi* hai, to iska
+matlab hai ke humein koi aur request receive hui hai. Hum doosri tamam requests
+ka response dene ke liye `else` block mein ek moment mein code add karenge.
 
-Run this code now and request _127.0.0.1:7878_; you should get the HTML in
-_hello.html_. If you make any other request, such as
-_127.0.0.1:7878/something-else_, you’ll get a connection error like those you
-saw when running the code in Listing 21-1 and Listing 21-2.
+Ab is code ko run karein aur *127.0.0.1:7878* request karein; aapko
+*hello.html* mein maujood HTML milna chahiye. Agar aap koi aur request karein,
+jaise *127.0.0.1:7878/something-else*, to aapko connection error milega, bilkul
+un errors ki tarah jo aapne Listing 21-1 aur Listing 21-2 ka code run karte
+waqt dekhe thay.
 
-Now let’s add the code in Listing 21-7 to the `else` block to return a response
-with the status code 404, which signals that the content for the request was
-not found. We’ll also return some HTML for a page to render in the browser
-indicating the response to the end user.
+Ab aao Listing 21-7 ka code `else` block mein add karte hain taake status code
+404 ke saath ek response return ki ja sake, jo signal karta hai ke request ka
+content nahi mila. Hum browser mein render hone ke liye kuch HTML bhi return
+karengi jo end user ko response ke bare mein indicate karegi.
 
-<Listing number="21-7" file-name="src/main.rs" caption="Responding with status code 404 and an error page if anything other than */* was requested">
+<Listing number="21-7" file-name="src/main.rs" caption="*/ * ke ilawa kuch bhi request kiye jane par status code 404 aur error page ke saath response dena">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-07/src/main.rs:here}}
@@ -410,13 +432,13 @@ indicating the response to the end user.
 
 </Listing>
 
-Here, our response has a status line with status code 404 and the reason phrase
-`NOT FOUND`. The body of the response will be the HTML in the file _404.html_.
-You’ll need to create a _404.html_ file next to _hello.html_ for the error
-page; again, feel free to use any HTML you want, or use the example HTML in
-Listing 21-8.
+Yahan, hamari response mein status code 404 aur reason phrase `NOT FOUND` ke
+saath ek status line hai. Response ki body file *404.html* mein maujood HTML
+hogi. Error page ke liye aapko *hello.html* ke saath *404.html* file create
+karni hogi; dobara, aap koi bhi HTML use kar sakte hain, ya Listing 21-8 mein
+di gayi example HTML use kar sakte hain.
 
-<Listing number="21-8" file-name="404.html" caption="Sample content for the page to send back with any 404 response">
+<Listing number="21-8" file-name="404.html" caption="Kisi bhi 404 response ke saath wapas bhejne ke liye sample page content">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-07/404.html}}
@@ -424,9 +446,10 @@ Listing 21-8.
 
 </Listing>
 
-With these changes, run your server again. Requesting _127.0.0.1:7878_ should
-return the contents of _hello.html_, and any other request, like
-_127.0.0.1:7878/foo_, should return the error HTML from _404.html_.
+In changes ke saath apne server ko dobara run karein. *127.0.0.1:7878* request
+karne par *hello.html* ke contents return hone chahiye, aur koi bhi doosri
+request, jaise *127.0.0.1:7878/foo*, ko *404.html* ka error HTML return karna
+chahiye.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -434,40 +457,40 @@ _127.0.0.1:7878/foo_, should return the error HTML from _404.html_.
 
 ### Refactoring
 
-At the moment, the `if` and `else` blocks have a lot of repetition: They’re
-both reading files and writing the contents of the files to the stream. The
-only differences are the status line and the filename. Let’s make the code more
-concise by pulling out those differences into separate `if` and `else` lines
-that will assign the values of the status line and the filename to variables;
-we can then use those variables unconditionally in the code to read the file
-and write the response. Listing 21-9 shows the resultant code after replacing
-the large `if` and `else` blocks.
+Filhaal, `if` aur `else` blocks mein bohat repetition hai: Dono files read kar
+rahe hain aur files ke contents ko stream mein write kar rahe hain. Sirf status
+line aur filename mein farq hai. Aao status line aur filename ki values ko
+variables mein assign karne wali separate `if` aur `else` lines mein in
+differences ko nikaal kar code ko zyada concise banate hain; phir hum un
+variables ko file read karne aur response write karne wale code mein
+unconditionally use kar sakte hain. Listing 21-9 large `if` aur `else` blocks
+ko replace karne ke baad resultant code dikhati hai.
 
-<Listing number="21-9" file-name="src/main.rs" caption="Refactoring the `if` and `else` blocks to contain only the code that differs between the two cases">
+<Listing number="21-9" file-name="src/main.rs" caption="`if` aur `else` blocks ko refactor karna taake un mein sirf woh code rahe jo dono cases ke darmiyan different hai">
 
-```rust,no_run
+```rust,no_run id="3g8x4m"
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-09/src/main.rs:here}}
 ```
 
 </Listing>
 
-Now the `if` and `else` blocks only return the appropriate values for the
-status line and filename in a tuple; we then use destructuring to assign these
-two values to `status_line` and `filename` using a pattern in the `let`
-statement, as discussed in Chapter 19.
+Ab `if` aur `else` blocks sirf tuple mein status line aur filename ki
+appropriate values return karte hain; phir hum destructuring use karke in dono
+values ko `let` statement mein ek pattern ke zariye `status_line` aur `filename`
+mein assign karte hain, jaisa ke Chapter 19 mein discuss kiya gaya tha.
 
-The previously duplicated code is now outside the `if` and `else` blocks and
-uses the `status_line` and `filename` variables. This makes it easier to see
-the difference between the two cases, and it means we have only one place to
-update the code if we want to change how the file reading and response writing
-work. The behavior of the code in Listing 21-9 will be the same as that in
-Listing 21-7.
+Pehle duplicate kiya gaya code ab `if` aur `else` blocks ke bahar hai aur
+`status_line` aur `filename` variables ko use karta hai. Is se dono cases ke
+darmiyan farq dekhna aasaan ho jata hai, aur iska matlab hai ke agar hum file
+reading aur response writing ke tareeqe ko change karna chahein, to code ko
+update karne ke liye hamare paas sirf ek jagah hai. Listing 21-9 mein code ka
+behavior Listing 21-7 ke code jaisa hi hoga.
 
-Awesome! We now have a simple web server in approximately 40 lines of Rust code
-that responds to one request with a page of content and responds to all other
-requests with a 404 response.
+Awesome! Ab hamare paas taqreeban 40 lines of Rust code mein ek simple web
+server hai jo ek request ka response content ke page ke saath deta hai aur
+baqi tamam requests ka response 404 ke saath deta hai.
 
-Currently, our server runs in a single thread, meaning it can only serve one
-request at a time. Let’s examine how that can be a problem by simulating some
-slow requests. Then, we’ll fix it so that our server can handle multiple
-requests at once.
+Filhaal, hamara server ek single thread mein run karta hai, yani yeh ek waqt
+mein sirf ek request serve kar sakta hai. Aao kuch slow requests simulate karke
+dekhein ke yeh problem kaise ban sakti hai. Phir hum isay fix karenge taake
+hamara server ek waqt mein multiple requests handle kar sake.
