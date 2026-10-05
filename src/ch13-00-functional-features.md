@@ -1,24 +1,14 @@
 # Functional Language Features: Iterators and Closures
 
-Rust’s design has taken inspiration from many existing languages and
-techniques, and one significant influence is _functional programming_.
-Programming in a functional style often includes using functions as values by
-passing them in arguments, returning them from other functions, assigning them
-to variables for later execution, and so forth.
+Rust ki design ne bohat si existing languages aur techniques se inspiration li hai, aur ek significant influence *functional programming* hai. Functional style mein programming karne mein aksar functions ko values ke taur par use karna shamil hota hai: unhein arguments mein pass karna, doosre functions se return karna, baad mein execution ke liye unhein variables mein assign karna, aur isi tarah doosre tareeqe.
 
-In this chapter, we won’t debate the issue of what functional programming is or
-isn’t but will instead discuss some features of Rust that are similar to
-features in many languages often referred to as functional.
+Is chapter mein hum is baat par debate nahi karenge ke functional programming kya hai ya kya nahi hai, balki Rust ke kuch aise features discuss karenge jo un features se milte julte hain jo aksar functional kehlane wali bohat si languages mein maujood hain.
 
-More specifically, we’ll cover:
+More specifically, hum cover karenge:
 
-- _Closures_, a function-like construct you can store in a variable
-- _Iterators_, a way of processing a series of elements
-- How to use closures and iterators to improve the I/O project in Chapter 12
-- The performance of closures and iterators (spoiler alert: They’re faster than
-  you might think!)
+* *Closures*, ek function-jaisa construct jise aap variable mein store kar sakte hain
+* *Iterators*, elements ki ek series ko process karne ka ek tareeqa
+* Chapter 12 ke I/O project ko improve karne ke liye closures aur iterators ko kaise use karein
+* Closures aur iterators ki performance (spoiler alert: yeh shayad aapki expectation se zyada fast hain!)
 
-We’ve already covered some other Rust features, such as pattern matching and
-enums, that are also influenced by the functional style. Because mastering
-closures and iterators is an important part of writing fast, idiomatic, Rust
-code, we’ll devote this entire chapter to them.
+Hum Rust ke kuch doosre features, jaise pattern matching aur enums, ko bhi pehle hi cover kar chuke hain jo functional style se influenced hain. Kyun ke closures aur iterators mein mastery fast, idiomatic Rust code likhne ka ek important hissa hai, hum poora chapter inhi ke liye dedicate kareng

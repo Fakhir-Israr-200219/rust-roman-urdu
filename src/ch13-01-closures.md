@@ -1,43 +1,21 @@
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="closures-anonymous-functions-that-can-capture-their-environment"></a>
-<a id="closures-anonymous-functions-that-capture-their-environment"></a>
+<a id="closures-anonymous-functions-that-can-capture-their-environment"></a> <a id="closures-anonymous-functions-that-capture-their-environment"></a>
 
 ## Closures
 
-Rust’s closures are anonymous functions you can save in a variable or pass as
-arguments to other functions. You can create the closure in one place and then
-call the closure elsewhere to evaluate it in a different context. Unlike
-functions, closures can capture values from the scope in which they’re defined.
-We’ll demonstrate how these closure features allow for code reuse and behavior
-customization.
+Rust ke closures anonymous functions hote hain jinhein aap kisi variable mein save kar sakte hain ya doosre functions ko arguments ke taur par pass kar sakte hain. Aap closure ko ek jagah create kar sakte hain aur phir us closure ko kahin aur call karke different context mein evaluate kar sakte hain. Functions ke unlike, closures us scope se values capture kar sakte hain jahan woh define kiye gaye hain. Hum demonstrate karenge ke closures ki yeh features code reuse aur behavior customization ki sahulat kaise deti hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="creating-an-abstraction-of-behavior-with-closures"></a>
-<a id="refactoring-using-functions"></a>
-<a id="refactoring-with-closures-to-store-code"></a>
-<a id="capturing-the-environment-with-closures"></a>
+<a id="creating-an-abstraction-of-behavior-with-closures"></a> <a id="refactoring-using-functions"></a> <a id="refactoring-with-closures-to-store-code"></a> <a id="capturing-the-environment-with-closures"></a>
+
 
 ### Capturing the Environment
 
-We’ll first examine how we can use closures to capture values from the
-environment they’re defined in for later use. Here’s the scenario: Every so
-often, our T-shirt company gives away an exclusive, limited-edition shirt to
-someone on our mailing list as a promotion. People on the mailing list can
-optionally add their favorite color to their profile. If the person chosen for
-a free shirt has their favorite color set, they get that color shirt. If the
-person hasn’t specified a favorite color, they get whatever color the company
-currently has the most of.
+Sab se pehle, hum examine karenge ke closures ko us environment se values capture karne ke liye kaise use kiya ja sakta hai jahan woh define kiye gaye hain, taake unhein baad mein use kiya ja sake. Scenario yeh hai: Har kuch arsay baad, hamari T-shirt company promotion ke taur par apni mailing list mein se kisi ek person ko ek exclusive, limited-edition shirt free mein deti hai. Mailing list par maujood log optionally apne profile mein apna favorite color add kar sakte hain. Agar free shirt ke liye select hone wale person ka favorite color set hai, to unhein usi color ki shirt milti hai. Agar person ne favorite color specify nahi kiya, to unhein woh color diya jata hai jo company ke paas filhaal sab se zyada quantity mein hai.
 
-There are many ways to implement this. For this example, we’re going to use an
-enum called `ShirtColor` that has the variants `Red` and `Blue` (limiting the
-number of colors available for simplicity). We represent the company’s
-inventory with an `Inventory` struct that has a field named `shirts` that
-contains a `Vec<ShirtColor>` representing the shirt colors currently in stock.
-The method `giveaway` defined on `Inventory` gets the optional shirt color
-preference of the free-shirt winner, and it returns the shirt color the
-person will get. This setup is shown in Listing 13-1.
+Isay implement karne ke bohat se tareeqe hain. Is example ke liye, hum `ShirtColor` naam ka ek enum use karenge jismein `Red` aur `Blue` variants honge (simplicity ke liye available colors ki tadaad limited rakhi gayi hai). Company ki inventory ko hum `Inventory` struct se represent karte hain jismein `shirts` naam ka field hai jo `Vec<ShirtColor>` contain karta hai, jo currently stock mein maujood shirt colors ko represent karta hai. `Inventory` par defined `giveaway` method free-shirt winner ki optional shirt color preference leta hai aur woh shirt color return karta hai jo person ko milega. Yeh setup Listing 13-1 mein dikhaya gaya hai.
 
 <Listing number="13-1" file-name="src/main.rs" caption="Shirt company giveaway situation">
 
@@ -47,43 +25,19 @@ person will get. This setup is shown in Listing 13-1.
 
 </Listing>
 
-The `store` defined in `main` has two blue shirts and one red shirt remaining
-to distribute for this limited-edition promotion. We call the `giveaway` method
-for a user with a preference for a red shirt and a user without any preference.
+`main` mein define ki gayi `store` mein is limited-edition promotion ke liye distribute karne ko do blue shirts aur ek red shirt baqi hain. Hum `giveaway` method ko ek aise user ke liye call karte hain jiski preference red shirt hai aur ek aise user ke liye jiski koi preference nahi hai.
 
-Again, this code could be implemented in many ways, and here, to focus on
-closures, we’ve stuck to concepts you’ve already learned, except for the body of
-the `giveaway` method that uses a closure. In the `giveaway` method, we get the
-user preference as a parameter of type `Option<ShirtColor>` and call the
-`unwrap_or_else` method on `user_preference`. The [`unwrap_or_else` method on
-`Option<T>`][unwrap-or-else]<!-- ignore --> is defined by the standard library.
-It takes one argument: a closure without any arguments that returns a value `T`
-(the same type stored in the `Some` variant of the `Option<T>`, in this case
-`ShirtColor`). If the `Option<T>` is the `Some` variant, `unwrap_or_else`
-returns the value from within the `Some`. If the `Option<T>` is the `None`
-variant, `unwrap_or_else` calls the closure and returns the value returned by
-the closure.
+Dobara, is code ko bohat se tareeqon se implement kiya ja sakta hai, aur yahan, closures par focus karne ke liye, hum un concepts tak hi limited rahe hain jo aap pehle hi seekh chuke hain, siwaye `giveaway` method ke body ke jo ek closure use karti hai. `giveaway` method mein, hum user preference ko `Option<ShirtColor>` type ke parameter ke taur par lete hain aur `user_preference` par `unwrap_or_else` method call karte hain. [`Option<T>` par `unwrap_or_else` method][unwrap-or-else]<!-- ignore --> standard library mein defined hai. Yeh ek argument leta hai: ek aisa closure jismein koi arguments nahi hote aur jo ek value `T` return karta hai (is case mein `Option<T>` ke `Some` variant mein stored same type `ShirtColor`). Agar `Option<T>` `Some` variant hai, to `unwrap_or_else` `Some` ke andar se value return karta hai. Agar `Option<T>` `None` variant hai, to `unwrap_or_else` closure ko call karta hai aur closure se return hone wali value return karta hai.
 
-We specify the closure expression `|| self.most_stocked()` as the argument to
-`unwrap_or_else`. This is a closure that takes no parameters itself (if the
-closure had parameters, they would appear between the two vertical pipes). The
-body of the closure calls `self.most_stocked()`. We’re defining the closure
-here, and the implementation of `unwrap_or_else` will evaluate the closure
-later if the result is needed.
+Hum `unwrap_or_else` ko argument ke taur par closure expression `|| self.most_stocked()` specify karte hain. Yeh ek aisa closure hai jo khud koi parameters nahi leta (agar closure ke parameters hote, to woh dono vertical pipes ke darmiyan appear hote). Closure ki body `self.most_stocked()` ko call karti hai. Hum yahan closure define kar rahe hain, aur `unwrap_or_else` ki implementation closure ko baad mein evaluate karegi agar result ki zarurat hui.
 
-Running this code prints the following:
+Is code ko run karne par yeh print hota hai:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-01/output.txt}}
 ```
 
-One interesting aspect here is that we’ve passed a closure that calls
-`self.most_stocked()` on the current `Inventory` instance. The standard library
-didn’t need to know anything about the `Inventory` or `ShirtColor` types we
-defined, or the logic we want to use in this scenario. The closure captures an
-immutable reference to the `self` `Inventory` instance and passes it with the
-code we specify to the `unwrap_or_else` method. Functions, on the other hand,
-are not able to capture their environment in this way.
+Yahan ek interesting aspect yeh hai ke humne ek aisa closure pass kiya hai jo current `Inventory` instance par `self.most_stocked()` call karta hai. Standard library ko `Inventory` ya `ShirtColor` types ke baare mein kuch bhi jaanne ki zarurat nahi thi jo humne define kiye hain, na hi us logic ke baare mein jo hum is scenario mein use karna chahte hain. Closure `self` `Inventory` instance ka ek immutable reference capture karta hai aur usay humare specify kiye gaye code ke saath `unwrap_or_else` method ko pass karta hai. Doosri taraf, functions apne environment ko is tarah capture karne ke qabil nahi hote.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -91,27 +45,11 @@ are not able to capture their environment in this way.
 
 ### Inferring and Annotating Closure Types
 
-There are more differences between functions and closures. Closures don’t
-usually require you to annotate the types of the parameters or the return value
-like `fn` functions do. Type annotations are required on functions because the
-types are part of an explicit interface exposed to your users. Defining this
-interface rigidly is important for ensuring that everyone agrees on what types
-of values a function uses and returns. Closures, on the other hand, aren’t used
-in an exposed interface like this: They’re stored in variables, and they’re
-used without naming them and exposing them to users of our library.
+Functions aur closures ke darmiyan aur bhi differences hain. Closures ko aam tor par parameters ke types ya return value ko annotate karne ki zarurat nahi hoti, jaisa ke `fn` functions mein hota hai. Functions par type annotations is liye required hoti hain kyun ke types ek explicit interface ka hissa hoti hain jo aapke users ke saamne expose hota hai. Is interface ko rigidly define karna is baat ko ensure karne ke liye important hai ke sab log is baat par agree karein ke function kis types ki values use karta hai aur return karta hai. Doosri taraf, closures ko is tarah ke exposed interface mein use nahi kiya jata: woh variables mein store hote hain aur unhein name kiye baghair use kiya jata hai, aur hamari library ke users ke saamne expose nahi kiya jata.
 
-Closures are typically short and relevant only within a narrow context rather
-than in any arbitrary scenario. Within these limited contexts, the compiler can
-infer the types of the parameters and the return type, similar to how it’s able
-to infer the types of most variables (there are rare cases where the compiler
-needs closure type annotations too).
+Closures aam tor par short hote hain aur sirf ek narrow context mein relevant hote hain, kisi bhi arbitrary scenario mein nahi. In limited contexts ke andar, compiler parameters aur return type ke types infer kar sakta hai, bilkul usi tarah jaise woh aksar variables ke types infer kar sakta hai (kuch rare cases hote hain jahan compiler ko closure type annotations ki bhi zarurat hoti hai).
 
-As with variables, we can add type annotations if we want to increase
-explicitness and clarity at the cost of being more verbose than is strictly
-necessary. Annotating the types for a closure would look like the definition
-shown in Listing 13-2. In this example, we’re defining a closure and storing it
-in a variable rather than defining the closure in the spot we pass it as an
-argument, as we did in Listing 13-1.
+Variables ki tarah, agar hum explicitness aur clarity barhana chahein to type annotations add kar sakte hain, lekin iski cost yeh hai ke code strictly necessary se zyada verbose ho jata hai. Closure ke types ko annotate karna Listing 13-2 mein dikhayi gayi definition jaisa hoga. Is example mein, hum closure ko define karke ek variable mein store kar rahe hain, bajaye iske ke closure ko usi jagah define karein jahan hum usay argument ke taur par pass karte hain, jaisa ke humne Listing 13-1 mein kiya tha.
 
 <Listing number="13-2" file-name="src/main.rs" caption="Adding optional type annotations of the parameter and return value types in the closure">
 
@@ -121,12 +59,7 @@ argument, as we did in Listing 13-1.
 
 </Listing>
 
-With type annotations added, the syntax of closures looks more similar to the
-syntax of functions. Here, we define a function that adds 1 to its parameter and
-a closure that has the same behavior, for comparison. We’ve added some spaces
-to line up the relevant parts. This illustrates how closure syntax is similar
-to function syntax except for the use of pipes and the amount of syntax that is
-optional:
+Type annotations add hone ke baad, closures ka syntax functions ke syntax se zyada similar nazar aata hai. Yahan, comparison ke liye, hum ek aisa function define karte hain jo apne parameter mein 1 add karta hai aur ek aisa closure jo same behavior rakhta hai. Relevant parts ko align karne ke liye humne kuch spaces add ki hain. Yeh illustrate karta hai ke closure syntax function syntax jaisa hai, siwaye pipes ke use aur is baat ke ke syntax ka kitna hissa optional hai:
 
 ```rust,ignore
 fn  add_one_v1   (x: u32) -> u32 { x + 1 }
@@ -135,24 +68,9 @@ let add_one_v3 = |x|             { x + 1 };
 let add_one_v4 = |x|               x + 1  ;
 ```
 
-The first line shows a function definition and the second line shows a fully
-annotated closure definition. In the third line, we remove the type annotations
-from the closure definition. In the fourth line, we remove the brackets, which
-are optional because the closure body has only one expression. These are all
-valid definitions that will produce the same behavior when they’re called. The
-`add_one_v3` and `add_one_v4` lines require the closures to be evaluated to be
-able to compile because the types will be inferred from their usage. This is
-similar to `let v = Vec::new();` needing either type annotations or values of
-some type to be inserted into the `Vec` for Rust to be able to infer the type.
+Pehli line function definition dikhati hai aur doosri line fully annotated closure definition dikhati hai. Teesri line mein, hum closure definition se type annotations remove kar dete hain. Chauthi line mein, hum brackets remove kar dete hain, jo optional hain kyun ke closure body mein sirf ek expression hai. Yeh tamam valid definitions hain jo call kiye jane par same behavior produce karengi. `add_one_v3` aur `add_one_v4` lines ko compile karne ke liye closures ko evaluate karna zaroori hai kyun ke types unke usage se infer honge. Yeh isi tarah hai jaise `let v = Vec::new();` ko Rust ke liye type infer karne ke liye ya to type annotations ki zarurat hoti hai ya phir `Vec` mein kisi type ki values insert karni hoti hain.
 
-For closure definitions, the compiler will infer one concrete type for each of
-their parameters and for their return value. For instance, Listing 13-3 shows
-the definition of a short closure that just returns the value it receives as a
-parameter. This closure isn’t very useful except for the purposes of this
-example. Note that we haven’t added any type annotations to the definition.
-Because there are no type annotations, we can call the closure with any type,
-which we’ve done here with `String` the first time. If we then try to call
-`example_closure` with an integer, we’ll get an error.
+Closure definitions ke liye, compiler unke har parameter aur unki return value ke liye ek concrete type infer karega. Misal ke taur par, Listing 13-3 ek short closure ki definition dikhati hai jo sirf woh value return karta hai jo usay parameter ke taur par milti hai. Yeh closure is example ke maqsad ke ilawa zyada useful nahi hai. Note karein ke humne definition mein koi type annotations add nahi ki hain. Kyun ke koi type annotations nahi hain, hum closure ko kisi bhi type ke saath call kar sakte hain, jo humne yahan pehli baar `String` ke saath kiya hai. Agar phir hum `example_closure` ko integer ke saath call karne ki koshish karein, to humein ek error milega.
 
 <Listing number="13-3" file-name="src/main.rs" caption="Attempting to call a closure whose types are inferred with two different types">
 
@@ -162,149 +80,85 @@ which we’ve done here with `String` the first time. If we then try to call
 
 </Listing>
 
-The compiler gives us this error:
+Compiler humein yeh error deta hai:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-03/output.txt}}
 ```
 
-The first time we call `example_closure` with the `String` value, the compiler
-infers the type of `x` and the return type of the closure to be `String`. Those
-types are then locked into the closure in `example_closure`, and we get a type
-error when we next try to use a different type with the same closure.
+Pehli baar jab hum `example_closure` ko `String` value ke saath call karte hain, compiler `x` ke type aur closure ki return type ko `String` infer karta hai. Phir yeh types `example_closure` mein closure ke liye lock ho jati hain, aur jab hum isi closure ke saath next time koi different type use karne ki koshish karte hain, to humein type error milta hai.
 
 ### Capturing References or Moving Ownership
 
-Closures can capture values from their environment in three ways, which
-directly map to the three ways a function can take a parameter: borrowing
-immutably, borrowing mutably, and taking ownership. The closure will decide
-which of these to use based on what the body of the function does with the
-captured values.
+Closures apne environment se values ko teen tareeqon se capture kar sakte hain, jo directly un teen tareeqon se match karte hain jin se ek function parameter le sakta hai: immutably borrow karna, mutably borrow karna, aur ownership lena. Closure in mein se kis tareeqe ko use karega, iska faisla is baat ki bunyaad par hota hai ke function ki body captured values ke saath kya karti hai.
 
-In Listing 13-4, we define a closure that captures an immutable reference to
-the vector named `list` because it only needs an immutable reference to print
-the value.
+Listing 13-4 mein, hum ek aisa closure define karte hain jo `list` naam ke vector ka immutable reference capture karta hai kyun ke isay value ko print karne ke liye sirf immutable reference ki zarurat hai.
 
 <Listing number="13-4" file-name="src/main.rs" caption="Defining and calling a closure that captures an immutable reference">
 
-```rust
+```rust id="8l4xpj"
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-04/src/main.rs}}
 ```
 
 </Listing>
 
-This example also illustrates that a variable can bind to a closure definition,
-and we can later call the closure by using the variable name and parentheses as
-if the variable name were a function name.
+Yeh example yeh bhi illustrate karta hai ke ek variable closure definition se bind ho sakta hai, aur hum baad mein variable name aur parentheses use karke closure ko call kar sakte hain, bilkul aise jaise variable name function ka naam ho.
 
-Because we can have multiple immutable references to `list` at the same time,
-`list` is still accessible from the code before the closure definition, after
-the closure definition but before the closure is called, and after the closure
-is called. This code compiles, runs, and prints:
+Kyun ke hum ek hi waqt mein `list` ke multiple immutable references rakh sakte hain, is liye `list` closure definition se pehle wale code mein, closure definition ke baad lekin closure call hone se pehle, aur closure call hone ke baad bhi accessible rehta hai. Yeh code compile aur run hota hai aur yeh print karta hai:
 
-```console
+```console id="xw2f2p"
 {{#include ../listings/ch13-functional-features/listing-13-04/output.txt}}
 ```
 
-Next, in Listing 13-5, we change the closure body so that it adds an element to
-the `list` vector. The closure now captures a mutable reference.
+Next, Listing 13-5 mein, hum closure body ko change karte hain taake yeh `list` vector mein ek element add kare. Ab closure ek mutable reference capture karta hai.
 
 <Listing number="13-5" file-name="src/main.rs" caption="Defining and calling a closure that captures a mutable reference">
 
-```rust
+```rust id="7kqf6n"
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-05/src/main.rs}}
 ```
 
 </Listing>
 
-This code compiles, runs, and prints:
+Yeh code compile aur run hota hai aur yeh print karta hai:
 
-```console
+```console id="j9xk8s"
 {{#include ../listings/ch13-functional-features/listing-13-05/output.txt}}
 ```
 
-Note that there’s no longer a `println!` between the definition and the call of
-the `borrows_mutably` closure: When `borrows_mutably` is defined, it captures a
-mutable reference to `list`. We don’t use the closure again after the closure
-is called, so the mutable borrow ends. Between the closure definition and the
-closure call, an immutable borrow to print isn’t allowed, because no other
-borrows are allowed when there’s a mutable borrow. Try adding a `println!`
-there to see what error message you get!
+Note karein ke ab `borrows_mutably` closure ki definition aur call ke darmiyan koi `println!` nahi hai: Jab `borrows_mutably` define hota hai, to yeh `list` ka mutable reference capture karta hai. Closure ko call karne ke baad hum usay dobara use nahi karte, is liye mutable borrow end ho jata hai. Closure definition aur closure call ke darmiyan, print karne ke liye immutable borrow allowed nahi hai, kyun ke jab mutable borrow hota hai to koi doosra borrow allowed nahi hota. Wahan `println!` add karke dekhein ke aapko kya error message milta hai!
 
-If you want to force the closure to take ownership of the values it uses in the
-environment even though the body of the closure doesn’t strictly need
-ownership, you can use the `move` keyword before the parameter list.
+Agar aap closure ko force karna chahte hain ke woh environment mein use hone wali values ki ownership le, halaan ke closure ki body ko strictly ownership ki zarurat nahi hai, to aap parameter list se pehle `move` keyword use kar sakte hain.
 
-This technique is mostly useful when passing a closure to a new thread to move
-the data so that it’s owned by the new thread. We’ll discuss threads and why
-you would want to use them in detail in Chapter 16 when we talk about
-concurrency, but for now, let’s briefly explore spawning a new thread using a
-closure that needs the `move` keyword. Listing 13-6 shows Listing 13-4 modified
-to print the vector in a new thread rather than in the main thread.
+Yeh technique zyada tar tab useful hoti hai jab kisi closure ko ek new thread ko pass kiya jata hai taake data ko move kiya ja sake aur woh new thread ke owned data mein ho. Hum threads aur unhein use karne ki wajah ke baare mein Chapter 16 mein detail se discuss karenge jab hum concurrency ki baat karenge, lekin filhaal, aaiye briefly ek new thread spawn karne ko explore karte hain jahan closure ko `move` keyword ki zarurat hoti hai. Listing 13-6 mein Listing 13-4 ko modify karke vector ko main thread ke bajaye ek new thread mein print kiya gaya hai.
 
 <Listing number="13-6" file-name="src/main.rs" caption="Using `move` to force the closure for the thread to take ownership of `list`">
 
-```rust
+```rust id="l0s5bn"
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-06/src/main.rs}}
 ```
 
 </Listing>
 
-We spawn a new thread, giving the thread a closure to run as an argument. The
-closure body prints out the list. In Listing 13-4, the closure only captured
-`list` using an immutable reference because that's the least amount of access
-to `list` needed to print it. In this example, even though the closure body
-still only needs an immutable reference, we need to specify that `list` should
-be moved into the closure by putting the `move` keyword at the beginning of the
-closure definition. If the main thread performed more operations before calling
-`join` on the new thread, the new thread might finish before the rest of the
-main thread finishes, or the main thread might finish first. If the main thread
-maintained ownership of `list` but ended before the new thread and drops
-`list`, the immutable reference in the thread would be invalid. Therefore, the
-compiler requires that `list` be moved into the closure given to the new thread
-so that the reference will be valid. Try removing the `move` keyword or using
-`list` in the main thread after the closure is defined to see what compiler
-errors you get!
+Hum ek new thread spawn karte hain aur thread ko ek closure argument ke taur par dete hain jise run karna hai. Closure body list ko print karti hai. Listing 13-4 mein, closure ne `list` ko sirf immutable reference ke zariye capture kiya tha kyun ke usay print karne ke liye `list` tak itni hi access ki zarurat thi. Is example mein, halaan ke closure body ko ab bhi sirf immutable reference ki zarurat hai, humein specify karna padta hai ke `list` ko closure mein move kiya jana chahiye, closure definition ke start mein `move` keyword rakh kar. Agar main thread new thread par `join` call karne se pehle mazeed operations karta, to new thread main thread ke baqi kaam complete hone se pehle finish ho sakta tha, ya main thread pehle finish ho sakta tha. Agar main thread `list` ki ownership maintain karta lekin new thread se pehle end ho jata aur `list` ko drop kar deta, to thread mein maujood immutable reference invalid ho jata. Is liye compiler require karta hai ke `list` ko new thread ko diye gaye closure mein move kiya jaye taake reference valid rahe. `move` keyword remove karke ya closure define hone ke baad main thread mein `list` ko use karke dekhein ke aapko compiler se kaun se errors milte hain!
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="storing-closures-using-generic-parameters-and-the-fn-traits"></a>
-<a id="limitations-of-the-cacher-implementation"></a>
-<a id="moving-captured-values-out-of-the-closure-and-the-fn-traits"></a>
-<a id="moving-captured-values-out-of-closures-and-the-fn-traits"></a>
+<a id="storing-closures-using-generic-parameters-and-the-fn-traits"></a> <a id="limitations-of-the-cacher-implementation"></a> <a id="moving-captured-values-out-of-the-closure-and-the-fn-traits"></a> <a id="moving-captured-values-out-of-closures-and-the-fn-traits"></a>
 
 ### Moving Captured Values Out of Closures
 
-Once a closure has captured a reference or captured ownership of a value from
-the environment where the closure is defined (thus affecting what, if anything,
-is moved _into_ the closure), the code in the body of the closure defines what
-happens to the references or values when the closure is evaluated later (thus
-affecting what, if anything, is moved _out of_ the closure).
+Jab ek closure us environment se kisi reference ko capture kar leta hai ya kisi value ki ownership capture kar leta hai jahan closure define kiya gaya hai (aur is tarah yeh affect hota hai ke closure mein kya move *into* hota hai), to closure ki body ka code yeh define karta hai ke baad mein jab closure evaluate kiya jata hai to references ya values ke saath kya hota hai (aur is tarah yeh affect hota hai ke closure se kya move *out of* hota hai).
 
-A closure body can do any of the following: Move a captured value out of the
-closure, mutate the captured value, neither move nor mutate the value, or
-capture nothing from the environment to begin with.
+Closure body in mein se koi bhi kaam kar sakti hai: captured value ko closure se bahar move karna, captured value ko mutate karna, na value ko move karna aur na mutate karna, ya shuru se environment se kuch bhi capture na karna.
 
-The way a closure captures and handles values from the environment affects
-which traits the closure implements, and traits are how functions and structs
-can specify what kinds of closures they can use. Closures will automatically
-implement one, two, or all three of these `Fn` traits, in an additive fashion,
-depending on how the closure’s body handles the values:
+Closure jis tarah environment se values ko capture aur handle karta hai, woh affect karta hai ke closure kaun se traits implement karta hai, aur traits woh tareeqa hain jin se functions aur structs specify kar sakte hain ke woh kis qisam ke closures use kar sakte hain. Closures automatically in teen `Fn` traits mein se ek, do, ya teeno implement karenge, additive fashion mein, jo is baat par depend karta hai ke closure ki body values ko kis tarah handle karti hai:
 
-* `FnOnce` applies to closures that can be called once. All closures implement
-  at least this trait because all closures can be called. A closure that moves
-  captured values out of its body will only implement `FnOnce` and none of the
-  other `Fn` traits because it can only be called once.
-* `FnMut` applies to closures that don’t move captured values out of their body
-  but might mutate the captured values. These closures can be called more than
-  once.
-* `Fn` applies to closures that don’t move captured values out of their body
-  and don’t mutate captured values, as well as closures that capture nothing
-  from their environment. These closures can be called more than once without
-  mutating their environment, which is important in cases such as calling a closure multiple times concurrently.
+* `FnOnce` un closures par apply hota hai jinhein sirf ek baar call kiya ja sakta hai. Tamam closures kam az kam is trait ko implement karte hain kyun ke tamam closures ko call kiya ja sakta hai. Aisa closure jo captured values ko apni body se bahar move karta hai, sirf `FnOnce` implement karega aur doosre `Fn` traits mein se koi nahi, kyun ke usay sirf ek baar call kiya ja sakta hai.
+* `FnMut` un closures par apply hota hai jo captured values ko apni body se bahar move nahi karte lekin captured values ko mutate kar sakte hain. In closures ko ek se zyada baar call kiya ja sakta hai.
+* `Fn` un closures par apply hota hai jo captured values ko apni body se bahar move nahi karte aur captured values ko mutate bhi nahi karte, aur un closures par bhi jo apne environment se kuch bhi capture nahi karte. In closures ko apne environment ko mutate kiye baghair ek se zyada baar call kiya ja sakta hai, jo un cases mein important hai jahan ek closure ko multiple times concurrently call karna ho.
 
-Let’s look at the definition of the `unwrap_or_else` method on `Option<T>` that
-we used in Listing 13-1:
+Aaiye `Option<T>` par `unwrap_or_else` method ki definition dekhte hain jo humne Listing 13-1 mein use ki thi:
 
 ```rust,ignore
 impl<T> Option<T> {
@@ -320,40 +174,15 @@ impl<T> Option<T> {
 }
 ```
 
-Recall that `T` is the generic type representing the type of the value in the
-`Some` variant of an `Option`. That type `T` is also the return type of the
-`unwrap_or_else` function: Code that calls `unwrap_or_else` on an
-`Option<String>`, for example, will get a `String`.
+Yaad rakhein ke `T` generic type hai jo `Option` ke `Some` variant mein value ke type ko represent karta hai. Woh type `T` `unwrap_or_else` function ka return type bhi hai: Misal ke taur par, jo code `Option<String>` par `unwrap_or_else` call karta hai, usay ek `String` milega.
 
-Next, notice that the `unwrap_or_else` function has the additional generic type
-parameter `F`. The `F` type is the type of the parameter named `f`, which is
-the closure we provide when calling `unwrap_or_else`.
+Next, note karein ke `unwrap_or_else` function ke paas additional generic type parameter `F` hai. `F` type `f` naam ke parameter ka type hai, jo woh closure hai jo hum `unwrap_or_else` ko call karte waqt provide karte hain.
 
-The trait bound specified on the generic type `F` is `FnOnce() -> T`, which
-means `F` must be able to be called once, take no arguments, and return a `T`.
-Using `FnOnce` in the trait bound expresses the constraint that
-`unwrap_or_else` will not call `f` more than once. In the body of
-`unwrap_or_else`, we can see that if the `Option` is `Some`, `f` won’t be
-called. If the `Option` is `None`, `f` will be called once. Because all
-closures implement `FnOnce`, `unwrap_or_else` accepts all three kinds of
-closures and is as flexible as it can be.
+Generic type `F` par specified trait bound `FnOnce() -> T` hai, jis ka matlab hai ke `F` ko ek baar call kiya ja sakna chahiye, koi arguments nahi lene chahiye, aur ek `T` return karna chahiye. Trait bound mein `FnOnce` use karna is constraint ko express karta hai ke `unwrap_or_else`, `f` ko ek se zyada baar call nahi karega. `unwrap_or_else` ki body mein hum dekh sakte hain ke agar `Option` `Some` hai to `f` call nahi hoga. Agar `Option` `None` hai to `f` ek baar call hoga. Kyun ke tamam closures `FnOnce` implement karte hain, `unwrap_or_else` teenon qisam ke closures ko accept karta hai aur jitna flexible ho sakta hai utna flexible hai.
 
-> Note: If what we want to do doesn’t require capturing a value from the
-> environment, we can use the name of a function rather than a closure where we
-> need something that implements one of the `Fn` traits. For example, on an
-> `Option<Vec<T>>` value, we could call `unwrap_or_else(Vec::new)` to get a
-> new, empty vector if the value is `None`. The compiler automatically
-> implements whichever of the `Fn` traits is applicable for a function
-> definition.
+> Note: Agar jo hum karna chahte hain us mein environment se kisi value ko capture karna required nahi hai, to jahan humein aisi cheez chahiye jo `Fn` traits mein se kisi ek ko implement karti ho, wahan hum closure ke bajaye kisi function ka naam use kar sakte hain. Misal ke taur par, `Option<Vec<T>>` value par hum `unwrap_or_else(Vec::new)` call kar sakte hain taake agar value `None` ho to ek naya, empty vector mil jaye. Compiler automatically function definition ke liye applicable `Fn` traits mein se jo bhi trait ho usay implement karta hai.
 
-Now let’s look at the standard library method `sort_by_key`, defined on slices,
-to see how that differs from `unwrap_or_else` and why `sort_by_key` uses
-`FnMut` instead of `FnOnce` for the trait bound. The closure gets one argument
-in the form of a reference to the current item in the slice being considered,
-and it returns a value of type `K` that can be ordered. This function is useful
-when you want to sort a slice by a particular attribute of each item. In
-Listing 13-7, we have a list of `Rectangle` instances, and we use `sort_by_key`
-to order them by their `width` attribute from low to high.
+Ab standard library method `sort_by_key` ko dekhte hain, jo slices par defined hai, taake samajh sakein ke yeh `unwrap_or_else` se kis tarah different hai aur `sort_by_key` trait bound ke liye `FnOnce` ke bajaye `FnMut` kyun use karta hai. Closure ko ek argument milta hai jo consider kiye ja rahe slice ke current item ka reference hota hai, aur yeh `K` type ki ek value return karta hai jise order kiya ja sakta hai. Yeh function tab useful hai jab aap kisi slice ko har item ke kisi particular attribute ki bunyaad par sort karna chahte hain. Listing 13-7 mein, hamare paas `Rectangle` instances ki ek list hai, aur hum `sort_by_key` ko use karke unhein unke `width` attribute ki bunyaad par low se high order mein arrange karte hain.
 
 <Listing number="13-7" file-name="src/main.rs" caption="Using `sort_by_key` to order rectangles by width">
 
@@ -363,20 +192,15 @@ to order them by their `width` attribute from low to high.
 
 </Listing>
 
-This code prints:
+Yeh code print karta hai:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-07/output.txt}}
 ```
 
-The reason `sort_by_key` is defined to take an `FnMut` closure is that it calls
-the closure multiple times: once for each item in the slice. The closure `|r|
-r.width` doesn’t capture, mutate, or move anything out from its environment, so
-it meets the trait bound requirements.
+`sort_by_key` ko `FnMut` closure lene ke liye define karne ki wajah yeh hai ke yeh closure ko multiple times call karta hai: slice ke har item ke liye ek baar. Closure `|r| r.width` apne environment se kuch capture, mutate, ya move out nahi karta, is liye yeh trait bound ki requirements ko meet karta hai.
 
-In contrast, Listing 13-8 shows an example of a closure that implements just
-the `FnOnce` trait, because it moves a value out of the environment. The
-compiler won’t let us use this closure with `sort_by_key`.
+Is ke baraks, Listing 13-8 ek aise closure ka example dikhati hai jo sirf `FnOnce` trait implement karta hai, kyun ke yeh environment se ek value ko move karta hai. Compiler humein is closure ko `sort_by_key` ke saath use karne nahi dega.
 
 <Listing number="13-8" file-name="src/main.rs" caption="Attempting to use an `FnOnce` closure with `sort_by_key`">
 
@@ -386,29 +210,13 @@ compiler won’t let us use this closure with `sort_by_key`.
 
 </Listing>
 
-This is a contrived, convoluted way (that doesn’t work) to try to count the
-number of times `sort_by_key` calls the closure when sorting `list`. This code
-attempts to do this counting by pushing `value`—a `String` from the closure’s
-environment—into the `sort_operations` vector. The closure captures `value` and
-then moves `value` out of the closure by transferring ownership of `value` to
-the `sort_operations` vector. This closure can be called once; trying to call
-it a second time wouldn’t work, because `value` would no longer be in the
-environment to be pushed into `sort_operations` again! Therefore, this closure
-only implements `FnOnce`. When we try to compile this code, we get this error
-that `value` can’t be moved out of the closure because the closure must
-implement `FnMut`:
+Yeh ek banawati, complicated tareeqa hai (jo kaam nahi karta) `sort_by_key` ke closure ko `list` ko sort karte waqt kitni baar call karne ki counting karne ki koshish ka. Yeh code `value` ko push karke counting karne ki koshish karta hai—`value` closure ke environment se ek `String` hai—`sort_operations` vector mein. Closure `value` ko capture karta hai aur phir `value` ki ownership `sort_operations` vector ko transfer karke `value` ko closure se bahar move kar deta hai. Is closure ko ek baar call kiya ja sakta hai; ise doosri baar call karne ki koshish kaam nahi karegi, kyun ke `value` ab environment mein maujood nahi hoga jise dobara `sort_operations` mein push kiya ja sake! Is liye yeh closure sirf `FnOnce` implement karta hai. Jab hum is code ko compile karne ki koshish karte hain, to humein yeh error milta hai ke `value` ko closure se bahar move nahi kiya ja sakta kyun ke closure ko `FnMut` implement karna zaroori hai:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-08/output.txt}}
 ```
 
-The error points to the line in the closure body that moves `value` out of the
-environment. To fix this, we need to change the closure body so that it doesn’t
-move values out of the environment. Keeping a counter in the environment and
-incrementing its value in the closure body is a more straightforward way to
-count the number of times the closure is called. The closure in Listing 13-9
-works with `sort_by_key` because it is only capturing a mutable reference to the
-`num_sort_operations` counter and can therefore be called more than once.
+Error closure body ki us line ki taraf point karta hai jo `value` ko environment se bahar move karti hai. Isay fix karne ke liye, humein closure body ko is tarah change karna hoga ke yeh environment se values ko bahar move na kare. Environment mein ek counter rakhna aur closure body mein uski value ko increment karna, closure ko kitni baar call kiya gaya hai iski counting ka zyada straightforward tareeqa hai. Listing 13-9 mein closure `sort_by_key` ke saath kaam karta hai kyun ke yeh sirf `num_sort_operations` counter ka mutable reference capture karta hai aur is liye isay ek se zyada baar call kiya ja sakta hai.
 
 <Listing number="13-9" file-name="src/main.rs" caption="Using an `FnMut` closure with `sort_by_key` is allowed.">
 
@@ -418,9 +226,6 @@ works with `sort_by_key` because it is only capturing a mutable reference to the
 
 </Listing>
 
-The `Fn` traits are important when defining or using functions or types that
-make use of closures. In the next section, we’ll discuss iterators. Many
-iterator methods take closure arguments, so keep these closure details in mind
-as we continue!
+`Fn` traits un functions ya types ko define ya use karte waqt important hain jo closures ka use karte hain. Agle section mein, hum iterators discuss karenge. Bohat se iterator methods closure arguments lete hain, is liye aage barhte hue closure ki in details ko zehan mein rakhein!
 
 [unwrap-or-else]: ../std/option/enum.Option.html#method.unwrap_or_else
