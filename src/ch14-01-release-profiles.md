@@ -1,16 +1,11 @@
 ## Customizing Builds with Release Profiles
 
-In Rust, _release profiles_ are predefined, customizable profiles with
-different configurations that allow a programmer to have more control over
-various options for compiling code. Each profile is configured independently of
-the others.
+Rust mein, *release profiles* pehle se defined aur customizable profiles hain jin mein different configurations hoti hain jo programmer ko code compile karne ke mukhtalif options par zyada control deti hain. Har profile doosri profiles se independently configured hoti hai.
 
-Cargo has two main profiles: the `dev` profile Cargo uses when you run `cargo
-build`, and the `release` profile Cargo uses when you run `cargo build
---release`. The `dev` profile is defined with good defaults for development,
-and the `release` profile has good defaults for release builds.
+Cargo ke do main profiles hain: `dev` profile jise Cargo tab use karta hai jab aap `cargo
+build` run karte hain, aur `release` profile jise Cargo tab use karta hai jab aap `cargo build --release` run karte hain. `dev` profile development ke liye achhe defaults ke saath defined hai, aur `release` profile release builds ke liye achhe defaults rakhti hai.
 
-These profile names might be familiar from the output of your builds:
+Yeh profile names shayad aapko apni builds ke output se familiar hon:
 
 <!-- manual-regeneration
 anywhere, run:
@@ -26,13 +21,9 @@ $ cargo build --release
     Finished `release` profile [optimized] target(s) in 0.32s
 ```
 
-The `dev` and `release` are these different profiles used by the compiler.
+`dev` aur `release` compiler ke zariye use ki jane wali yeh different profiles hain.
 
-Cargo has default settings for each of the profiles that apply when you haven't
-explicitly added any `[profile.*]` sections in the project’s _Cargo.toml_ file.
-By adding `[profile.*]` sections for any profile you want to customize, you
-override any subset of the default settings. For example, here are the default
-values for the `opt-level` setting for the `dev` and `release` profiles:
+Cargo ke paas har profile ke liye default settings hoti hain jo tab apply hoti hain jab aapne project ki *Cargo.toml* file mein explicitly koi `[profile.*]` section add nahi kiya hota. Kisi bhi profile ko customize karne ke liye `[profile.*]` sections add karke, aap default settings ke kisi bhi subset ko override kar sakte hain. Misal ke taur par, `dev` aur `release` profiles ke liye `opt-level` setting ki default values yeh hain:
 
 <span class="filename">Filename: Cargo.toml</span>
 
@@ -44,20 +35,9 @@ opt-level = 0
 opt-level = 3
 ```
 
-The `opt-level` setting controls the number of optimizations Rust will apply to
-your code, with a range of 0 to 3. Applying more optimizations extends
-compiling time, so if you’re in development and compiling your code often,
-you’ll want fewer optimizations to compile faster even if the resultant code
-runs slower. The default `opt-level` for `dev` is therefore `0`. When you’re
-ready to release your code, it’s best to spend more time compiling. You’ll only
-compile in release mode once, but you’ll run the compiled program many times,
-so release mode trades longer compile time for code that runs faster. That is
-why the default `opt-level` for the `release` profile is `3`.
+`opt-level` setting yeh control karti hai ke Rust aapke code par kitni optimizations apply karega, jiska range 0 se 3 tak hai. Zyada optimizations apply karne se compiling time barhta hai, is liye agar aap development mein hain aur apne code ko frequently compile kar rahe hain, to aap kam optimizations chahenge taake code jaldi compile ho, chahe resultant code slower run kare. Is liye `dev` ka default `opt-level` `0` hai. Jab aap apne code ko release karne ke liye ready hon, to compiling mein zyada time spend karna behtar hai. Aap release mode mein sirf ek baar compile karenge, lekin compiled program ko bohat dafa run karenge, is liye release mode zyada compile time ko aise code ke saath trade karta hai jo faster run hota hai. Isi wajah se `release` profile ka default `opt-level` `3` hai.
 
-You can override a default setting by adding a different value for it in
-_Cargo.toml_. For example, if we want to use optimization level 1 in the
-development profile, we can add these two lines to our project’s _Cargo.toml_
-file:
+Aap *Cargo.toml* mein us setting ke liye different value add karke default setting ko override kar sakte hain. Misal ke taur par, agar hum development profile mein optimization level 1 use karna chahte hain, to hum apne project ki *Cargo.toml* file mein yeh do lines add kar sakte hain:
 
 <span class="filename">Filename: Cargo.toml</span>
 
@@ -66,10 +46,6 @@ file:
 opt-level = 1
 ```
 
-This code overrides the default setting of `0`. Now when we run `cargo build`,
-Cargo will use the defaults for the `dev` profile plus our customization to
-`opt-level`. Because we set `opt-level` to `1`, Cargo will apply more
-optimizations than the default, but not as many as in a release build.
+Yeh code default setting `0` ko override karta hai. Ab jab hum `cargo build` run karenge, Cargo `dev` profile ke defaults ke saath `opt-level` ke liye hamari customization use karega. Kyun ke humne `opt-level` ko `1` set kiya hai, Cargo default ke muqable mein zyada optimizations apply karega, lekin release build jitni nahi.
 
-For the full list of configuration options and defaults for each profile, see
-[Cargo’s documentation](https://doc.rust-lang.org/cargo/reference/profiles.html).
+Har profile ke configuration options aur defaults ki complete list ke liye [Cargo ki documentation](https://doc.rust-lang.org/cargo/reference/profiles.html) dekhein.
