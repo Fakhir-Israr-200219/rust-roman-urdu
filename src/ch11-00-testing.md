@@ -1,34 +1,11 @@
 # Writing Automated Tests
 
-In his 1972 essay “The Humble Programmer,” Edsger W. Dijkstra said that “program
-testing can be a very effective way to show the presence of bugs, but it is
-hopelessly inadequate for showing their absence.” That doesn’t mean we shouldn’t
-try to test as much as we can!
+Edsger W. Dijkstra ne apne 1972 ke essay “The Humble Programmer” mein kaha tha ke “program testing bugs ki mojoodgi dikhane ka ek bohat effective tareeqa ho sakta hai, lekin un ki adam-mojoodgi dikhane ke liye ye bilkul na-kafi hai.” Is ka matlab ye nahi ke humein jitna mumkin ho utna test karne ki koshish nahi karni chahiye!
 
-_Correctness_ in our programs is the extent to which our code does what we
-intend it to do. Rust is designed with a high degree of concern about the
-correctness of programs, but correctness is complex and not easy to prove.
-Rust’s type system shoulders a huge part of this burden, but the type system
-cannot catch everything. As such, Rust includes support for writing automated
-software tests.
+Hamare programs mein *correctness* se murad ye hai ke hamara code kis had tak woh kaam karta hai jo hum us se karwana chahte hain. Rust ko programs ki correctness ke liye bohat zyada concern ke saath design kiya gaya hai, lekin correctness complex hai aur isay prove karna aasaan nahi. Rust ka type system is burden ka ek bohat bara hissa sambhalta hai, lekin type system har cheez ko catch nahi kar sakta. Isi liye, Rust automated software tests likhne ke liye support provide karta hai.
 
-Say we write a function `add_two` that adds 2 to whatever number is passed to
-it. This function’s signature accepts an integer as a parameter and returns an
-integer as a result. When we implement and compile that function, Rust does all
-the type checking and borrow checking that you’ve learned so far to ensure
-that, for instance, we aren’t passing a `String` value or an invalid reference
-to this function. But Rust _can’t_ check that this function will do precisely
-what we intend, which is return the parameter plus 2 rather than, say, the
-parameter plus 10 or the parameter minus 50! That’s where tests come in.
+Maan lein hum `add_two` naam ka ek function likhte hain jo usay diye gaye kisi bhi number mein 2 add karta hai. Is function ka signature ek integer ko parameter ke taur par accept karta hai aur result ke taur par ek integer return karta hai. Jab hum is function ko implement aur compile karte hain, Rust woh tamam type checking aur borrow checking karta hai jo aap ab tak seekh chuke hain taa-ke ye ensure kiya ja sake ke, misal ke taur par, hum is function ko `String` value ya invalid reference pass nahi kar rahe. Lekin Rust ye *check nahi kar sakta* ke ye function bilkul wohi kaam karega jo hum us se karwana chahte hain, yani parameter mein 2 add karke return karega, na ke, maan lein, parameter mein 10 add karega ya parameter mein se 50 minus karega! Yahin tests kaam aate hain.
 
-We can write tests that assert, for example, that when we pass `3` to the
-`add_two` function, the returned value is `5`. We can run these tests whenever
-we make changes to our code to make sure any existing correct behavior has not
-changed.
+Hum aise tests likh sakte hain jo, misal ke taur par, ye assert karein ke jab hum `add_two` function ko `3` pass karte hain, to returned value `5` hoti hai. Jab bhi hum apne code mein changes karein, hum in tests ko run kar sakte hain taa-ke ye ensure ho ke pehle se mojood koi correct behavior change nahi hua.
 
-Testing is a complex skill: Although we can’t cover in one chapter every detail
-about how to write good tests, in this chapter we will discuss the mechanics of
-Rust’s testing facilities. We’ll talk about the annotations and macros
-available to you when writing your tests, the default behavior and options
-provided for running your tests, and how to organize tests into unit tests and
-integration tests.
+Testing ek complex skill hai: Agarche hum ek chapter mein achay tests likhne ke tareeqe ki har detail cover nahi kar sakte, lekin is chapter mein hum Rust ki testing facilities ke mechanics discuss karenge. Hum un annotations aur macros ke baare mein baat karenge jo aap apne tests likhte waqt use kar sakte hain, tests run karne ke liye default behavior aur available options ke baare mein baat karenge, aur ye bhi dekhenge ke tests ko unit tests aur integration tests mein kaise organize kiya jata hai.

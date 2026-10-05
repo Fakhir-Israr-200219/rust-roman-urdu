@@ -1,188 +1,125 @@
-## Controlling How Tests Are Run
+## Tests Kaise Run Kiye Jate Hain, Isay Control Karna
 
-Just as `cargo run` compiles your code and then runs the resultant binary,
-`cargo test` compiles your code in test mode and runs the resultant test
-binary. The default behavior of the binary produced by `cargo test` is to run
-all the tests in parallel and capture output generated during test runs,
-preventing the output from being displayed and making it easier to read the
-output related to the test results. You can, however, specify command line
-options to change this default behavior.
+Jis tarah `cargo run` aapke code ko compile karta hai aur phir resulting binary ko run karta hai, usi tarah `cargo test` aapke code ko test mode mein compile karta hai aur phir resulting test binary ko run karta hai. `cargo test` se produce hone wali binary ka default behavior yeh hai ke woh tamam tests ko parallel mein run karti hai aur test runs ke dauran generate hone wale output ko capture karti hai, jis se output display hone se ruk jata hai aur test results se related output ko read karna aasaan ho jata hai. Lekin aap command line options specify karke is default behavior ko change kar sakte hain.
 
-Some command line options go to `cargo test`, and some go to the resultant test
-binary. To separate these two types of arguments, you list the arguments that
-go to `cargo test` followed by the separator `--` and then the ones that go to
-the test binary. Running `cargo test --help` displays the options you can use
-with `cargo test`, and running `cargo test -- --help` displays the options you
-can use after the separator. These options are also documented in [the “Tests”
-section of _The `rustc` Book_][tests].
+Kuch command line options `cargo test` ko jate hain, aur kuch resulting test binary ko. In dono types ke arguments ko alag karne ke liye, aap pehle `cargo test` ko jane wale arguments list karte hain, phir separator `--` aur us ke baad woh arguments jo test binary ko jane hain. `cargo test --help` run karne se woh options display hote hain jo aap `cargo test` ke sath use kar sakte hain, aur `cargo test -- --help` run karne se woh options display hote hain jo separator ke baad use kiye ja sakte hain. Yeh options [the “Tests” section of *The `rustc` Book*][tests] mein bhi documented hain.
 
 [tests]: https://doc.rust-lang.org/rustc/tests/index.html
 
-### Running Tests in Parallel or Consecutively
+### Tests Ko Parallel Ya Consecutively Run Karna
 
-When you run multiple tests, by default they run in parallel using threads,
-meaning they finish running more quickly and you get feedback sooner. Because
-the tests are running at the same time, you must make sure your tests don’t
-depend on each other or on any shared state, including a shared environment,
-such as the current working directory or environment variables.
+Jab aap multiple tests run karte hain, to default taur par woh threads ko use karte hue parallel mein run hote hain, jis ka matlab hai ke woh zyada jaldi complete hote hain aur aapko feedback bhi jaldi milta hai. Kyun ke tests ek hi waqt mein run ho rahe hote hain, is liye aapko ensure karna hota hai ke aapke tests ek doosre par ya kisi shared state par depend na karein, jis mein shared environment bhi shamil hai, jaise current working directory ya environment variables.
 
-For example, say each of your tests runs some code that creates a file on disk
-named _test-output.txt_ and writes some data to that file. Then, each test
-reads the data in that file and asserts that the file contains a particular
-value, which is different in each test. Because the tests run at the same time,
-one test might overwrite the file in the time between when another test is
-writing and reading the file. The second test will then fail, not because the
-code is incorrect but because the tests have interfered with each other while
-running in parallel. One solution is to make sure each test writes to a
-different file; another solution is to run the tests one at a time.
+Misal ke taur par, maan lein ke aapka har test kuch aisa code run karta hai jo disk par *test-output.txt* naam ki ek file create karta hai aur us file mein kuch data write karta hai. Phir har test us file se data read karta hai aur assert karta hai ke file mein ek particular value hai, jo har test mein different hai. Kyun ke tests ek hi waqt mein run hote hain, ek test us waqt file ko overwrite kar sakta hai jab doosra test file mein write karne aur usay read karne ke darmiyan ho. Is surat mein doosra test fail ho jayega, code incorrect hone ki wajah se nahi, balki is liye ke tests ne parallel mein run hote hue ek doosre ke kaam mein interference ki. Is ka ek solution yeh hai ke ensure kiya jaye ke har test different file mein write kare; doosra solution yeh hai ke tests ko ek waqt mein sirf ek run kiya jaye.
 
-If you don’t want to run the tests in parallel or if you want more fine-grained
-control over the number of threads used, you can send the `--test-threads` flag
-and the number of threads you want to use to the test binary. Take a look at
-the following example:
+Agar aap tests ko parallel mein run nahi karna chahte ya aap use hone wale threads ki tadaad par zyada fine-grained control chahte hain, to aap test binary ko `--test-threads` flag aur un threads ki tadaad bhej sakte hain jinhein aap use karna chahte hain. Neeche di gayi example ko dekhein:
 
-```console
+```console id="6n7w0x"
 $ cargo test -- --test-threads=1
 ```
 
-We set the number of test threads to `1`, telling the program not to use any
-parallelism. Running the tests using one thread will take longer than running
-them in parallel, but the tests won’t interfere with each other if they share
-state.
+Humne test threads ki tadaad `1` set ki hai, jis se program ko bataya ja raha hai ke woh parallelism use na kare. Tests ko ek thread use karke run karne mein unhein parallel mein run karne ke muqable mein zyada waqt lagega, lekin agar tests shared state use karte hain to woh ek doosre ke kaam mein interference nahi karenge.
 
-### Showing Function Output
+### Function Output Dikhana
 
-By default, if a test passes, Rust’s test library captures anything printed to
-standard output. For example, if we call `println!` in a test and the test
-passes, we won’t see the `println!` output in the terminal; we’ll see only the
-line that indicates the test passed. If a test fails, we’ll see whatever was
-printed to standard output with the rest of the failure message.
+Default taur par, agar koi test pass ho jaye, to Rust ki test library standard output par print hone wali har cheez ko capture kar leti hai. Misal ke taur par, agar hum test mein `println!` call karein aur test pass ho jaye, to humein terminal mein `println!` ka output nazar nahi aayega; humein sirf woh line nazar aayegi jo batati hai ke test pass ho gaya. Agar test fail ho jaye, to humein standard output par print hone wali cheez failure message ke baqi hisson ke sath nazar aayegi.
 
-As an example, Listing 11-10 has a silly function that prints the value of its
-parameter and returns 10, as well as a test that passes and a test that fails.
+Misal ke taur par, Listing 11-10 mein ek simple si function hai jo apne parameter ki value print karti hai aur `10` return karti hai, aur is ke sath ek aisa test hai jo pass hota hai aur ek aisa test hai jo fail hota hai.
 
-<Listing number="11-10" file-name="src/lib.rs" caption="Tests for a function that calls `println!`">
+<Listing number="11-10" file-name="src/lib.rs" caption="Aise function ke tests jo `println!` call karta hai">
 
-```rust,panics,noplayground
+```rust,panics,noplayground id="f8q2mk"
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-10/src/lib.rs}}
 ```
 
 </Listing>
 
-When we run these tests with `cargo test`, we’ll see the following output:
+Jab hum in tests ko `cargo test` ke sath run karte hain, to humein following output nazar aata hai:
 
-```console
+```console id="r6k1zt"
 {{#include ../listings/ch11-writing-automated-tests/listing-11-10/output.txt}}
 ```
 
-Note that nowhere in this output do we see `I got the value 4`, which is
-printed when the test that passes runs. That output has been captured. The
-output from the test that failed, `I got the value 8`, appears in the section
-of the test summary output, which also shows the cause of the test failure.
+Note karein ke is output mein kahin bhi `I got the value 4` nazar nahi aata, jo us waqt print hota hai jab pass hone wala test run hota hai. Us output ko capture kar liya gaya hai. Jo test fail hua us ka output, `I got the value 8`, test summary output ke section mein nazar aata hai, jahan test failure ki wajah bhi dikhai jati hai.
 
-If we want to see printed values for passing tests as well, we can tell Rust to
-also show the output of successful tests with `--show-output`:
+Agar hum passing tests ke liye bhi printed values dekhna chahte hain, to hum Rust ko `--show-output` ke sath successful tests ka output bhi dikhane ke liye keh sakte hain:
 
 ```console
 $ cargo test -- --show-output
 ```
 
-When we run the tests in Listing 11-10 again with the `--show-output` flag, we
-see the following output:
+Jab hum Listing 11-10 ke tests ko `--show-output` flag ke sath dobara run karte hain, to humein following output nazar aata hai:
 
-```console
+```console id="k3v9pa"
 {{#include ../listings/ch11-writing-automated-tests/output-only-01-show-output/output.txt}}
 ```
 
-### Running a Subset of Tests by Name
+### Naam Ke Zariye Tests Ke Ek Subset Ko Run Karna
 
-Running a full test suite can sometimes take a long time. If you’re working on
-code in a particular area, you might want to run only the tests pertaining to
-that code. You can choose which tests to run by passing `cargo test` the name
-or names of the test(s) you want to run as an argument.
+Kabhi kabhi poori test suite ko run karne mein kaafi waqt lag sakta hai. Agar aap code ke kisi particular area par kaam kar rahe hain, to aap shayad sirf un tests ko run karna chahein jo us code se related hain. Aap `cargo test` ko un test(s) ka naam ya naam dekar choose kar sakte hain jinhein aap argument ke taur par run karna chahte hain.
 
-To demonstrate how to run a subset of tests, we’ll first create three tests for
-our `add_two` function, as shown in Listing 11-11, and choose which ones to run.
+Tests ke ek subset ko run karne ka tareeqa demonstrate karne ke liye, hum pehle apne `add_two` function ke liye teen tests create karenge, jaisa ke Listing 11-11 mein dikhaya gaya hai, aur phir choose karenge ke kaun se tests run karne hain.
 
-<Listing number="11-11" file-name="src/lib.rs" caption="Three tests with three different names">
+<Listing number="11-11" file-name="src/lib.rs" caption="Teen tests jin ke teen different names hain">
 
-```rust,noplayground
+```rust,noplayground id="q7m2cx"
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-11/src/lib.rs}}
 ```
 
 </Listing>
 
-If we run the tests without passing any arguments, as we saw earlier, all the
-tests will run in parallel:
+Agar hum koi arguments pass kiye baghair tests run karein, jaisa ke humne pehle dekha tha, to tamam tests parallel mein run honge:
 
-```console
+```console id="n5x8wr"
 {{#include ../listings/ch11-writing-automated-tests/listing-11-11/output.txt}}
 ```
 
-#### Running Single Tests
+#### Single Tests Run Karna
 
-We can pass the name of any test function to `cargo test` to run only that test:
+Hum kisi bhi test function ka naam `cargo test` ko dekar sirf usi test ko run kar sakte hain:
 
-```console
+```console id="q2k7mf"
 {{#include ../listings/ch11-writing-automated-tests/output-only-02-single-test/output.txt}}
 ```
 
-Only the test with the name `one_hundred` ran; the other two tests didn’t match
-that name. The test output lets us know we had more tests that didn’t run by
-displaying `2 filtered out` at the end.
+Sirf `one_hundred` naam wala test run hua; baqi dono tests is naam se match nahi hue. Test output humein yeh batata hai ke aur bhi tests thay jo run nahi hue, aur end mein `2 filtered out` display hota hai.
 
-We can’t specify the names of multiple tests in this way; only the first value
-given to `cargo test` will be used. But there is a way to run multiple tests.
+Hum is tareeqe se multiple tests ke names specify nahi kar sakte; `cargo test` ko di gayi sirf pehli value use ki jayegi. Lekin multiple tests run karne ka ek tareeqa maujood hai.
 
-#### Filtering to Run Multiple Tests
+#### Multiple Tests Run Karne Ke Liye Filtering
 
-We can specify part of a test name, and any test whose name matches that value
-will be run. For example, because two of our tests’ names contain `add`, we can
-run those two by running `cargo test add`:
+Hum test name ka sirf ek hissa specify kar sakte hain, aur jis bhi test ka naam us value se match karega woh run kiya jayega. Misal ke taur par, kyun ke hamare do tests ke names mein `add` shamil hai, hum `cargo test add` run karke un dono tests ko run kar sakte hain:
 
-```console
+```console id="w6j3qa"
 {{#include ../listings/ch11-writing-automated-tests/output-only-03-multiple-tests/output.txt}}
 ```
 
-This command ran all tests with `add` in the name and filtered out the test
-named `one_hundred`. Also note that the module in which a test appears becomes
-part of the test’s name, so we can run all the tests in a module by filtering
-on the module’s name.
+Is command ne un tamam tests ko run kiya jin ke naam mein `add` tha aur `one_hundred` naam wale test ko filter out kar diya. Yeh bhi note karein ke jis module mein koi test hota hai, woh module bhi test ke naam ka hissa ban jata hai, is liye hum module ke naam par filtering karke us module ke tamam tests run kar sakte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ignoring-some-tests-unless-specifically-requested"></a>
 
-### Ignoring Tests Unless Specifically Requested
+### Tests Ko Ignore Karna Jab Tak Khaas Taur Par Request Na Ki Jaye
 
-Sometimes a few specific tests can be very time-consuming to execute, so you
-might want to exclude them during most runs of `cargo test`. Rather than
-listing as arguments all tests you do want to run, you can instead annotate the
-time-consuming tests using the `ignore` attribute to exclude them, as shown
-here:
+Kabhi kabhi kuch specific tests ko execute karne mein bohat zyada waqt lag sakta hai, is liye aap `cargo test` ke zyada tar runs ke dauran unhein exclude karna chah sakte hain. Un tamam tests ko arguments ke taur par list karne ke bajaye jinhein aap run karna chahte hain, aap time-consuming tests par `ignore` attribute laga kar unhein exclude kar sakte hain, jaisa ke yahan dikhaya gaya hai:
 
 <span class="filename">Filename: src/lib.rs</span>
 
-```rust,noplayground
+```rust,noplayground id="j6t4xp"
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-11-ignore-a-test/src/lib.rs:here}}
 ```
 
-After `#[test]`, we add the `#[ignore]` line to the test we want to exclude.
-Now when we run our tests, `it_works` runs, but `expensive_test` doesn’t:
+`#[test]` ke baad hum us test ke liye `#[ignore]` line add karte hain jise hum exclude karna chahte hain. Ab jab hum apne tests run karte hain, `it_works` run hota hai, lekin `expensive_test` nahi:
 
-```console
+```console id="c8m2vz"
 {{#include ../listings/ch11-writing-automated-tests/no-listing-11-ignore-a-test/output.txt}}
 ```
 
-The `expensive_test` function is listed as `ignored`. If we want to run only
-the ignored tests, we can use `cargo test -- --ignored`:
+`expensive_test` function ko `ignored` ke taur par list kiya gaya hai. Agar hum sirf ignored tests ko run karna chahte hain, to hum `cargo test -- --ignored` use kar sakte hain:
 
-```console
+```console id="p5r9kw"
 {{#include ../listings/ch11-writing-automated-tests/output-only-04-running-ignored/output.txt}}
 ```
 
-By controlling which tests run, you can make sure your `cargo test` results
-will be returned quickly. When you’re at a point where it makes sense to check
-the results of the `ignored` tests and you have time to wait for the results,
-you can run `cargo test -- --ignored` instead. If you want to run all tests
-whether they’re ignored or not, you can run `cargo test -- --include-ignored`.
+Yeh control karke ke kaun se tests run hon, aap ensure kar sakte hain ke aapke `cargo test` ke results jaldi return hon. Jab aap aisi stage par hon jahan `ignored` tests ke results check karna munasib ho aur aapke paas results ka intezar karne ka waqt ho, to aap is ke bajaye `cargo test -- --ignored` run kar sakte hain. Agar aap tamam tests run karna chahte hain, chahe woh ignored hon ya na hon, to aap `cargo test -- --include-ignored` run kar sakte hain.
