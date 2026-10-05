@@ -1,4 +1,4 @@
 # Appendix
 
-The following sections contain reference material you may find useful in your
-Rust journey.
+Neeche diye gaye sections mein reference material mojood hai jo aapko apne
+Rust ke safar mein useful lag sakta hai.

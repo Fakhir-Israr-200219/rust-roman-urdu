@@ -1,59 +1,66 @@
 ## Appendix E: Editions
 
-In Chapter 1, you saw that `cargo new` adds a bit of metadata to your
-_Cargo.toml_ file about an edition. This appendix talks about what that means!
+Chapter 1 mein aapne dekha tha ke `cargo new` aapki *Cargo.toml* file mein
+edition ke bare mein thora sa metadata add karta hai. Yeh appendix batati hai
+ke is ka kya matlab hai!
 
-The Rust language and compiler have a six-week release cycle, meaning users get
-a constant stream of new features. Other programming languages release larger
-changes less often; Rust releases smaller updates more frequently. After a
-while, all of these tiny changes add up. But from release to release, it can be
-difficult to look back and say, “Wow, between Rust 1.10 and Rust 1.31, Rust has
-changed a lot!”
+Rust language aur compiler ka six-week release cycle hai, jis ka matlab hai ke
+users ko new features ka ek constant stream milta rehta hai. Doosri
+programming languages kam frequently badi changes release karti hain; Rust
+chhoti updates zyada frequently release karta hai. Kuch arsay baad, yeh tamam
+chhoti changes mil kar kaafi badi ho jati hain. Lekin ek release se doosri
+release tak peeche mur kar yeh kehna mushkil ho sakta hai, “Wow, Rust 1.10 aur
+Rust 1.31 ke darmiyan Rust mein bohat kuch change ho gaya hai!”
 
-Every three years or so, the Rust team produces a new Rust _edition_. Each
-edition brings together the features that have landed into a clear package with
-fully updated documentation and tooling. New editions ship as part of the usual
-six-week release process.
+Har taqreeban teen saal baad, Rust team ek nayi Rust *edition* produce karti
+hai. Har edition un features ko jo land ho chuke hain ek clear package mein
+jama karti hai, jiske saath fully updated documentation aur tooling hoti hai.
+New editions usual six-week release process ke part ke taur par ship hoti hain.
 
-Editions serve different purposes for different people:
+Editions different logon ke liye different purposes serve karti hain:
 
-- For active Rust users, a new edition brings together incremental changes into
-  an easy-to-understand package.
-- For non-users, a new edition signals that some major advancements have
-  landed, which might make Rust worth another look.
-- For those developing Rust, a new edition provides a rallying point for the
-  project as a whole.
+* Active Rust users ke liye, ek new edition incremental changes ko ek
+  easy-to-understand package mein jama karti hai.
+* Non-users ke liye, ek new edition signal deti hai ke kuch major advancements
+  land ho chuki hain, jo Rust ko dobara dekhne ke laayak bana sakti hain.
+* Rust develop karne walon ke liye, ek new edition poore project ke liye ek
+  rallying point provide karti hai.
 
-At the time of this writing, four Rust editions are available: Rust 2015, Rust
-2018, Rust 2021, and Rust 2024. This book is written using Rust 2024 edition
-idioms.
+Is waqt jab yeh likhi ja rahi hai, chaar Rust editions available hain: Rust
+2015, Rust 2018, Rust 2021, aur Rust 2024. Yeh book Rust 2024 edition idioms
+ko use karke likhi gayi hai.
 
-The `edition` key in _Cargo.toml_ indicates which edition the compiler should
-use for your code. If the key doesn’t exist, Rust uses `2015` as the edition
-value for backward compatibility reasons.
+*Cargo.toml* mein `edition` key indicate karti hai ke compiler ko aapke code
+ke liye kaunsi edition use karni chahiye. Agar key exist nahi karti, to Rust
+backward compatibility reasons ki wajah se `2015` ko edition value ke taur par
+use karta hai.
 
-Each project can opt in to an edition other than the default 2015 edition.
-Editions can contain incompatible changes, such as including a new keyword that
-conflicts with identifiers in code. However, unless you opt in to those
-changes, your code will continue to compile even as you upgrade the Rust
-compiler version you use.
+Har project default 2015 edition ke ilawa kisi doosri edition ko opt in kar
+sakta hai. Editions mein incompatible changes ho sakti hain, jaise ek naya
+keyword include karna jo code mein mojood identifiers ke saath conflict karta
+ho. Lekin jab tak aap un changes ko opt in nahi karte, aapka code compile hota
+rahega, hatta ke jab aap apne use kiye jane wale Rust compiler version ko
+upgrade kar lein.
 
-All Rust compiler versions support any edition that existed prior to that
-compiler’s release, and they can link crates of any supported editions
-together. Edition changes only affect the way the compiler initially parses
-code. Therefore, if you’re using Rust 2015 and one of your dependencies uses
-Rust 2018, your project will compile and be able to use that dependency. The
-opposite situation, where your project uses Rust 2018 and a dependency uses
-Rust 2015, works as well.
+Rust compiler ke tamam versions kisi bhi aisi edition ko support karte hain
+jo us compiler ki release se pehle exist karti thi, aur woh kisi bhi supported
+editions ke crates ko aapas mein link kar sakte hain. Edition changes sirf is
+baat ko affect karti hain ke compiler shuru mein code ko kis tarah parse karta
+hai. Is liye, agar aap Rust 2015 use kar rahe hain aur aapki dependencies mein
+se ek Rust 2018 use karti hai, to aapka project compile hoga aur us dependency
+ko use kar sakega. Is ka ulta situation bhi, jahan aapka project Rust 2018 use
+karta hai aur dependency Rust 2015 use karti hai, isi tarah kaam karti hai.
 
-To be clear: Most features will be available on all editions. Developers using
-any Rust edition will continue to see improvements as new stable releases are
-made. However, in some cases, mainly when new keywords are added, some new
-features might only be available in later editions. You will need to switch
-editions if you want to take advantage of such features.
+Wazeh taur par: Zyada tar features tamam editions par available honge. Kisi bhi
+Rust edition ko use karne wale developers ko new stable releases ke saath
+improvements milti rahengi. Lekin kuch cases mein, mainly jab new keywords add
+kiye jate hain, kuch new features sirf later editions mein available ho sakte
+hain. Agar aap aise features se faida uthana chahte hain to aapko editions
+switch karni hongi.
 
-For more details, see [_The Rust Edition Guide_][edition-guide]. This is a
-complete book that enumerates the differences between editions and explains how
-to automatically upgrade your code to a new edition via `cargo fix`.
+Mazeed details ke liye [*The Rust Edition Guide*][edition-guide] dekhein. Yeh
+ek complete book hai jo editions ke darmiyan differences ko enumerate karti
+hai aur explain karti hai ke `cargo fix` ke zariye aap apne code ko automatically
+new edition par upgrade kaise kar sakte hain.
 
 [edition-guide]: https://doc.rust-lang.org/stable/edition-guide

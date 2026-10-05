@@ -1,183 +1,202 @@
 ## Appendix C: Derivable Traits
 
-In various places in the book, we’ve discussed the `derive` attribute, which
-you can apply to a struct or enum definition. The `derive` attribute generates
-code that will implement a trait with its own default implementation on the
-type you’ve annotated with the `derive` syntax.
+Book ke mukhtalif maqamat par humne `derive` attribute discuss kiya hai, jo aap
+struct ya enum definition par apply kar sakte hain. `derive` attribute aisa
+code generate karta hai jo us type par, jis par aapne `derive` syntax lagayi
+hai, kisi trait ko uski apni default implementation ke saath implement karta
+hai.
 
-In this appendix, we provide a reference of all the traits in the standard
-library that you can use with `derive`. Each section covers:
+Is appendix mein hum standard library ke un tamam traits ka reference provide
+karte hain jinhein aap `derive` ke saath use kar sakte hain. Har section mein
+yeh cover kiya gaya hai:
 
-- What operators and methods deriving this trait will enable
-- What the implementation of the trait provided by `derive` does
-- What implementing the trait signifies about the type
-- The conditions in which you’re allowed or not allowed to implement the trait
-- Examples of operations that require the trait
+* Is trait ko derive karne se kaun se operators aur methods enable honge
+* `derive` ki taraf se provide ki gayi trait implementation kya karti hai
+* Is trait ko implement karna type ke bare mein kya signify karta hai
+* Kin conditions mein aapko trait implement karne ki ijazat hoti hai ya nahi hoti
+* Kin operations ke liye is trait ki zaroorat hoti hai
 
-If you want different behavior from that provided by the `derive` attribute,
-consult the [standard library documentation](../std/index.html)<!-- ignore -->
-for each trait for details on how to manually implement them.
+Agar aap `derive` attribute ki taraf se provide kiye gaye behavior se different
+behavior chahte hain, to har trait ke liye details jaanne ke liye
+[standard library documentation](../std/index.html)<!-- ignore --> dekhein ke
+unhein manually kaise implement kiya jaye.
 
-The traits listed here are the only ones defined by the standard library that
-can be implemented on your types using `derive`. Other traits defined in the
-standard library don’t have sensible default behavior, so it’s up to you to
-implement them in the way that makes sense for what you’re trying to accomplish.
+Yahan listed traits hi standard library mein defined woh tamam traits hain
+jinhein aap `derive` use karke apni types par implement kar sakte hain. Standard
+library mein defined doosre traits ka sensible default behavior nahi hota, is
+liye unhein aapko khud us tarah implement karna hota hai jo aapke desired
+purpose ke liye munasib ho.
 
-An example of a trait that can’t be derived is `Display`, which handles
-formatting for end users. You should always consider the appropriate way to
-display a type to an end user. What parts of the type should an end user be
-allowed to see? What parts would they find relevant? What format of the data
-would be most relevant to them? The Rust compiler doesn’t have this insight, so
-it can’t provide appropriate default behavior for you.
+Ek aise trait ki example jo derive nahi kiya ja sakta `Display` hai, jo end
+users ke liye formatting handle karta hai. Aapko hamesha is baat par ghaur
+karna chahiye ke end user ko kisi type ko display karne ka appropriate tareeqa
+kya hona chahiye. Type ke kin parts ko end user ko dekhne ki ijazat honi chahiye?
+Kin parts ko woh relevant samjhenge? Data ka kaunsa format unke liye sab se
+relevant hoga? Rust compiler ke paas yeh insight nahi hoti, is liye woh aapke
+liye appropriate default behavior provide nahi kar sakta.
 
-The list of derivable traits provided in this appendix is not comprehensive:
-Libraries can implement `derive` for their own traits, making the list of
-traits you can use `derive` with truly open ended. Implementing `derive`
-involves using a procedural macro, which is covered in the [“Custom `derive`
-Macros”][custom-derive-macros]<!-- ignore --> section in Chapter 20.
+Is appendix mein diye gaye derivable traits ki list comprehensive nahi hai:
+Libraries apne khud ke traits ke liye `derive` implement kar sakti hain, jis ki
+wajah se un traits ki list jinke saath aap `derive` use kar sakte hain waqai
+open ended hai. `derive` implement karne mein procedural macro ka use hota hai,
+jise Chapter 20 ke [“Custom `derive`
+Macros”][custom-derive-macros]<!-- ignore --> section mein cover kiya gaya hai.
 
 ### `Debug` for Programmer Output
 
-The `Debug` trait enables debug formatting in format strings, which you
-indicate by adding `:?` within `{}` placeholders.
+`Debug` trait format strings mein debug formatting enable karta hai, jise aap
+`{}` placeholders ke andar `:?` add karke indicate karte hain.
 
-The `Debug` trait allows you to print instances of a type for debugging
-purposes, so you and other programmers using your type can inspect an instance
-at a particular point in a program’s execution.
+`Debug` trait aapko kisi type ke instances ko debugging purposes ke liye print
+karne deta hai, taake aap aur aapki type use karne wale doosre programmers
+program ki execution ke kisi particular point par kisi instance ka inspection
+kar saken.
 
-The `Debug` trait is required, for example, in the use of the `assert_eq!`
-macro. This macro prints the values of instances given as arguments if the
-equality assertion fails so that programmers can see why the two instances
-weren’t equal.
+Misal ke taur par, `assert_eq!` macro ko use karte waqt `Debug` trait required
+hota hai. Agar equality assertion fail ho jaye to yeh macro arguments ke taur
+par diye gaye instances ki values print karta hai, taake programmers dekh saken
+ke dono instances equal kyun nahi thay.
 
 ### `PartialEq` and `Eq` for Equality Comparisons
 
-The `PartialEq` trait allows you to compare instances of a type to check for
-equality and enables use of the `==` and `!=` operators.
+`PartialEq` trait aapko kisi type ke instances ko equality check karne ke liye
+compare karne deta hai aur `==` aur `!=` operators ke use ko enable karta hai.
 
-Deriving `PartialEq` implements the `eq` method. When `PartialEq` is derived on
-structs, two instances are equal only if _all_ fields are equal, and the
-instances are not equal if _any_ fields are not equal. When derived on enums,
-each variant is equal to itself and not equal to the other variants.
+`PartialEq` ko derive karne se `eq` method implement hota hai. Jab structs par
+`PartialEq` derive kiya jata hai, to do instances sirf us waqt equal hotay hain
+jab *tamam* fields equal hon, aur agar *koi bhi* field equal na ho to instances
+equal nahi hotay. Jab enums par derive kiya jata hai, to har variant khud ke
+saath equal hota hai aur doosre variants ke saath equal nahi hota.
 
-The `PartialEq` trait is required, for example, with the use of the
-`assert_eq!` macro, which needs to be able to compare two instances of a type
-for equality.
+`PartialEq` trait required hota hai, misal ke taur par, `assert_eq!` macro ke
+saath, jise kisi type ke do instances ko equality ke liye compare karne ke
+qabil hona zaroori hai.
 
-The `Eq` trait has no methods. Its purpose is to signal that for every value of
-the annotated type, the value is equal to itself. The `Eq` trait can only be
-applied to types that also implement `PartialEq`, although not all types that
-implement `PartialEq` can implement `Eq`. One example of this is floating-point
-number types: The implementation of floating-point numbers states that two
-instances of the not-a-number (`NaN`) value are not equal to each other.
+`Eq` trait ka koi method nahi hota. Is ka purpose yeh signal karna hai ke
+annotated type ki har value ke liye, woh value khud ke barabar hai. `Eq` trait
+sirf un types par apply kiya ja sakta hai jo `PartialEq` bhi implement karti
+hon, halanke `PartialEq` implement karne wali tamam types `Eq` implement nahi
+kar sakti. Is ki ek example floating-point number types hain: floating-point
+numbers ki implementation ke mutabiq not-a-number (`NaN`) value ke do
+instances ek doosre ke barabar nahi hotay.
 
-An example of when `Eq` is required is for keys in a `HashMap<K, V>` so that
-the `HashMap<K, V>` can tell whether two keys are the same.
+Ek example jahan `Eq` required hota hai `HashMap<K, V>` ki keys hain, taake
+`HashMap<K, V>` yeh bata sake ke do keys same hain ya nahi.
 
 ### `PartialOrd` and `Ord` for Ordering Comparisons
 
-The `PartialOrd` trait allows you to compare instances of a type for sorting
-purposes. A type that implements `PartialOrd` can be used with the `<`, `>`,
-`<=`, and `>=` operators. You can only apply the `PartialOrd` trait to types
-that also implement `PartialEq`.
+`PartialOrd` trait aapko sorting purposes ke liye kisi type ke instances ko
+compare karne deta hai. Jo type `PartialOrd` implement karti hai usay `<`, `>`,
+`<=`, aur `>=` operators ke saath use kiya ja sakta hai. Aap `PartialOrd` trait
+sirf un types par apply kar sakte hain jo `PartialEq` bhi implement karti hon.
 
-Deriving `PartialOrd` implements the `partial_cmp` method, which returns an
-`Option<Ordering>` that will be `None` when the values given don’t produce an
-ordering. An example of a value that doesn’t produce an ordering, even though
-most values of that type can be compared, is the `NaN` floating point value.
-Calling `partial_cmp` with any floating-point number and the `NaN`
-floating-point value will return `None`.
+`PartialOrd` ko derive karne se `partial_cmp` method implement hota hai, jo ek
+`Option<Ordering>` return karta hai aur jab di gayi values koi ordering produce
+na karein to `None` return karega. Aisi value ki ek example jo ordering
+produce nahi karti, halanke us type ki zyada tar values ko compare kiya ja
+sakta hai, floating-point `NaN` value hai. `partial_cmp` ko kisi bhi
+floating-point number aur `NaN` floating-point value ke saath call karne par
+`None` return hoga.
 
-When derived on structs, `PartialOrd` compares two instances by comparing the
-value in each field in the order in which the fields appear in the struct
-definition. When derived on enums, variants of the enum declared earlier in the
-enum definition are considered less than the variants listed later.
+Jab structs par derive kiya jata hai, `PartialOrd` do instances ko struct
+definition mein fields ke appear hone ke order ke mutabiq har field ki value
+compare karke compare karta hai. Jab enums par derive kiya jata hai, enum
+definition mein pehle declare kiye gaye variants ko baad mein listed variants
+se less than consider kiya jata hai.
 
-The `PartialOrd` trait is required, for example, for the `gen_range` method
-from the `rand` crate that generates a random value in the range specified by a
-range expression.
+`PartialOrd` trait required hota hai, misal ke taur par, `rand` crate ke
+`gen_range` method ke liye, jo range expression mein specify ki gayi range ke
+andar ek random value generate karta hai.
 
-The `Ord` trait allows you to know that for any two values of the annotated
-type, a valid ordering will exist. The `Ord` trait implements the `cmp` method,
-which returns an `Ordering` rather than an `Option<Ordering>` because a valid
-ordering will always be possible. You can only apply the `Ord` trait to types
-that also implement `PartialOrd` and `Eq` (and `Eq` requires `PartialEq`). When
-derived on structs and enums, `cmp` behaves the same way as the derived
-implementation for `partial_cmp` does with `PartialOrd`.
+`Ord` trait aapko yeh jaanne deta hai ke annotated type ki kisi bhi do values ke
+liye ek valid ordering mojood hogi. `Ord` trait `cmp` method implement karta
+hai, jo `Option<Ordering>` ke bajaye `Ordering` return karta hai, kyun ke ek
+valid ordering hamesha possible hogi. Aap `Ord` trait sirf un types par apply
+kar sakte hain jo `PartialOrd` aur `Eq` dono implement karti hon (`Eq` ke liye
+`PartialEq` required hai). Structs aur enums par derive kiye jane par `cmp`
+bilkul usi tarah behave karta hai jis tarah `PartialOrd` ke saath `partial_cmp`
+ki derived implementation karti hai.
 
-An example of when `Ord` is required is when storing values in a `BTreeSet<T>`,
-a data structure that stores data based on the sort order of the values.
+Ek example jahan `Ord` required hota hai `BTreeSet<T>` mein values store karna
+hai, jo ek aisa data structure hai jo values ke sort order ki bunyaad par data
+store karta hai.
 
 ### `Clone` and `Copy` for Duplicating Values
 
-The `Clone` trait allows you to explicitly create a deep copy of a value, and
-the duplication process might involve running arbitrary code and copying heap
-data. See the [“Variables and Data Interacting with
-Clone”][variables-and-data-interacting-with-clone]<!-- ignore --> section in
-Chapter 4 for more information on `Clone`.
+`Clone` trait aapko kisi value ki deep copy explicitly create karne deta hai,
+aur duplication ka process arbitrary code run karne aur heap data copy karne par
+mushtamil ho sakta hai. `Clone` ke bare mein mazeed information ke liye
+Chapter 4 ka [“Variables and Data Interacting with
+Clone”][variables-and-data-interacting-with-clone]<!-- ignore --> section
+dekhein.
 
-Deriving `Clone` implements the `clone` method, which when implemented for the
-whole type, calls `clone` on each of the parts of the type. This means all the
-fields or values in the type must also implement `Clone` to derive `Clone`.
+`Clone` ko derive karne se `clone` method implement hota hai, jo jab poori type
+ke liye implement hota hai to type ke har part par `clone` call karta hai. Is ka
+matlab hai ke type ke tamam fields ya values ka bhi `Clone` implement karna
+zaroori hai taake `Clone` derive kiya ja sake.
 
-An example of when `Clone` is required is when calling the `to_vec` method on a
-slice. The slice doesn’t own the type instances it contains, but the vector
-returned from `to_vec` will need to own its instances, so `to_vec` calls
-`clone` on each item. Thus, the type stored in the slice must implement `Clone`.
+Ek example jahan `Clone` required hota hai slice par `to_vec` method call karna
+hai. Slice un type instances ki ownership nahi rakhti jinhein woh contain
+karti hai, lekin `to_vec` se return hone wale vector ko apne instances ki
+ownership rakhni hogi, is liye `to_vec` har item par `clone` call karta hai.
+Is tarah, slice mein stored type ka `Clone` implement karna zaroori hai.
 
-The `Copy` trait allows you to duplicate a value by only copying bits stored on
-the stack; no arbitrary code is necessary. See the [“Stack-Only Data:
-Copy”][stack-only-data-copy]<!-- ignore --> section in Chapter 4 for more
-information on `Copy`.
+`Copy` trait aapko kisi value ko sirf stack par stored bits copy karke duplicate
+karne deta hai; is ke liye arbitrary code ki zaroorat nahi hoti. `Copy` ke bare
+mein mazeed information ke liye Chapter 4 ka [“Stack-Only Data:
+Copy”][stack-only-data-copy]<!-- ignore --> section dekhein.
 
-The `Copy` trait doesn’t define any methods to prevent programmers from
-overloading those methods and violating the assumption that no arbitrary code
-is being run. That way, all programmers can assume that copying a value will be
-very fast.
+`Copy` trait koi methods define nahi karta, taake programmers un methods ko
+overload karke is assumption ki khilaf warzi na kar saken ke koi arbitrary code
+run nahi ho raha. Is tarah tamam programmers yeh assume kar sakte hain ke kisi
+value ko copy karna bohat fast hoga.
 
-You can derive `Copy` on any type whose parts all implement `Copy`. A type that
-implements `Copy` must also implement `Clone` because a type that implements
-`Copy` has a trivial implementation of `Clone` that performs the same task as
-`Copy`.
+Aap `Copy` ko kisi bhi aisi type par derive kar sakte hain jis ke tamam parts
+`Copy` implement karte hon. Jo type `Copy` implement karti hai us ka `Clone`
+bhi implement karna zaroori hai, kyun ke `Copy` implement karne wali type ke
+paas `Clone` ki ek trivial implementation hoti hai jo `Copy` jaisa hi kaam
+karti hai.
 
-The `Copy` trait is rarely required; types that implement `Copy` have
-optimizations available, meaning you don’t have to call `clone`, which makes
-the code more concise.
+`Copy` trait ki zaroorat kam hi padti hai; `Copy` implement karne wali types ke
+liye optimizations available hoti hain, jis ka matlab hai ke aapko `clone`
+call karne ki zaroorat nahi hoti, aur code zyada concise ho jata hai.
 
-Everything possible with `Copy` you can also accomplish with `Clone`, but the
-code might be slower or have to use `clone` in places.
+`Copy` ke saath jo kuch possible hai woh `Clone` ke saath bhi accomplish kiya ja
+sakta hai, lekin code slower ho sakta hai ya kuch jagahon par `clone` use karna
+par sakta hai.
 
 ### `Hash` for Mapping a Value to a Value of Fixed Size
 
-The `Hash` trait allows you to take an instance of a type of arbitrary size and
-map that instance to a value of fixed size using a hash function. Deriving
-`Hash` implements the `hash` method. The derived implementation of the `hash`
-method combines the result of calling `hash` on each of the parts of the type,
-meaning all fields or values must also implement `Hash` to derive `Hash`.
+`Hash` trait aapko arbitrary size ki kisi type ke instance ko ek hash function
+use karke fixed size ki value mein map karne deta hai. `Hash` ko derive karne
+se `hash` method implement hota hai. `hash` method ki derived implementation
+type ke har part par `hash` call karne ke results ko combine karti hai, jis ka
+matlab hai ke derive `Hash` karne ke liye tamam fields ya values ka bhi `Hash`
+implement karna zaroori hai.
 
-An example of when `Hash` is required is in storing keys in a `HashMap<K, V>`
-to store data efficiently.
+Ek example jahan `Hash` required hota hai `HashMap<K, V>` mein keys store karna
+hai, taake data efficiently store kiya ja sake.
 
 ### `Default` for Default Values
 
-The `Default` trait allows you to create a default value for a type. Deriving
-`Default` implements the `default` function. The derived implementation of the
-`default` function calls the `default` function on each part of the type,
-meaning all fields or values in the type must also implement `Default` to
-derive `Default`.
+`Default` trait aapko kisi type ki default value create karne deta hai. `Default`
+ko derive karne se `default` function implement hota hai. `default` function ki
+derived implementation type ke har part par `default` function call karti hai,
+jis ka matlab hai ke type ke tamam fields ya values ka bhi `Default` implement
+karna zaroori hai taake `Default` derive kiya ja sake.
 
-The `Default::default` function is commonly used in combination with the struct
-update syntax discussed in the [“Creating Instances from Other Instances with
-Struct Update
+`Default::default` function aam tor par Chapter 5 ke [“Creating Instances from
+Other Instances with Struct Update
 Syntax”][creating-instances-from-other-instances-with-struct-update-syntax]<!--
-ignore --> section in Chapter 5. You can customize a few fields of a struct and
-then set and use a default value for the rest of the fields by using
-`..Default::default()`.
+ignore --> section mein discuss ki gayi struct update syntax ke saath use hota
+hai. Aap struct ke kuch fields ko customize kar sakte hain aur phir
+`..Default::default()` use karke baqi fields ke liye default value set aur use
+kar sakte hain.
 
-The `Default` trait is required when you use the method `unwrap_or_default` on
-`Option<T>` instances, for example. If the `Option<T>` is `None`, the method
-`unwrap_or_default` will return the result of `Default::default` for the type
-`T` stored in the `Option<T>`.
+`Default` trait required hota hai jab aap `Option<T>` instances par
+`unwrap_or_default` method use karte hain, misal ke taur par. Agar `Option<T>`
+`None` ho, to `unwrap_or_default` us `T` type ke liye `Default::default` ka
+result return karega jo `Option<T>` mein stored hai.
 
 [creating-instances-from-other-instances-with-struct-update-syntax]: ch05-01-defining-structs.html#creating-instances-from-other-instances-with-struct-update-syntax
 [stack-only-data-copy]: ch04-01-what-is-ownership.html#stack-only-data-copy

@@ -1,50 +1,54 @@
 ## Appendix G - How Rust is Made and “Nightly Rust”
 
-This appendix is about how Rust is made and how that affects you as a Rust
-developer.
+Yeh appendix is bare mein hai ke Rust kaise banaya jata hai aur yeh cheez aap
+par ek Rust developer ke taur par kaise asar dalti hai.
 
 ### Stability Without Stagnation
 
-As a language, Rust cares a _lot_ about the stability of your code. We want
-Rust to be a rock-solid foundation you can build on, and if things were
-constantly changing, that would be impossible. At the same time, if we can’t
-experiment with new features, we may not find out important flaws until after
-their release, when we can no longer change things.
+Ek language ke taur par, Rust aapke code ki stability (mustahkam rehne) ko
+*bohat* ahmiyat deta hai. Hum chahte hain ke Rust ek rock-solid foundation ho
+jis par aap build kar saken, aur agar cheezen constantly change hoti rahen, to
+yeh mumkin nahi hoga. Saath hi, agar hum new features ke saath experiment nahi
+kar sakte, to ho sakta hai ke hum important flaws ka pata unke release hone ke
+baad lagayen, jab hum cheezon ko mazeed change na kar saken.
 
-Our solution to this problem is what we call “stability without stagnation”,
-and our guiding principle is this: you should never have to fear upgrading to a
-new version of stable Rust. Each upgrade should be painless, but should also
-bring you new features, fewer bugs, and faster compile times.
+Is problem ka hamara solution woh hai jise hum “stability without stagnation”
+kehte hain, aur hamara guiding principle yeh hai: aapko stable Rust ke kisi new
+version par upgrade karne se kabhi darna nahi chahiye. Har upgrade painless
+hona chahiye, lekin saath hi aapke liye new features, kam bugs, aur faster
+compile times bhi lekar aana chahiye.
 
 ### Choo, Choo! Release Channels and Riding the Trains
 
-Rust development operates on a _train schedule_. That is, all development is
-done in the main branch of the Rust repository. Releases follow a software
-release train model, which has been used by Cisco IOS and other software
-projects. There are three _release channels_ for Rust:
+Rust development ek *train schedule* par operate karta hai. Yani, tamam
+development Rust repository ki main branch mein ki jati hai. Releases software
+release train model ko follow karti hain, jo Cisco IOS aur doosre software
+projects ne bhi use kiya hai. Rust ke liye teen *release channels* hain:
 
-- Nightly
-- Beta
-- Stable
+* Nightly
+* Beta
+* Stable
 
-Most Rust developers primarily use the stable channel, but those who want to
-try out experimental new features may use nightly or beta.
+Zyada tar Rust developers primarily stable channel use karte hain, lekin jo log
+experimental new features ko try karna chahte hain woh nightly ya beta use kar
+sakte hain.
 
-Here’s an example of how the development and release process works: let’s
-assume that the Rust team is working on the release of Rust 1.5. That release
-happened in December of 2015, but it will provide us with realistic version
-numbers. A new feature is added to Rust: a new commit lands on the main
-branch. Each night, a new nightly version of Rust is produced. Every day is a
-release day, and these releases are created by our release infrastructure
-automatically. So as time passes, our releases look like this, once a night:
+Yahan ek example hai ke development aur release process kaise kaam karta hai:
+maan lein Rust team Rust 1.5 ke release par kaam kar rahi hai. Yeh release
+December of 2015 mein hui thi, lekin yeh humein realistic version numbers
+provide karegi. Rust mein ek new feature add hota hai: ek new commit main branch
+mein land karta hai. Har raat Rust ka ek new nightly version produce hota hai.
+Har din release day hota hai, aur yeh releases hamari release infrastructure
+ke zariye automatically create hoti hain. Is liye waqt guzarte ke saath hamari
+releases kuch is tarah nazar aati hain, har raat ek:
 
 ```text
 nightly: * - - * - - *
 ```
 
-Every six weeks, it’s time to prepare a new release! The `beta` branch of the
-Rust repository branches off from the main branch used by nightly. Now,
-there are two releases:
+Har six weeks mein, new release prepare karne ka waqt aa jata hai! Rust
+repository ki `beta` branch nightly ke liye use hone wali main branch se branch
+off hoti hai. Ab do releases hain:
 
 ```text
 nightly: * - - * - - *
@@ -52,9 +56,10 @@ nightly: * - - * - - *
 beta:                *
 ```
 
-Most Rust users do not use beta releases actively, but test against beta in
-their CI system to help Rust discover possible regressions. In the meantime,
-there’s still a nightly release every night:
+Zyada tar Rust users beta releases ko actively use nahi karte, lekin Rust ko
+possible regressions discover karne mein madad dene ke liye apne CI system mein
+beta ke against test karte hain. Is dauran, har raat ek nightly release ab bhi
+aati rehti hai:
 
 ```text
 nightly: * - - * - - * - - * - - *
@@ -62,10 +67,11 @@ nightly: * - - * - - * - - * - - *
 beta:                *
 ```
 
-Let’s say a regression is found. Good thing we had some time to test the beta
-release before the regression snuck into a stable release! The fix is applied
-to the main branch, so that nightly is fixed, and then the fix is backported to
-the `beta` branch, and a new release of beta is produced:
+Maan lein ke ek regression mil jati hai. Achhi baat hai ke regression ke stable
+release mein ghusne se pehle hamare paas beta release ko test karne ke liye kuch
+waqt tha! Fix main branch par apply ki jati hai, taake nightly fix ho jaye, aur
+phir fix ko `beta` branch par backport kiya jata hai, aur beta ki ek new release
+produce ki jati hai:
 
 ```text
 nightly: * - - * - - * - - * - - * - - *
@@ -73,8 +79,8 @@ nightly: * - - * - - * - - * - - * - - *
 beta:                * - - - - - - - - *
 ```
 
-Six weeks after the first beta was created, it’s time for a stable release! The
-`stable` branch is produced from the `beta` branch:
+Pehli beta create hone ke six weeks baad, stable release ka waqt aa jata hai!
+`stable` branch `beta` branch se produce hoti hai:
 
 ```text
 nightly: * - - * - - * - - * - - * - - * - * - *
@@ -84,10 +90,10 @@ beta:                * - - - - - - - - *
 stable:                                *
 ```
 
-Hooray! Rust 1.5 is done! However, we’ve forgotten one thing: because the six
-weeks have gone by, we also need a new beta of the _next_ version of Rust, 1.6.
-So after `stable` branches off of `beta`, the next version of `beta` branches
-off of `nightly` again:
+Hooray! Rust 1.5 complete ho gaya! Lekin hum ek cheez bhool gaye hain: kyun ke
+six weeks guzar chuke hain, humein Rust ke *next* version, 1.6 ka ek new beta
+bhi chahiye. Is liye `stable` ke `beta` se branch off hone ke baad, `beta` ka
+next version dobara `nightly` se branch off hota hai:
 
 ```text
 nightly: * - - * - - * - - * - - * - - * - * - *
@@ -97,63 +103,70 @@ beta:                * - - - - - - - - *       *
 stable:                                *
 ```
 
-This is called the “train model” because every six weeks, a release “leaves the
-station”, but still has to take a journey through the beta channel before it
-arrives as a stable release.
+Isay “train model” kaha jata hai kyun ke har six weeks mein ek release “station
+se nikalti hai”, lekin stable release ke taur par pohanchne se pehle usay beta
+channel ke zariye ek safar karna hota hai.
 
-Rust releases every six weeks, like clockwork. If you know the date of one Rust
-release, you can know the date of the next one: it’s six weeks later. A nice
-aspect of having releases scheduled every six weeks is that the next train is
-coming soon. If a feature happens to miss a particular release, there’s no need
-to worry: another one is happening in a short time! This helps reduce pressure
-to sneak possibly unpolished features in close to the release deadline.
+Rust har six weeks mein, bilkul clockwork ki tarah, release hota hai. Agar aap
+Rust ki kisi ek release ki date jaante hain, to aap next release ki date jaan
+sakte hain: woh six weeks baad hogi. Har six weeks mein releases scheduled
+hone ka ek acha pehlu yeh hai ke next train jald aa rahi hoti hai. Agar koi
+feature kisi particular release mein shamil hone se reh jaye, to fikar karne ki
+zaroorat nahi: doosri release thore hi waqt mein aa rahi hoti hai! Is se
+release deadline ke qareeb possibly unpolished features ko jaldi se shamil
+karne ka pressure kam hota hai.
 
-Thanks to this process, you can always check out the next build of Rust and
-verify for yourself that it’s easy to upgrade to: if a beta release doesn’t
-work as expected, you can report it to the team and get it fixed before the
-next stable release happens! Breakage in a beta release is relatively rare, but
-`rustc` is still a piece of software, and bugs do exist.
+Is process ki wajah se, aap hamesha Rust ki next build ko check out kar sakte
+hain aur khud verify kar sakte hain ke us par upgrade karna easy hai: agar beta
+release expected tarah se kaam nahi karti, to aap team ko report kar sakte hain
+aur next stable release se pehle usay fix karwa sakte hain! Beta release mein
+breakage relatively rare hoti hai, lekin `rustc` phir bhi ek software hai, aur
+bugs exist karte hain.
 
 ### Maintenance time
 
-The Rust project supports the most recent stable version. When a new stable
-version is released, the old version reaches its end of life (EOL). This means
-each version is supported for six weeks.
+Rust project sab se recent stable version ko support karta hai. Jab ek new stable
+version release hota hai, purana version apni end of life (EOL) par pohanch jata
+hai. Is ka matlab hai ke har version ko six weeks tak support kiya jata hai.
 
 ### Unstable Features
 
-There’s one more catch with this release model: unstable features. Rust uses a
-technique called “feature flags” to determine what features are enabled in a
-given release. If a new feature is under active development, it lands on the
-main branch, and therefore, in nightly, but behind a _feature flag_. If you, as
-a user, wish to try out the work-in-progress feature, you can, but you must be
-using a nightly release of Rust and annotate your source code with the
-appropriate flag to opt in.
+Is release model ke saath ek aur catch hai: unstable features. Rust ek
+technique use karta hai jise “feature flags” kaha jata hai, taake determine kiya
+ja sake ke kisi given release mein kaun se features enabled hain. Agar koi new
+feature active development ke under hai, to woh main branch mein land hota hai,
+aur is liye nightly mein bhi, lekin ek *feature flag* ke peeche. Agar aap,
+ek user ke taur par, work-in-progress feature ko try karna chahte hain, to aap
+aisa kar sakte hain, lekin aapko Rust ki nightly release use karni hogi aur
+apne source code ko appropriate flag ke saath annotate karna hoga taake aap
+opt in kar saken.
 
-If you’re using a beta or stable release of Rust, you can’t use any feature
-flags. This is the key that allows us to get practical use with new features
-before we declare them stable forever. Those who wish to opt into the bleeding
-edge can do so, and those who want a rock-solid experience can stick with
-stable and know that their code won’t break. Stability without stagnation.
+Agar aap Rust ki beta ya stable release use kar rahe hain, to aap koi feature
+flags use nahi kar sakte. Yeh woh key hai jo humein new features ko hamesha ke
+liye stable declare karne se pehle unka practical use hasil karne deti hai. Jo
+log bleeding edge ko opt into karna chahte hain woh aisa kar sakte hain, aur jo
+log rock-solid experience chahte hain woh stable par stick kar sakte hain aur
+jaan sakte hain ke unka code break nahi hoga. Stability without stagnation.
 
-This book only contains information about stable features, as in-progress
-features are still changing, and surely they’ll be different between when this
-book was written and when they get enabled in stable builds. You can find
-documentation for nightly-only features online.
+Yeh book sirf stable features ke bare mein information contain karti hai, kyun
+ke in-progress features abhi bhi change ho rahe hain, aur yaqeenan jab yeh
+book likhi gayi thi aur jab woh stable builds mein enabled honge, un dono waqt
+ke darmiyan woh different honge. Aap nightly-only features ki documentation
+online dhoond sakte hain.
 
 ### Rustup and the Role of Rust Nightly
 
-Rustup makes it easy to change between different release channels of Rust, on a
-global or per-project basis. By default, you’ll have stable Rust installed. To
-install nightly, for example:
+Rustup Rust ke different release channels ke darmiyan global ya per-project
+basis par change karna easy banata hai. By default, aapke paas stable Rust
+installed hoga. Misal ke taur par nightly install karne ke liye:
 
 ```console
 $ rustup toolchain install nightly
 ```
 
-You can see all of the _toolchains_ (releases of Rust and associated
-components) you have installed with `rustup` as well. Here’s an example on one
-of your authors’ Windows computer:
+Aap `rustup` ke zariye apne installed tamam *toolchains* (Rust ki releases aur
+unke associated components) bhi dekh sakte hain. Yahan aapke authors mein se
+ek ke Windows computer par ek example hai:
 
 ```powershell
 > rustup toolchain list
@@ -162,45 +175,51 @@ beta-x86_64-pc-windows-msvc
 nightly-x86_64-pc-windows-msvc
 ```
 
-As you can see, the stable toolchain is the default. Most Rust users use stable
-most of the time. You might want to use stable most of the time, but use
-nightly on a specific project, because you care about a cutting-edge feature.
-To do so, you can use `rustup override` in that project’s directory to set the
-nightly toolchain as the one `rustup` should use when you’re in that directory:
+Jaisa ke aap dekh sakte hain, stable toolchain default hai. Zyada tar Rust users
+zyada tar waqt stable use karte hain. Aap bhi zyada tar waqt stable use karna
+chah sakte hain, lekin kisi specific project par nightly use karna chahte hon,
+kyun ke aapko ek cutting-edge feature ki parwah hai. Aisa karne ke liye, aap
+us project ki directory mein `rustup override` use karke nightly toolchain ko
+woh toolchain set kar sakte hain jo `rustup` ko us directory mein hone par use
+karni chahiye:
 
 ```console
 $ cd ~/projects/needs-nightly
 $ rustup override set nightly
 ```
 
-Now, every time you call `rustc` or `cargo` inside of
-_~/projects/needs-nightly_, `rustup` will make sure that you are using nightly
-Rust, rather than your default of stable Rust. This comes in handy when you
-have a lot of Rust projects!
+Ab jab bhi aap *~/projects/needs-nightly* ke andar `rustc` ya `cargo` call
+karenge, `rustup` ensure karega ke aap default stable Rust ke bajaye nightly
+Rust use kar rahe hain. Yeh tab bohat kaam aata hai jab aapke paas bohat se
+Rust projects hon!
 
 ### The RFC Process and Teams
 
-So how do you learn about these new features? Rust’s development model follows
-a _Request For Comments (RFC) process_. If you’d like an improvement in Rust,
-you can write up a proposal, called an RFC.
+To phir aap in new features ke bare mein kaise seekhte hain? Rust ka
+development model ek *Request For Comments (RFC) process* follow karta hai.
+Agar aap Rust mein koi improvement chahte hain, to aap ek proposal likh sakte
+hain, jise RFC kaha jata hai.
 
-Anyone can write RFCs to improve Rust, and the proposals are reviewed and
-discussed by the Rust team, which is comprised of many topic subteams. There’s
-a full list of the teams [on Rust’s website](https://www.rust-lang.org/governance), which includes teams for
-each area of the project: language design, compiler implementation,
-infrastructure, documentation, and more. The appropriate team reads the
-proposal and the comments, writes some comments of their own, and eventually,
-there’s consensus to accept or reject the feature.
+Koi bhi shakhs Rust ko improve karne ke liye RFCs likh sakta hai, aur proposals
+Rust team review aur discuss karti hai, jo kai topic subteams par mushtamil hai.
+Teams ki ek full list [on Rust’s website](https://www.rust-lang.org/governance)
+par hai, jis mein project ke har area ke liye teams shamil hain: language
+design, compiler implementation, infrastructure, documentation, aur mazeed.
+Appropriate team proposal aur comments ko parhti hai, apne comments likhti hai,
+aur aakhir mein feature ko accept ya reject karne par consensus hota hai.
 
-If the feature is accepted, an issue is opened on the Rust repository, and
-someone can implement it. The person who implements it very well may not be the
-person who proposed the feature in the first place! When the implementation is
-ready, it lands on the main branch behind a feature gate, as we discussed in
-the [“Unstable Features”](#unstable-features)<!-- ignore --> section.
+Agar feature accept ho jaye, to Rust repository par ek issue open kiya jata hai,
+aur koi shakhs usay implement kar sakta hai. Jo shakhs usay implement karta
+hai, bohat mumkin hai ke woh wohi shakhs na ho jis ne pehli dafa feature
+propose kiya tha! Jab implementation ready ho jati hai, to woh main branch mein
+ek feature gate ke peeche land hoti hai, jaisa ke humne [“Unstable
+Features”](#unstable-features)<!-- ignore --> section mein discuss kiya hai.
 
-After some time, once Rust developers who use nightly releases have been able
-to try out the new feature, team members will discuss the feature, how it’s
-worked out on nightly, and decide if it should make it into stable Rust or not.
-If the decision is to move forward, the feature gate is removed, and the
-feature is now considered stable! It rides the trains into a new stable release
-of Rust.
+Kuch waqt ke baad, jab nightly releases use karne wale Rust developers ko new
+feature try karne ka mauqa mil chuka hota hai, team members feature par
+discussion karte hain, dekhte hain ke nightly par woh kaisi rahi, aur decide
+karte hain ke usay stable Rust mein shamil hona chahiye ya nahi. Agar decision
+aage barhne ka ho, to feature gate remove kar diya jata hai, aur feature ab
+stable consider hota hai! Yeh Rust ki new stable release mein trains ke zariye
+safar karta hua pohanchta hai.
+
