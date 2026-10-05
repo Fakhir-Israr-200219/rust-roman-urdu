@@ -1,10 +1,11 @@
 ## Advanced Types
 
-The Rust type system has some features that we’ve so far mentioned but haven’t
-yet discussed. We’ll start by discussing newtypes in general as we examine why
-they are useful as types. Then, we’ll move on to type aliases, a feature
-similar to newtypes but with slightly different semantics. We’ll also discuss
-the `!` type and dynamically sized types.
+Rust ke type system mein kuch features hain jin ka humne ab tak zikr to kiya
+hai lekin abhi tak un par discussion nahi ki. Hum sab se pehle newtypes par
+generally discussion karenge aur dekhenge ke types ke taur par yeh kyun useful
+hain. Phir hum type aliases ki taraf jayenge, jo newtypes ke similar ek feature
+hai lekin is ke semantics thore different hain. Hum `!` type aur dynamically
+sized types par bhi discussion karenge.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -12,30 +13,33 @@ the `!` type and dynamically sized types.
 
 ### Type Safety and Abstraction with the Newtype Pattern
 
-This section assumes you’ve read the earlier section [“Implementing External
-Traits with the Newtype Pattern”][newtype]<!-- ignore -->. The newtype pattern
-is also useful for tasks beyond those we’ve discussed so far, including
-statically enforcing that values are never confused and indicating the units of
-a value. You saw an example of using newtypes to indicate units in Listing
-20-16: Recall that the `Millimeters` and `Meters` structs wrapped `u32` values
-in a newtype. If we wrote a function with a parameter of type `Millimeters`, we
-wouldn’t be able to compile a program that accidentally tried to call that
-function with a value of type `Meters` or a plain `u32`.
+Yeh section assume karta hai ke aap ne pehle wala section [“Implementing External
+Traits with the Newtype Pattern”][newtype]<!-- ignore --> parh liya hai. Newtype
+pattern un tasks ke liye bhi useful hai jo humne abhi tak discuss nahi kiye,
+jin mein statically enforce karna ke values kabhi confuse na hon aur kisi value
+ki units ko indicate karna shamil hai. Aapne Listing 20-16 mein units indicate
+karne ke liye newtypes use karne ki ek example dekhi thi: Yaad karein ke
+`Millimeters` aur `Meters` structs ne `u32` values ko newtype mein wrap kiya
+tha. Agar hum `Millimeters` type ke parameter ke saath ek function likhein, to
+hum aisa program compile nahi karwa sakte jo ghalti se us function ko
+`Meters` type ki value ya plain `u32` ke saath call karne ki koshish kare.
 
-We can also use the newtype pattern to abstract away some implementation
-details of a type: The new type can expose a public API that is different from
-the API of the private inner type.
+Hum newtype pattern ko kisi type ki kuch implementation details ko abstract
+away karne ke liye bhi use kar sakte hain: New type ek public API expose kar
+sakti hai jo private inner type ki API se different ho.
 
-Newtypes can also hide internal implementation. For example, we could provide a
-`People` type to wrap a `HashMap<i32, String>` that stores a person’s ID
-associated with their name. Code using `People` would only interact with the
-public API we provide, such as a method to add a name string to the `People`
-collection; that code wouldn’t need to know that we assign an `i32` ID to names
-internally. The newtype pattern is a lightweight way to achieve encapsulation
-to hide implementation details, which we discussed in the [“Encapsulation that
+Newtypes internal implementation ko bhi hide kar sakte hain. Misal ke taur par,
+hum ek `People` type provide kar sakte hain jo `HashMap<i32, String>` ko wrap
+kare aur ek person ki ID ko us ke name ke saath associated store kare. `People`
+use karne wala code sirf us public API ke saath interact karega jo hum provide
+karte hain, jaise `People` collection mein name string add karne ka method; us
+code ko yeh jaanne ki zaroorat nahi hogi ke hum internally names ko `i32` ID
+assign karte hain. Newtype pattern implementation details ko hide karne ke
+liye encapsulation achieve karne ka ek lightweight tareeqa hai, jis par humne
+Chapter 18 ke [“Encapsulation that
 Hides Implementation
 Details”][encapsulation-that-hides-implementation-details]<!-- ignore -->
-section in Chapter 18.
+section mein discussion ki thi.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -43,40 +47,40 @@ section in Chapter 18.
 
 ### Type Synonyms and Type Aliases
 
-Rust provides the ability to declare a _type alias_ to give an existing type
-another name. For this we use the `type` keyword. For example, we can create
-the alias `Kilometers` to `i32` like so:
+Rust existing type ko doosra naam dene ke liye *type alias* declare karne ki
+ability provide karta hai. Is ke liye hum `type` keyword use karte hain. Misal
+ke taur par, hum `i32` ke liye `Kilometers` alias is tarah create kar sakte hain:
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-04-kilometers-alias/src/main.rs:here}}
 ```
 
-Now the alias `Kilometers` is a _synonym_ for `i32`; unlike the `Millimeters`
-and `Meters` types we created in Listing 20-16, `Kilometers` is not a separate,
-new type. Values that have the type `Kilometers` will be treated the same as
-values of type `i32`:
+Ab `Kilometers`, `i32` ka ek *synonym* hai; Listing 20-16 mein banaye gaye
+`Millimeters` aur `Meters` types ke unlike, `Kilometers` koi separate, new
+type nahi hai. `Kilometers` type rakhne wali values ko bilkul `i32` type ki
+values ki tarah treat kiya jayega:
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-04-kilometers-alias/src/main.rs:there}}
 ```
 
-Because `Kilometers` and `i32` are the same type, we can add values of both
-types and can pass `Kilometers` values to functions that take `i32`
-parameters. However, using this method, we don’t get the type-checking benefits
-that we get from the newtype pattern discussed earlier. In other words, if we
-mix up `Kilometers` and `i32` values somewhere, the compiler will not give us
-an error.
+Kyun ke `Kilometers` aur `i32` same type hain, hum dono types ki values ko add
+kar sakte hain aur `Kilometers` values ko un functions mein pass kar sakte hain
+jo `i32` parameters lete hain. Lekin is method ko use karne se humein woh
+type-checking benefits nahi milte jo pehle discuss kiye gaye newtype pattern se
+milte hain. Doosre lafzon mein, agar hum kahin `Kilometers` aur `i32` values ko
+mix up kar dein, to compiler humein error nahi dega.
 
-The main use case for type synonyms is to reduce repetition. For example, we
-might have a lengthy type like this:
+Type synonyms ka main use case repetition ko reduce karna hai. Misal ke taur
+par, hamare paas is tarah ka ek lengthy type ho sakta hai:
 
 ```rust,ignore
 Box<dyn Fn() + Send + 'static>
 ```
 
-Writing this lengthy type in function signatures and as type annotations all
-over the code can be tiresome and error-prone. Imagine having a project full of
-code like that in Listing 20-25.
+Function signatures mein aur poore code mein type annotations ke taur par is
+lengthy type ko likhna tiresome aur error-prone ho sakta hai. Sochiye ke ek
+project mein Listing 20-25 ki tarah bohot sara code ho.
 
 <Listing number="20-25" caption="Using a long type in many places">
 
@@ -86,9 +90,10 @@ code like that in Listing 20-25.
 
 </Listing>
 
-A type alias makes this code more manageable by reducing the repetition. In
-Listing 20-26, we’ve introduced an alias named `Thunk` for the verbose type and
-can replace all uses of the type with the shorter alias `Thunk`.
+Ek type alias repetition ko reduce karke is code ko zyada manageable bana deta
+hai. Listing 20-26 mein humne verbose type ke liye `Thunk` naam ka ek alias
+introduce kiya hai aur type ke tamam uses ko chhote alias `Thunk` se replace
+kar sakte hain.
 
 <Listing number="20-26" caption="Introducing a type alias, `Thunk`, to reduce repetition">
 
@@ -98,62 +103,64 @@ can replace all uses of the type with the shorter alias `Thunk`.
 
 </Listing>
 
-This code is much easier to read and write! Choosing a meaningful name for a
-type alias can help communicate your intent as well (_thunk_ is a word for code
-to be evaluated at a later time, so it’s an appropriate name for a closure that
-gets stored).
+Yeh code read aur write karna kaafi easy hai! Type alias ke liye meaningful
+naam choose karna aapke intent ko communicate karne mein bhi help kar sakta hai
+(*thunk* aise code ke liye ek word hai jise baad mein evaluate kiya jana ho,
+is liye yeh us closure ke liye appropriate naam hai jo stored hota hai).
 
-Type aliases are also commonly used with the `Result<T, E>` type for reducing
-repetition. Consider the `std::io` module in the standard library. I/O
-operations often return a `Result<T, E>` to handle situations when operations
-fail to work. This library has a `std::io::Error` struct that represents all
-possible I/O errors. Many of the functions in `std::io` will be returning
-`Result<T, E>` where the `E` is `std::io::Error`, such as these functions in
-the `Write` trait:
+Type aliases ko `Result<T, E>` type ke saath bhi commonly use kiya jata hai taa-ke
+repetition reduce ho. Standard library mein `std::io` module ko consider
+karein. I/O operations aksar `Result<T, E>` return karti hain taa-ke un
+situations ko handle kiya ja sake jab operations fail ho jayein. Is library mein
+`std::io::Error` struct hai jo tamam possible I/O errors ko represent karta
+hai. `std::io` ke bohot se functions `Result<T, E>` return karte honge jahan
+`E` `std::io::Error` hoga, jaise `Write` trait ke yeh functions:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-05-write-trait/src/lib.rs}}
 ```
 
-The `Result<..., Error>` is repeated a lot. As such, `std::io` has this type
-alias declaration:
+`Result<..., Error>` bohot zyada repeat ho raha hai. Isi liye, `std::io` mein
+yeh type alias declaration hai:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-06-result-alias/src/lib.rs:here}}
 ```
 
-Because this declaration is in the `std::io` module, we can use the fully
-qualified alias `std::io::Result<T>`; that is, a `Result<T, E>` with the `E`
-filled in as `std::io::Error`. The `Write` trait function signatures end up
-looking like this:
+Kyun ke yeh declaration `std::io` module mein hai, hum fully qualified alias
+`std::io::Result<T>` use kar sakte hain; yani, ek `Result<T, E>` jismein `E`
+ko `std::io::Error` ke taur par fill kiya gaya ho. `Write` trait ki function
+signatures is tarah nazar aati hain:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-06-result-alias/src/lib.rs:there}}
 ```
 
-The type alias helps in two ways: It makes code easier to write _and_ it gives
-us a consistent interface across all of `std::io`. Because it’s an alias, it’s
-just another `Result<T, E>`, which means we can use any methods that work on
-`Result<T, E>` with it, as well as special syntax like the `?` operator.
+Type alias do tareeqon se help karta hai: Yeh code ko likhna *aur* easy banata
+hai aur yeh humein poore `std::io` mein ek consistent interface deta hai. Kyun
+ke yeh ek alias hai, yeh sirf ek aur `Result<T, E>` hai, jis ka matlab hai ke
+hum is ke saath `Result<T, E>` par kaam karne wale tamam methods use kar sakte
+hain, saath hi `?` operator jaisi special syntax bhi.
 
 ### The Never Type That Never Returns
 
-Rust has a special type named `!` that’s known in type theory lingo as the
-_empty type_ because it has no values. We prefer to call it the _never type_
-because it stands in the place of the return type when a function will never
-return. Here is an example:
+Rust mein `!` naam ka ek special type hai jo type theory ki terminology mein
+*empty type* ke taur par jana jata hai kyun ke is ki koi values nahi hotin. Hum
+isay *never type* kehna prefer karte hain kyun ke jab koi function kabhi return
+nahi karega to yeh return type ki jagah hota hai. Yahan ek example hai:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-07-never-type/src/lib.rs:here}}
 ```
 
-This code is read as “the function `bar` returns never.” Functions that return
-never are called _diverging functions_. We can’t create values of the type `!`,
-so `bar` can never possibly return.
+Is code ko is tarah read kiya jata hai: “function `bar` never return karta
+hai.” Jo functions never return karte hain unhein *diverging functions* kaha
+jata hai. Hum `!` type ki values create nahi kar sakte, is liye `bar` kabhi
+bhi possible taur par return nahi kar sakta.
 
-But what use is a type you can never create values for? Recall the code from
-Listing 2-5, part of the number-guessing game; we’ve reproduced a bit of it
-here in Listing 20-27.
+Lekin aise type ka kya faida hai jis ki values aap kabhi create hi nahi kar
+sakte? Listing 2-5 ka code yaad karein, jo number-guessing game ka hissa tha;
+humne yahan Listing 20-27 mein us ka thora sa hissa dobara diya hai.
 
 <Listing number="20-27" caption="A `match` with an arm that ends in `continue`">
 
@@ -163,138 +170,150 @@ here in Listing 20-27.
 
 </Listing>
 
-At the time, we skipped over some details in this code. In [“The `match`
+Us waqt humne is code ki kuch details ko skip kar diya tha. Chapter 6 ke
+[“The `match`
 Control Flow Construct”][the-match-control-flow-construct]<!-- ignore -->
-section in Chapter 6, we discussed that `match` arms must all return the same
-type. So, for example, the following code doesn’t work:
+section mein humne discuss kiya tha ke `match` arms sab ko same type return
+karna hota hai. Misal ke taur par, following code kaam nahi karta:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-08-match-arms-different-types/src/main.rs:here}}
 ```
 
-The type of `guess` in this code would have to be an integer _and_ a string,
-and Rust requires that `guess` have only one type. So, what does `continue`
-return? How were we allowed to return a `u32` from one arm and have another arm
-that ends with `continue` in Listing 20-27?
+Is code mein `guess` ka type ek integer *aur* ek string hona padega, aur Rust
+require karta hai ke `guess` ka sirf ek type ho. To `continue` kya return
+karta hai? Listing 20-27 mein humein ek arm se `u32` return karne aur doosre
+arm ko `continue` par end karne ki permission kaise mili?
 
-As you might have guessed, `continue` has a `!` value. That is, when Rust
-computes the type of `guess`, it looks at both match arms, the former with a
-value of `u32` and the latter with a `!` value. Because `!` can never have a
-value, Rust decides that the type of `guess` is `u32`.
+Jaisa ke aapne shayad guess kiya, `continue` ki value `!` hai. Yani, jab Rust
+`guess` ka type calculate karta hai, to woh dono match arms ko dekhta hai,
+pehle mein `u32` value aur doosre mein `!` value hoti hai. Kyun ke `!` ki
+kabhi koi value nahi ho sakti, Rust decide karta hai ke `guess` ka type
+`u32` hai.
 
-The formal way of describing this behavior is that expressions of type `!` can
-be coerced into any other type. We’re allowed to end this `match` arm with
-`continue` because `continue` doesn’t return a value; instead, it moves control
-back to the top of the loop, so in the `Err` case, we never assign a value to
-`guess`.
+Is behavior ko describe karne ka formal tareeqa yeh hai ke `!` type ki
+expressions ko kisi bhi doosre type mein coerce kiya ja sakta hai. Humein is
+`match` arm ko `continue` ke saath end karne ki permission is liye hai kyun ke
+`continue` koi value return nahi karta; is ke bajaye, yeh control ko loop ke
+top par wapas le jata hai, is liye `Err` case mein hum `guess` ko kabhi koi
+value assign nahi karte.
 
-The never type is useful with the `panic!` macro as well. Recall the `unwrap`
-function that we call on `Option<T>` values to produce a value or panic with
-this definition:
+Never type `panic!` macro ke saath bhi useful hai. `Option<T>` values par value
+produce karne ya is definition ke saath panic karne ke liye hum jis `unwrap`
+function ko call karte hain, usay yaad karein:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-09-unwrap-definition/src/lib.rs:here}}
 ```
 
-In this code, the same thing happens as in the `match` in Listing 20-27: Rust
-sees that `val` has the type `T` and `panic!` has the type `!`, so the result
-of the overall `match` expression is `T`. This code works because `panic!`
-doesn’t produce a value; it ends the program. In the `None` case, we won’t be
-returning a value from `unwrap`, so this code is valid.
+Is code mein bhi wahi cheez hoti hai jo Listing 20-27 ke `match` mein hui thi:
+Rust dekhta hai ke `val` ka type `T` hai aur `panic!` ka type `!` hai, is liye
+overall `match` expression ka result `T` hai. Yeh code is liye kaam karta hai
+kyun ke `panic!` koi value produce nahi karta; yeh program ko end kar deta hai.
+`None` case mein, hum `unwrap` se koi value return nahi karenge, is liye yeh
+code valid hai.
 
-One final expression that has the type `!` is a loop:
+Ek final expression jis ka type `!` hota hai, woh ek loop hai:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-10-loop-returns-never/src/main.rs:here}}
 ```
 
-Here, the loop never ends, so `!` is the value of the expression. However, this
-wouldn’t be true if we included a `break`, because the loop would terminate
-when it got to the `break`.
+Yahan loop kabhi end nahi hota, is liye `!` expression ki value hai. Lekin
+agar hum `break` include karte to yeh true nahi hota, kyun ke loop `break`
+tak pohanchne par terminate ho jata.
+
 
 ### Dynamically Sized Types and the `Sized` Trait
 
-Rust needs to know certain details about its types, such as how much space to
-allocate for a value of a particular type. This leaves one corner of its type
-system a little confusing at first: the concept of _dynamically sized types_.
-Sometimes referred to as _DSTs_ or _unsized types_, these types let us write
-code using values whose size we can know only at runtime.
+Rust ko apni types ke bare mein kuch details ka pata hona zaroori hai, jaise ke
+kisi particular type ki value ke liye kitni space allocate karni hai. Is ki wajah
+se is ke type system ka ek hissa shuru mein thora confusing lagta hai:
+*dynamically sized types* ka concept. Kabhi kabhi inhein *DSTs* ya *unsized
+types* bhi kaha jata hai, aur yeh humein aisa code likhne dete hain jo un
+values ke saath kaam karta hai jin ka size hum sirf runtime par jaan sakte hain.
 
-Let’s dig into the details of a dynamically sized type called `str`, which
-we’ve been using throughout the book. That’s right, not `&str`, but `str` on
-its own, is a DST. In many cases, such as when storing text entered by a user,
-we can’t know how long the string is until runtime. That means we can’t create
-a variable of type `str`, nor can we take an argument of type `str`. Consider
-the following code, which does not work:
+Aaiye `str` naam ke ek dynamically sized type ki details mein jate hain, jise
+hum poori book mein use karte aa rahe hain. Ji haan, `&str` nahi, balki sirf
+`str` apne aap mein ek DST hai. Bohot se cases mein, jaise jab user ki enter ki
+hui text ko store karna ho, hum yeh nahi jaan sakte ke string kitni lambi hogi
+jab tak runtime na aa jaye. Is ka matlab hai ke hum `str` type ka variable
+create nahi kar sakte, na hi hum `str` type ka argument le sakte hain.
+Following code ko consider karein, jo kaam nahi karta:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-11-cant-create-str/src/main.rs:here}}
 ```
 
-Rust needs to know how much memory to allocate for any value of a particular
-type, and all values of a type must use the same amount of memory. If Rust
-allowed us to write this code, these two `str` values would need to take up the
-same amount of space. But they have different lengths: `s1` needs 12 bytes of
-storage and `s2` needs 15. This is why it’s not possible to create a variable
-holding a dynamically sized type.
+Rust ko kisi particular type ki kisi bhi value ke liye yeh pata hona zaroori hai
+ke kitni memory allocate karni hai, aur kisi type ki tamam values ko memory ki
+same amount use karni hoti hai. Agar Rust humein yeh code likhne deta, to in
+dono `str` values ko same amount of space use karni padti. Lekin in ki lengths
+different hain: `s1` ko 12 bytes ki storage chahiye aur `s2` ko 15. Isi liye
+dynamically sized type ko hold karne wala variable create karna possible nahi
+hai.
 
-So, what do we do? In this case, you already know the answer: We make the type
-of `s1` and `s2` string slice (`&str`) rather than `str`. Recall from the
-[“String Slices”][string-slices]<!-- ignore --> section in Chapter 4 that the
-slice data structure only stores the starting position and the length of the
-slice. So, although `&T` is a single value that stores the memory address of
-where the `T` is located, a string slice is _two_ values: the address of the
-`str` and its length. As such, we can know the size of a string slice value at
-compile time: It’s twice the length of a `usize`. That is, we always know the
-size of a string slice, no matter how long the string it refers to is. In
-general, this is the way in which dynamically sized types are used in Rust:
-They have an extra bit of metadata that stores the size of the dynamic
-information. The golden rule of dynamically sized types is that we must always
-put values of dynamically sized types behind a pointer of some kind.
+To hum kya karte hain? Is case mein, aap jawab pehle se jaante hain: Hum
+`s1` aur `s2` ki type `str` ke bajaye string slice (`&str`) rakhte hain. Chapter
+4 ke [“String Slices”][string-slices]<!-- ignore --> section se yaad karein ke
+slice data structure sirf slice ki starting position aur length store karta hai.
+Is liye, agarche `&T` ek single value hai jo us memory address ko store karti
+hai jahan `T` located hai, string slice *do* values hain: `str` ka address aur
+us ki length. Is tarah, hum compile time par string slice value ka size jaan
+sakte hain: yeh `usize` ki length ka do guna hota hai. Yani, string slice ka
+size humein hamesha pata hota hai, chahe jis string ko woh refer karta hai woh
+kitni bhi lambi ho. Generally, Rust mein dynamically sized types ko isi tarah
+use kiya jata hai: Un ke paas extra metadata ka ek hissa hota hai jo dynamic
+information ka size store karta hai. Dynamically sized types ka golden rule yeh
+hai ke humein dynamically sized types ki values ko hamesha kisi na kisi type ke
+pointer ke peeche rakhna chahiye.
 
-We can combine `str` with all kinds of pointers: for example, `Box<str>` or
-`Rc<str>`. In fact, you’ve seen this before but with a different dynamically
-sized type: traits. Every trait is a dynamically sized type we can refer to by
-using the name of the trait. In the [“Using Trait Objects to Abstract over
+Hum `str` ko har tarah ke pointers ke saath combine kar sakte hain: misal ke
+taur par, `Box<str>` ya `Rc<str>`. Asal mein, aap isay pehle bhi dekh chuke
+hain, lekin ek different dynamically sized type ke saath: traits. Har trait ek
+dynamically sized type hai jise hum trait ke naam ko use karke refer kar sakte
+hain. Chapter 18 ke [“Using Trait Objects to Abstract over
 Shared Behavior”][using-trait-objects-to-abstract-over-shared-behavior]<!--
-ignore --> section in Chapter 18, we mentioned that to use traits as trait
-objects, we must put them behind a pointer, such as `&dyn Trait` or `Box<dyn
-Trait>` (`Rc<dyn Trait>` would work too).
+ignore --> section mein humne mention kiya tha ke traits ko trait objects ke
+taur par use karne ke liye humein unhein kisi pointer ke peeche rakhna hota hai,
+jaise `&dyn Trait` ya `Box<dyn Trait>` (`Rc<dyn Trait>` bhi kaam karega).
 
-To work with DSTs, Rust provides the `Sized` trait to determine whether or not
-a type’s size is known at compile time. This trait is automatically implemented
-for everything whose size is known at compile time. In addition, Rust
-implicitly adds a bound on `Sized` to every generic function. That is, a
-generic function definition like this:
+DSTs ke saath kaam karne ke liye, Rust `Sized` trait provide karta hai taa-ke
+yeh determine kiya ja sake ke kisi type ka size compile time par known hai ya
+nahi. Yeh trait har us cheez ke liye automatically implement hota hai jis ka
+size compile time par known hota hai. Is ke ilawa, Rust har generic function
+mein implicitly `Sized` par ek bound add karta hai. Yani, generic function
+definition jaise yeh:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-12-generic-fn-definition/src/lib.rs}}
 ```
 
-is actually treated as though we had written this:
+asal mein is tarah treat hoti hai jaise humne yeh likha ho:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-13-generic-implicit-sized-bound/src/lib.rs}}
 ```
 
-By default, generic functions will work only on types that have a known size at
-compile time. However, you can use the following special syntax to relax this
-restriction:
+Default taur par, generic functions sirf un types par kaam karenge jin ka size
+compile time par known ho. Lekin, aap following special syntax use karke is
+restriction ko relax kar sakte hain:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-14-generic-maybe-sized/src/lib.rs}}
 ```
 
-A trait bound on `?Sized` means “`T` may or may not be `Sized`,” and this
-notation overrides the default that generic types must have a known size at
-compile time. The `?Trait` syntax with this meaning is only available for
-`Sized`, not any other traits.
+`?Sized` par trait bound ka matlab hai “`T` `Sized` ho bhi sakta hai aur nahi bhi,”
+aur yeh notation is default ko override karta hai ke generic types ka size
+compile time par known hona chahiye. Is meaning ke saath `?Trait` syntax sirf
+`Sized` ke liye available hai, kisi doosre trait ke liye nahi.
 
-Also note that we switched the type of the `t` parameter from `T` to `&T`.
-Because the type might not be `Sized`, we need to use it behind some kind of
-pointer. In this case, we’ve chosen a reference.
+Yeh bhi note karein ke humne `t` parameter ki type `T` se badal kar `&T` kar di
+hai. Kyun ke type `Sized` na bhi ho sakti hai, humein isay kisi na kisi type ke
+pointer ke peeche use karna hoga. Is case mein, humne ek reference choose kiya
+hai.
 
-Next, we’ll talk about functions and closures!
+Agla topic functions aur closures hain!
 
 [encapsulation-that-hides-implementation-details]: ch18-01-what-is-oo.html#encapsulation-that-hides-implementation-details
 [string-slices]: ch04-03-slices.html#string-slices

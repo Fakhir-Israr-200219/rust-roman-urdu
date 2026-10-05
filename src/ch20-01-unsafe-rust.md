@@ -1,27 +1,10 @@
 ## Unsafe Rust
 
-All the code we’ve discussed so far has had Rust’s memory safety guarantees
-enforced at compile time. However, Rust has a second language hidden inside it
-that doesn’t enforce these memory safety guarantees: It’s called _unsafe Rust_
-and works just like regular Rust but gives us extra superpowers.
+Ab tak humne jis code par discussion ki hai, us mein Rust ki memory safety guarantees ko compile time par enforce kiya gaya hai. Lekin Rust ke andar ek doosri language bhi chhupi hui hai jo in memory safety guarantees ko enforce nahi karti: Isay *unsafe Rust* kaha jata hai aur yeh bilkul regular Rust ki tarah kaam karti hai, lekin humein extra superpowers deti hai.
 
-Unsafe Rust exists because, by nature, static analysis is conservative. When
-the compiler tries to determine whether or not code upholds the guarantees,
-it’s better for it to reject some valid programs than to accept some invalid
-programs. Although the code _might_ be okay, if the Rust compiler doesn’t have
-enough information to be confident, it will reject the code. In these cases,
-you can use unsafe code to tell the compiler, “Trust me, I know what I’m
-doing.” Be warned, however, that you use unsafe Rust at your own risk: If you
-use unsafe code incorrectly, problems can occur due to memory unsafety, such as
-null pointer dereferencing.
+Unsafe Rust is liye exist karti hai kyun ke static analysis apni nature mein conservative hoti hai. Jab compiler yeh determine karne ki koshish karta hai ke code guarantees ko uphold karta hai ya nahi, to us ke liye kuch valid programs ko reject karna, kuch invalid programs ko accept karne se behtar hota hai. Agarche code *might* theek ho, lekin agar Rust compiler ke paas itni information nahi hai ke woh confident ho sake, to woh code ko reject kar dega. In cases mein, aap compiler ko unsafe code use karke keh sakte hain, “Mujh par trust karo, mujhe pata hai main kya kar raha hoon.” Lekin warn kar diya jaye ke aap unsafe Rust ko apne risk par use karte hain: Agar aap unsafe code ko ghalat tareeqe se use karein, to memory unsafety ki wajah se problems ho sakti hain, jaise null pointer dereferencing.
 
-Another reason Rust has an unsafe alter ego is that the underlying computer
-hardware is inherently unsafe. If Rust didn’t let you do unsafe operations, you
-couldn’t do certain tasks. Rust needs to allow you to do low-level systems
-programming, such as directly interacting with the operating system or even
-writing your own operating system. Working with low-level systems programming
-is one of the goals of the language. Let’s explore what we can do with unsafe
-Rust and how to do it.
+Rust ke unsafe alter ego ki ek aur wajah yeh hai ke underlying computer hardware apni nature mein inherently unsafe hai. Agar Rust aapko unsafe operations karne ki ijazat na deta, to aap kuch specific tasks nahi kar sakte. Rust ko aapko low-level systems programming karne ki ability deni hoti hai, jaise operating system ke saath directly interact karna ya hatta ke apna operating system likhna. Low-level systems programming ke saath kaam karna language ke goals mein se ek hai. Aaiye explore karte hain ke hum unsafe Rust ke saath kya kar sakte hain aur usay kaise karna hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -29,181 +12,102 @@ Rust and how to do it.
 
 ### Performing Unsafe Superpowers
 
-To switch to unsafe Rust, use the `unsafe` keyword and then start a new block
-that holds the unsafe code. You can take five actions in unsafe Rust that you
-can’t in safe Rust, which we call _unsafe superpowers_. Those superpowers
-include the ability to:
+Unsafe Rust mein switch karne ke liye `unsafe` keyword use karein aur phir ek naya block start karein jo unsafe code ko hold karta ho. Unsafe Rust mein aap paanch actions perform kar sakte hain jo safe Rust mein nahi kar sakte, jinhein hum *unsafe superpowers* kehte hain. In superpowers mein yeh ability shamil hai ke:
 
 1. Dereference a raw pointer.
-1. Call an unsafe function or method.
-1. Access or modify a mutable static variable.
-1. Implement an unsafe trait.
-1. Access fields of `union`s.
+2. Call an unsafe function or method.
+3. Access or modify a mutable static variable.
+4. Implement an unsafe trait.
+5. Access fields of `union`s.
 
-It’s important to understand that `unsafe` doesn’t turn off the borrow checker
-or disable any of Rust’s other safety checks: If you use a reference in unsafe
-code, it will still be checked. The `unsafe` keyword only gives you access to
-these five features that are then not checked by the compiler for memory
-safety. You’ll still get some degree of safety inside an unsafe block.
+Yeh samajhna important hai ke `unsafe` borrow checker ko turn off nahi karta aur na hi Rust ke doosre safety checks ko disable karta hai: Agar aap unsafe code mein reference use karte hain, to woh ab bhi check hoga. `unsafe` keyword sirf aapko in paanch features tak access deta hai jinhein compiler memory safety ke liye check nahi karta. Unsafe block ke andar bhi aapko kuch had tak safety milti rahegi.
 
-In addition, `unsafe` does not mean the code inside the block is necessarily
-dangerous or that it will definitely have memory safety problems: The intent is
-that as the programmer, you’ll ensure that the code inside an `unsafe` block
-will access memory in a valid way.
+Is ke ilawa, `unsafe` ka matlab yeh nahi hai ke block ke andar ka code zaroor dangerous hai ya us mein definitely memory safety problems hongi: Maqsad yeh hai ke programmer ke taur par aap ensure karein ke `unsafe` block ke andar code memory ko valid tareeqe se access karega.
 
-People are fallible and mistakes will happen, but by requiring these five
-unsafe operations to be inside blocks annotated with `unsafe`, you’ll know that
-any errors related to memory safety must be within an `unsafe` block. Keep
-`unsafe` blocks small; you’ll be thankful later when you investigate memory
-bugs.
+Log ghaltiyan kar sakte hain aur mistakes hongi, lekin in paanch unsafe operations ko `unsafe` se annotated blocks ke andar rakhne ki requirement ki wajah se, aap jaan sakenge ke memory safety se related koi bhi errors `unsafe` block ke andar hi hone chahiye. `unsafe` blocks ko chhota rakhein; baad mein memory bugs investigate karte waqt aap is ke liye thankful honge.
 
-To isolate unsafe code as much as possible, it’s best to enclose such code
-within a safe abstraction and provide a safe API, which we’ll discuss later in
-the chapter when we examine unsafe functions and methods. Parts of the standard
-library are implemented as safe abstractions over unsafe code that has been
-audited. Wrapping unsafe code in a safe abstraction prevents uses of `unsafe`
-from leaking out into all the places that you or your users might want to use
-the functionality implemented with `unsafe` code, because using a safe
-abstraction is safe.
+Unsafe code ko jitna mumkin ho isolate karne ke liye, behtar hai ke aise code ko ek safe abstraction ke andar enclose kiya jaye aur ek safe API provide ki jaye, jise hum chapter mein baad mein discuss karenge jab hum unsafe functions aur methods ka jaiza lenge. Standard library ke kuch parts aise safe abstractions ke taur par implement kiye gaye hain jo audited unsafe code ke upar bani hui hain. Unsafe code ko safe abstraction mein wrap karna `unsafe` ke uses ko un tamam places tak leak hone se rokta hai jahan aap ya aapke users unsafe code se implement ki gayi functionality ko use karna chahte hon, kyun ke safe abstraction ko use karna safe hai.
 
-Let’s look at each of the five unsafe superpowers in turn. We’ll also look at
-some abstractions that provide a safe interface to unsafe code.
+Aaiye baari baari se in paanch unsafe superpowers mein se har ek ko dekhte hain. Hum kuch aisi abstractions bhi dekhenge jo unsafe code ke liye ek safe interface provide karti hain.
 
 ### Dereferencing a Raw Pointer
 
-In Chapter 4, in the [“Dangling References”][dangling-references]<!-- ignore
---> section, we mentioned that the compiler ensures that references are always
-valid. Unsafe Rust has two new types called _raw pointers_ that are similar to
-references. As with references, raw pointers can be immutable or mutable and
-are written as `*const T` and `*mut T`, respectively. The asterisk isn’t the
-dereference operator; it’s part of the type name. In the context of raw
-pointers, _immutable_ means that the pointer can’t be directly assigned to
-after being dereferenced.
+Chapter 4 mein, [“Dangling References”][dangling-references]<!-- ignore
+--> section mein, humne mention kiya tha ke compiler ensure karta hai ke references hamesha valid hon. Unsafe Rust mein do naye types hote hain jinhein *raw pointers* kaha jata hai jo references se milte-julte hain. References ki tarah, raw pointers immutable ya mutable ho sakte hain aur respectively `*const T` aur `*mut T` ke taur par likhe jate hain. Asterisk dereference operator nahi hai; yeh type name ka hissa hai. Raw pointers ke context mein, *immutable* ka matlab hai ke dereference hone ke baad pointer ko directly assign nahi kiya ja sakta.
 
-Different from references and smart pointers, raw pointers:
+References aur smart pointers se mukhtalif, raw pointers:
 
-- Are allowed to ignore the borrowing rules by having both immutable and
-  mutable pointers or multiple mutable pointers to the same location
-- Aren’t guaranteed to point to valid memory
-- Are allowed to be null
-- Don’t implement any automatic cleanup
+* Borrowing rules ko ignore kar sakte hain, kyun ke ek hi location par immutable aur mutable pointers dono, ya multiple mutable pointers rakhna allowed hai
+* Valid memory ki taraf point karne ki guarantee nahi hoti
+* Null ho sakte hain
+* Koi automatic cleanup implement nahi karte
 
-By opting out of having Rust enforce these guarantees, you can give up
-guaranteed safety in exchange for greater performance or the ability to
-interface with another language or hardware where Rust’s guarantees don’t apply.
+Rust ko in guarantees ko enforce karne se opt out karke, aap guaranteed safety ko greater performance ya kisi doosri language ya hardware ke saath interface karne ki ability ke badle mein give up kar sakte hain, jahan Rust ki guarantees apply nahi hotin.
 
-Listing 20-1 shows how to create an immutable and a mutable raw pointer.
+Listing 20-1 dikhati hai ke immutable aur mutable raw pointer kaise create kiya jata hai.
 
 <Listing number="20-1" caption="Creating raw pointers with the raw borrow operators">
 
-```rust
+```rust id="7n3wpa"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-01/src/main.rs:here}}
 ```
 
 </Listing>
 
-Notice that we don’t include the `unsafe` keyword in this code. We can create
-raw pointers in safe code; we just can’t dereference raw pointers outside an
-unsafe block, as you’ll see in a bit.
+Notice karein ke hum is code mein `unsafe` keyword include nahi karte. Hum safe code mein raw pointers create kar sakte hain; hum sirf unsafe block ke bahar raw pointers ko dereference nahi kar sakte, jaisa ke aap thori der mein dekhenge.
 
-We’ve created raw pointers by using the raw borrow operators: `&raw const num`
-creates a `*const i32` immutable raw pointer, and `&raw mut num` creates a `*mut
-i32` mutable raw pointer. Because we created them directly from a local
-variable, we know these particular raw pointers are valid, but we can’t make
-that assumption about just any raw pointer.
+Humne raw borrow operators ko use karke raw pointers create kiye hain: `&raw const num` ek `*const i32` immutable raw pointer create karta hai, aur `&raw mut num` ek `*mut i32` mutable raw pointer create karta hai. Kyun ke humne inhein directly ek local variable se create kiya hai, hum jaante hain ke yeh particular raw pointers valid hain, lekin hum har raw pointer ke bare mein yeh assumption nahi kar sakte.
 
-To demonstrate this, next we’ll create a raw pointer whose validity we can’t be
-so certain of, using the keyword `as` to cast a value instead of using the raw
-borrow operator. Listing 20-2 shows how to create a raw pointer to an arbitrary
-location in memory. Trying to use arbitrary memory is undefined: There might be
-data at that address or there might not, the compiler might optimize the code
-so that there is no memory access, or the program might terminate with a
-segmentation fault. Usually, there is no good reason to write code like this,
-especially in cases where you can use a raw borrow operator instead, but it is
-possible.
+Is baat ko demonstrate karne ke liye, ab hum ek aisa raw pointer create karenge jis ki validity ke bare mein hum itne certain nahi ho sakte, aur raw borrow operator use karne ke bajaye value ko cast karne ke liye keyword `as` use karenge. Listing 20-2 dikhati hai ke memory mein kisi arbitrary location ke liye raw pointer kaise create kiya jata hai. Arbitrary memory ko use karna undefined hai: Us address par data ho bhi sakta hai aur nahi bhi, compiler code ko is tarah optimize kar sakta hai ke koi memory access hi na ho, ya program segmentation fault ke saath terminate ho sakta hai. Aam tor par, is tarah ka code likhne ki koi achi wajah nahi hoti, khaas taur par un cases mein jahan aap is ke bajaye raw borrow operator use kar sakte hain, lekin yeh possible hai.
 
 <Listing number="20-2" caption="Creating a raw pointer to an arbitrary memory address">
 
-```rust
+```rust id="a5l5i4"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-02/src/main.rs:here}}
 ```
 
 </Listing>
 
-Recall that we can create raw pointers in safe code, but we can’t dereference
-raw pointers and read the data being pointed to. In Listing 20-3, we use the
-dereference operator `*` on a raw pointer that requires an `unsafe` block.
+Yaad rakhein ke hum safe code mein raw pointers create kar sakte hain, lekin hum raw pointers ko dereference karke unke pointed-to data ko read nahi kar sakte. Listing 20-3 mein, hum ek raw pointer par dereference operator `*` use karte hain jo `unsafe` block require karta hai.
 
 <Listing number="20-3" caption="Dereferencing raw pointers within an `unsafe` block">
 
-```rust
+```rust id="p9o6ls"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-03/src/main.rs:here}}
 ```
 
 </Listing>
 
-Creating a pointer does no harm; it’s only when we try to access the value that
-it points at that we might end up dealing with an invalid value.
+Pointer create karne se koi harm nahi hota; sirf us waqt jab hum us value ko access karne ki koshish karte hain jis ki taraf woh point karta hai, tab hum ek invalid value ke saath deal kar sakte hain.
 
-Note also that in Listings 20-1 and 20-3, we created `*const i32` and `*mut
-i32` raw pointers that both pointed to the same memory location, where `num` is
-stored. If we instead tried to create an immutable and a mutable reference to
-`num`, the code would not have compiled because Rust’s ownership rules don’t
-allow a mutable reference at the same time as any immutable references. With
-raw pointers, we can create a mutable pointer and an immutable pointer to the
-same location and change data through the mutable pointer, potentially creating
-a data race. Be careful!
+Yeh bhi note karein ke Listings 20-1 aur 20-3 mein, humne `*const i32` aur `*mut
+i32` raw pointers create kiye jo dono ek hi memory location ki taraf point kar rahe thay, jahan `num` store hai. Agar hum is ke bajaye `num` ke liye ek immutable aur ek mutable reference create karne ki koshish karte, to code compile nahi hota kyun ke Rust ke ownership rules ek mutable reference ko usi waqt kisi bhi immutable references ke saath allow nahi karte. Raw pointers ke saath, hum ek hi location ke liye mutable pointer aur immutable pointer create kar sakte hain aur mutable pointer ke zariye data change kar sakte hain, jis se potentially data race create ho sakta hai. Ehtiyat karein!
 
-With all of these dangers, why would you ever use raw pointers? One major use
-case is when interfacing with C code, as you’ll see in the next section.
-Another case is when building up safe abstractions that the borrow checker
-doesn’t understand. We’ll introduce unsafe functions and then look at an
-example of a safe abstraction that uses unsafe code.
+In tamam dangers ke bawajood, aap raw pointers kabhi use kyun karenge? Ek major use case C code ke saath interfacing hai, jaisa ke aap next section mein dekhenge. Ek aur case safe abstractions build karna hai jinhein borrow checker samajh nahi pata. Hum unsafe functions introduce karenge aur phir safe abstraction ki ek example dekhenge jo unsafe code use karti hai.
 
 ### Calling an Unsafe Function or Method
 
-The second type of operation you can perform in an unsafe block is calling
-unsafe functions. Unsafe functions and methods look exactly like regular
-functions and methods, but they have an extra `unsafe` before the rest of the
-definition. The `unsafe` keyword in this context indicates the function has
-requirements we need to uphold when we call this function, because Rust can’t
-guarantee we’ve met these requirements. By calling an unsafe function within an
-`unsafe` block, we’re saying that we’ve read this function’s documentation and
-we take responsibility for upholding the function’s contracts.
+Doosri type ki operation jo aap unsafe block mein perform kar sakte hain, woh unsafe functions ko call karna hai. Unsafe functions aur methods bilkul regular functions aur methods ki tarah nazar aate hain, lekin unki definition ke baqi hisson se pehle extra `unsafe` hota hai. Is context mein `unsafe` keyword indicate karta hai ke function ki kuch requirements hain jinhein humein is function ko call karte waqt uphold karna hota hai, kyun ke Rust guarantee nahi kar sakta ke humne in requirements ko meet kiya hai. Kisi unsafe function ko `unsafe` block ke andar call karke, hum keh rahe hote hain ke humne is function ki documentation parhi hai aur hum function ke contracts ko uphold karne ki responsibility lete hain.
 
-Here is an unsafe function named `dangerous` that doesn’t do anything in its
-body:
+Yahan `dangerous` naam ka ek unsafe function hai jo apne body mein kuch nahi karta:
 
-```rust
+```rust id="r7d2kp"
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-01-unsafe-fn/src/main.rs:here}}
 ```
 
-We must call the `dangerous` function within a separate `unsafe` block. If we
-try to call `dangerous` without the `unsafe` block, we’ll get an error:
+Humein `dangerous` function ko ek separate `unsafe` block ke andar call karna zaroori hai. Agar hum `unsafe` block ke baghair `dangerous` ko call karne ki koshish karein, to humein ek error milega:
 
-```console
+```console id="q1v8mx"
 {{#include ../listings/ch20-advanced-features/output-only-01-missing-unsafe/output.txt}}
 ```
 
-With the `unsafe` block, we’re asserting to Rust that we’ve read the function’s
-documentation, we understand how to use it properly, and we’ve verified that
-we’re fulfilling the contract of the function.
+`unsafe` block ke saath, hum Rust ko assert kar rahe hote hain ke humne function ki documentation parhi hai, hum samajhte hain ke isay properly kaise use karna hai, aur humne verify kar liya hai ke hum function ke contract ko fulfill kar rahe hain.
 
-To perform unsafe operations in the body of an `unsafe` function, you still
-need to use an `unsafe` block, just as within a regular function, and the
-compiler will warn you if you forget. This helps us keep `unsafe` blocks as
-small as possible, as unsafe operations may not be needed across the whole
-function body.
+Unsafe function ke body mein unsafe operations perform karne ke liye bhi aapko `unsafe` block use karna zaroori hai, bilkul regular function ke andar ki tarah, aur agar aap bhool jayein to compiler aapko warning dega. Is se humein `unsafe` blocks ko jitna mumkin ho chhota rakhne mein madad milti hai, kyun ke unsafe operations poore function body mein zaroori nahi hote.
 
 #### Creating a Safe Abstraction over Unsafe Code
 
-Just because a function contains unsafe code doesn’t mean we need to mark the
-entire function as unsafe. In fact, wrapping unsafe code in a safe function is
-a common abstraction. As an example, let’s study the `split_at_mut` function
-from the standard library, which requires some unsafe code. We’ll explore how
-we might implement it. This safe method is defined on mutable slices: It takes
-one slice and makes it two by splitting the slice at the index given as an
-argument. Listing 20-4 shows how to use `split_at_mut`.
+Sirf is wajah se ke kisi function mein unsafe code hai, yeh zaroori nahi ke hum poore function ko `unsafe` mark karein. Asal mein, unsafe code ko safe function mein wrap karna ek common abstraction hai. Misal ke taur par, standard library ke `split_at_mut` function ka jaiza lete hain, jise kuch unsafe code ki zaroorat hoti hai. Hum dekhenge ke hum isay kaise implement kar sakte hain. Yeh safe method mutable slices par defined hai: Yeh ek slice leta hai aur argument ke taur par diye gaye index par slice ko split karke usay do slices mein bana deta hai. Listing 20-4 dikhati hai ke `split_at_mut` ko kaise use karna hai.
 
 <Listing number="20-4" caption="Using the safe `split_at_mut` function">
 
@@ -213,10 +117,7 @@ argument. Listing 20-4 shows how to use `split_at_mut`.
 
 </Listing>
 
-We can’t implement this function using only safe Rust. An attempt might look
-something like Listing 20-5, which won’t compile. For simplicity, we’ll
-implement `split_at_mut` as a function rather than a method and only for slices
-of `i32` values rather than for a generic type `T`.
+Hum is function ko sirf safe Rust use karke implement nahi kar sakte. Ek attempt Listing 20-5 jaisa ho sakta hai, jo compile nahi hoga. Simplicity ke liye, hum `split_at_mut` ko method ke bajaye function ke taur par implement karenge aur generic type `T` ke bajaye sirf `i32` values ke slices ke liye implement karenge.
 
 <Listing number="20-5" caption="An attempted implementation of `split_at_mut` using only safe Rust">
 
@@ -226,30 +127,19 @@ of `i32` values rather than for a generic type `T`.
 
 </Listing>
 
-This function first gets the total length of the slice. Then, it asserts that
-the index given as a parameter is within the slice by checking whether it’s
-less than or equal to the length. The assertion means that if we pass an index
-that is greater than the length to split the slice at, the function will panic
-before it attempts to use that index.
+Yeh function sab se pehle slice ki total length hasil karta hai. Phir, yeh check karke ke index length se less than ya equal hai, yeh assert karta hai ke parameter ke taur par diya gaya index slice ke andar hai. Is assertion ka matlab hai ke agar hum slice ko split karne ke liye length se greater index pass karein, to function us index ko use karne ki koshish se pehle panic karega.
 
-Then, we return two mutable slices in a tuple: one from the start of the
-original slice to the `mid` index and another from `mid` to the end of the
-slice.
+Phir, hum tuple mein do mutable slices return karte hain: ek original slice ke start se `mid` index tak aur doosra `mid` se slice ke end tak.
 
-When we try to compile the code in Listing 20-5, we’ll get an error:
+Jab hum Listing 20-5 ke code ko compile karne ki koshish karte hain, to humein ek error milega:
 
 ```console
 {{#include ../listings/ch20-advanced-features/listing-20-05/output.txt}}
 ```
 
-Rust’s borrow checker can’t understand that we’re borrowing different parts of
-the slice; it only knows that we’re borrowing from the same slice twice.
-Borrowing different parts of a slice is fundamentally okay because the two
-slices aren’t overlapping, but Rust isn’t smart enough to know this. When we
-know code is okay, but Rust doesn’t, it’s time to reach for unsafe code.
+Rust ka borrow checker yeh nahi samajh sakta ke hum slice ke different parts ko borrow kar rahe hain; woh sirf itna jaanta hai ke hum ek hi slice se do baar borrow kar rahe hain. Slice ke different parts ko borrow karna fundamentally theek hai kyun ke dono slices overlap nahi karte, lekin Rust itna smart nahi hai ke yeh baat jaan sake. Jab humein pata ho ke code theek hai, lekin Rust ko pata nahi, to yeh unsafe code use karne ka waqt hai.
 
-Listing 20-6 shows how to use an `unsafe` block, a raw pointer, and some calls
-to unsafe functions to make the implementation of `split_at_mut` work.
+Listing 20-6 dikhati hai ke `split_at_mut` ki implementation ko kaam karwane ke liye `unsafe` block, raw pointer, aur unsafe functions ki kuch calls ko kaise use kiya jata hai.
 
 <Listing number="20-6" caption="Using unsafe code in the implementation of the `split_at_mut` function">
 
@@ -259,40 +149,15 @@ to unsafe functions to make the implementation of `split_at_mut` work.
 
 </Listing>
 
-Recall from [“The Slice Type”][the-slice-type]<!-- ignore --> section in
-Chapter 4 that a slice is a pointer to some data and the length of the slice.
-We use the `len` method to get the length of a slice and the `as_mut_ptr`
-method to access the raw pointer of a slice. In this case, because we have a
-mutable slice to `i32` values, `as_mut_ptr` returns a raw pointer with the type
-`*mut i32`, which we’ve stored in the variable `ptr`.
+Chapter 4 ke [“The Slice Type”][the-slice-type]<!-- ignore --> section se yaad karein ke slice kisi data ka pointer aur slice ki length hota hai. Hum slice ki length hasil karne ke liye `len` method use karte hain aur slice ke raw pointer ko access karne ke liye `as_mut_ptr` method use karte hain. Is case mein, kyun ke hamare paas `i32` values ka mutable slice hai, `as_mut_ptr` `*mut i32` type ka raw pointer return karta hai, jise humne `ptr` variable mein store kiya hai.
 
-We keep the assertion that the `mid` index is within the slice. Then, we get to
-the unsafe code: The `slice::from_raw_parts_mut` function takes a raw pointer
-and a length, and it creates a slice. We use this function to create a slice
-that starts from `ptr` and is `mid` items long. Then, we call the `add` method
-on `ptr` with `mid` as an argument to get a raw pointer that starts at `mid`,
-and we create a slice using that pointer and the remaining number of items
-after `mid` as the length.
+Hum yeh assertion barqarar rakhte hain ke `mid` index slice ke andar hai. Phir hum unsafe code tak pohanchte hain: `slice::from_raw_parts_mut` function ek raw pointer aur length leta hai aur ek slice create karta hai. Hum is function ko use karke ek aisa slice create karte hain jo `ptr` se start hota hai aur `mid` items long hota hai. Phir, hum `ptr` par `add` method ko `mid` ko argument ke taur par dekar call karte hain taa-ke ek aisa raw pointer hasil ho jo `mid` se start hota hai, aur hum us pointer aur `mid` ke baad remaining items ki tadaad ko length ke taur par use karke ek slice create karte hain.
 
-The function `slice::from_raw_parts_mut` is unsafe because it takes a raw
-pointer and must trust that this pointer is valid. The `add` method on raw
-pointers is also unsafe because it must trust that the offset location is also
-a valid pointer. Therefore, we had to put an `unsafe` block around our calls to
-`slice::from_raw_parts_mut` and `add` so that we could call them. By looking at
-the code and by adding the assertion that `mid` must be less than or equal to
-`len`, we can tell that all the raw pointers used within the `unsafe` block
-will be valid pointers to data within the slice. This is an acceptable and
-appropriate use of `unsafe`.
+Function `slice::from_raw_parts_mut` unsafe hai kyun ke yeh ek raw pointer leta hai aur is baat par trust karna padta hai ke yeh pointer valid hai. Raw pointers par `add` method bhi unsafe hai kyun ke isay trust karna padta hai ke offset location bhi ek valid pointer hai. Is liye humein `slice::from_raw_parts_mut` aur `add` ki calls ke around `unsafe` block rakhna pada taa-ke hum unhein call kar saken. Code ko dekh kar aur yeh assertion add karke ke `mid` less than ya equal to `len` hona zaroori hai, hum bata sakte hain ke `unsafe` block ke andar use hone wale tamam raw pointers slice ke andar data ke valid pointers honge. Yeh `unsafe` ka ek acceptable aur appropriate use hai.
 
-Note that we don’t need to mark the resultant `split_at_mut` function as
-`unsafe`, and we can call this function from safe Rust. We’ve created a safe
-abstraction to the unsafe code with an implementation of the function that uses
-`unsafe` code in a safe way, because it creates only valid pointers from the
-data this function has access to.
+Note karein ke humein resultant `split_at_mut` function ko `unsafe` mark karne ki zaroorat nahi hai, aur hum is function ko safe Rust se call kar sakte hain. Humne unsafe code ke liye ek safe abstraction create ki hai, aisi function implementation ke saath jo `unsafe` code ko safe tareeqe se use karti hai, kyun ke yeh sirf us data se valid pointers create karti hai jis tak is function ko access hasil hai.
 
-In contrast, the use of `slice::from_raw_parts_mut` in Listing 20-7 would
-likely crash when the slice is used. This code takes an arbitrary memory
-location and creates a slice 10,000 items long.
+Is ke baraks, Listing 20-7 mein `slice::from_raw_parts_mut` ka use likely crash karega jab slice ko use kiya jayega. Yeh code ek arbitrary memory location leta hai aur 10,000 items long slice create karta hai.
 
 <Listing number="20-7" caption="Creating a slice from an arbitrary memory location">
 
@@ -302,24 +167,13 @@ location and creates a slice 10,000 items long.
 
 </Listing>
 
-We don’t own the memory at this arbitrary location, and there is no guarantee
-that the slice this code creates contains valid `i32` values. Attempting to use
-`values` as though it’s a valid slice results in undefined behavior.
+Hum is arbitrary location par maujood memory ke owner nahi hain, aur is baat ki koi guarantee nahi hai ke jo slice yeh code create karta hai us mein valid `i32` values hain. `values` ko ek valid slice samajh kar use karne ki koshish undefined behavior ka sabab banti hai.
 
 #### Using `extern` Functions to Call External Code
 
-Sometimes your Rust code might need to interact with code written in another
-language. For this, Rust has the keyword `extern` that facilitates the creation
-and use of a _Foreign Function Interface (FFI)_, which is a way for a
-programming language to define functions and enable a different (foreign)
-programming language to call those functions.
+Kabhi kabhi aapke Rust code ko kisi doosri language mein likhe gaye code ke saath interact karne ki zaroorat ho sakti hai. Is ke liye, Rust ke paas `extern` keyword hai jo *Foreign Function Interface (FFI)* ki creation aur use ko facilitate karta hai, jo ek aisa tareeqa hai jiske zariye ek programming language functions ko define kar sakti hai aur kisi different (foreign) programming language ko un functions ko call karne ki ability de sakti hai.
 
-Listing 20-8 demonstrates how to set up an integration with the `abs` function
-from the C standard library. Functions declared within `extern` blocks are
-generally unsafe to call from Rust code, so `extern` blocks must also be marked
-`unsafe`. The reason is that other languages don’t enforce Rust’s rules and
-guarantees, and Rust can’t check them, so responsibility falls on the
-programmer to ensure safety.
+Listing 20-8 demonstrate karti hai ke C standard library ke `abs` function ke saath integration kaise set up ki jati hai. `extern` blocks ke andar declare kiye gaye functions ko Rust code se call karna generally unsafe hota hai, is liye `extern` blocks ko bhi `unsafe` mark karna zaroori hai. Is ki wajah yeh hai ke doosri languages Rust ke rules aur guarantees enforce nahi kartin, aur Rust unhein check nahi kar sakta, is liye safety ensure karne ki responsibility programmer par hoti hai.
 
 <Listing number="20-8" file-name="src/main.rs" caption="Declaring and calling an `extern` function defined in another language">
 
@@ -329,20 +183,9 @@ programmer to ensure safety.
 
 </Listing>
 
-Within the `unsafe extern "C"` block, we list the names and signatures of
-external functions from another language we want to call. The `"C"` part
-defines which _application binary interface (ABI)_ the external function uses:
-The ABI defines how to call the function at the assembly level. The `"C"` ABI
-is the most common and follows the C programming language’s ABI. Information
-about all the ABIs Rust supports is available in [the Rust Reference][ABI].
+`unsafe extern "C"` block ke andar, hum un external functions ke names aur signatures list karte hain jinhein hum kisi doosri language se call karna chahte hain. `"C"` wala hissa define karta hai ke external function kaunsa *application binary interface (ABI)* use karta hai: ABI define karta hai ke assembly level par function ko kaise call kiya jata hai. `"C"` ABI sab se common hai aur C programming language ke ABI ko follow karta hai. Rust jin tamam ABIs ko support karta hai unke bare mein information [the Rust Reference][ABI] mein available hai.
 
-Every item declared within an `unsafe extern` block is implicitly unsafe.
-However, some FFI functions *are* safe to call. For example, the `abs` function
-from C’s standard library does not have any memory safety considerations, and we
-know it can be called with any `i32`. In cases like this, we can use the `safe`
-keyword to say that this specific function is safe to call even though it is in
-an `unsafe extern` block. Once we make that change, calling it no longer
-requires an `unsafe` block, as shown in Listing 20-9.
+`unsafe extern` block ke andar declare kiya gaya har item implicitly unsafe hota hai. Lekin kuch FFI functions *safe* hotay hain. Misal ke taur par, C ki standard library ka `abs` function memory safety ke hawale se koi considerations nahi rakhta, aur hum jaante hain ke isay kisi bhi `i32` ke saath call kiya ja sakta hai. Aise cases mein, hum `safe` keyword use karke keh sakte hain ke yeh specific function call karne ke liye safe hai, chahe yeh `unsafe extern` block ke andar ho. Jab hum yeh change kar dete hain, to isay call karne ke liye ab `unsafe` block ki zaroorat nahi rehti, jaisa ke Listing 20-9 mein dikhaya gaya hai.
 
 <Listing number="20-9" file-name="src/main.rs" caption="Explicitly marking a function as `safe` within an `unsafe extern` block and calling it safely">
 
@@ -352,28 +195,13 @@ requires an `unsafe` block, as shown in Listing 20-9.
 
 </Listing>
 
-Marking a function as `safe` does not inherently make it safe! Instead, it is
-like a promise you are making to Rust that it is safe. It is still your
-responsibility to make sure that promise is kept!
+Kisi function ko `safe` mark karna inherently usay safe nahi bana deta! Is ke bajaye, yeh us promise ki tarah hai jo aap Rust se kar rahe hote hain ke yeh safe hai. Yeh ensure karna ab bhi aapki responsibility hai ke woh promise poora ho!
 
 #### Calling Rust Functions from Other Languages
 
-We can also use `extern` to create an interface that allows other languages to
-call Rust functions. Instead of creating a whole `extern` block, we add the
-`extern` keyword and specify the ABI to use just before the `fn` keyword for
-the relevant function. We also need to add an `#[unsafe(no_mangle)]` annotation
-to tell the Rust compiler not to mangle the name of this function. _Mangling_
-is when a compiler changes the name we’ve given a function to a different name
-that contains more information for other parts of the compilation process to
-consume but is less human readable. Every programming language compiler mangles
-names slightly differently, so for a Rust function to be nameable by other
-languages, we must disable the Rust compiler’s name mangling. This is unsafe
-because there might be name collisions across libraries without the built-in
-mangling, so it is our responsibility to make sure the name we choose is safe
-to export without mangling.
+Hum `extern` ko ek aisa interface create karne ke liye bhi use kar sakte hain jo doosri languages ko Rust functions call karne ki ability deta hai. Pura `extern` block create karne ke bajaye, hum `extern` keyword add karte hain aur relevant function ke `fn` keyword se bilkul pehle use kiya jane wala ABI specify karte hain. Humein `#[unsafe(no_mangle)]` annotation bhi add karna hota hai taa-ke Rust compiler ko bataya ja sake ke is function ke name ko mangle na kare. *Mangling* us waqt hoti hai jab compiler hamare diye hue function name ko ek different name mein change karta hai jismein compilation process ke doosre parts ke consume karne ke liye zyada information hoti hai, lekin jo insaan ke liye kam readable hota hai. Har programming language ka compiler names ko thora different tareeqe se mangle karta hai, is liye kisi Rust function ko doosri languages ke zariye nameable banane ke liye humein Rust compiler ki name mangling disable karni hoti hai. Yeh unsafe hai kyun ke built-in mangling ke baghair libraries ke darmiyan name collisions ho sakti hain, is liye yeh hamari responsibility hai ke hum jo name choose karein woh mangling ke baghair export karne ke liye safe ho.
 
-In the following example, we make the `call_from_c` function accessible from C
-code, after it’s compiled to a shared library and linked from C:
+Neeche diye gaye example mein, hum `call_from_c` function ko C code se accessible banate hain, jab isay shared library mein compile karke C se link kiya jaye:
 
 ```
 #[unsafe(no_mangle)]
@@ -382,19 +210,13 @@ pub extern "C" fn call_from_c() {
 }
 ```
 
-This usage of `extern` requires `unsafe` only in the attribute, not on the
-`extern` block.
+`extern` ka yeh usage sirf attribute mein `unsafe` require karta hai, `extern` block par nahi.
 
 ### Accessing or Modifying a Mutable Static Variable
 
-In this book, we’ve not yet talked about global variables, which Rust does
-support but which can be problematic with Rust’s ownership rules. If two
-threads are accessing the same mutable global variable, it can cause a data
-race.
+Is book mein, humne abhi tak global variables ke bare mein baat nahi ki, jinhein Rust support karta hai lekin jo Rust ke ownership rules ke saath problematic ho sakte hain. Agar do threads ek hi mutable global variable ko access kar rahe hon, to is se data race ho sakti hai.
 
-In Rust, global variables are called _static_ variables. Listing 20-10 shows an
-example declaration and use of a static variable with a string slice as a
-value.
+Rust mein, global variables ko *static* variables kaha jata hai. Listing 20-10 ek static variable ki example declaration aur use dikhati hai jismein value ke taur par ek string slice hai.
 
 <Listing number="20-10" file-name="src/main.rs" caption="Defining and using an immutable static variable">
 
@@ -404,20 +226,9 @@ value.
 
 </Listing>
 
-Static variables are similar to constants, which we discussed in the
-[“Declaring Constants”][constants]<!-- ignore --> section in Chapter 3. The
-names of static variables are in `SCREAMING_SNAKE_CASE` by convention. Static
-variables can only store references with the `'static` lifetime, which means
-the Rust compiler can figure out the lifetime and we aren’t required to
-annotate it explicitly. Accessing an immutable static variable is safe.
+Static variables constants ke similar hotay hain, jin par humne Chapter 3 ke [“Declaring Constants”][constants]<!-- ignore --> section mein baat ki thi. Static variables ke names convention ke mutabiq `SCREAMING_SNAKE_CASE` mein hotay hain. Static variables sirf un references ko store kar sakte hain jinka lifetime `'static` ho, jis ka matlab hai ke Rust compiler lifetime ka pata laga sakta hai aur humein usay explicitly annotate karne ki zaroorat nahi hoti. Immutable static variable ko access karna safe hai.
 
-A subtle difference between constants and immutable static variables is that
-values in a static variable have a fixed address in memory. Using the value
-will always access the same data. Constants, on the other hand, are allowed to
-duplicate their data whenever they’re used. Another difference is that static
-variables can be mutable. Accessing and modifying mutable static variables is
-_unsafe_. Listing 20-11 shows how to declare, access, and modify a mutable
-static variable named `COUNTER`.
+Constants aur immutable static variables ke darmiyan ek subtle difference yeh hai ke static variable mein values ki memory mein ek fixed address hoti hai. Value ko use karne par hamesha wahi data access hota hai. Doosri taraf, constants ko ijazat hoti hai ke jab bhi unhein use kiya jaye to woh apna data duplicate kar dein. Ek aur difference yeh hai ke static variables mutable ho sakte hain. Mutable static variables ko access aur modify karna *unsafe* hai. Listing 20-11 dikhati hai ke `COUNTER` naam ke mutable static variable ko kaise declare, access, aur modify karna hai.
 
 <Listing number="20-11" file-name="src/main.rs" caption="Reading from or writing to a mutable static variable is unsafe.">
 
@@ -427,44 +238,17 @@ static variable named `COUNTER`.
 
 </Listing>
 
-As with regular variables, we specify mutability using the `mut` keyword. Any
-code that reads or writes from `COUNTER` must be within an `unsafe` block. The
-code in Listing 20-11 compiles and prints `COUNTER: 3` as we would expect
-because it’s single threaded. Having multiple threads access `COUNTER` would
-likely result in data races, so it is undefined behavior. Therefore, we need to
-mark the entire function as `unsafe` and document the safety limitation so that
-anyone calling the function knows what they are and are not allowed to do
-safely.
+Regular variables ki tarah, hum `mut` keyword use karke mutability specify karte hain. Koi bhi code jo `COUNTER` se read ya us mein write karta hai, `unsafe` block ke andar hona zaroori hai. Listing 20-11 ka code compile hota hai aur `COUNTER: 3` print karta hai, jaisa ke hum expect karte hain, kyun ke yeh single threaded hai. Agar multiple threads `COUNTER` ko access karein, to likely data races hongi, is liye yeh undefined behavior hai. Is wajah se, humein poore function ko `unsafe` mark karna aur safety limitation ko document karna zaroori hai taa-ke function ko call karne wala har shakhs jaane ke woh safely kya kar sakta hai aur kya nahi.
 
-Whenever we write an unsafe function, it is idiomatic to write a comment
-starting with `SAFETY` and explaining what the caller needs to do to call the
-function safely. Likewise, whenever we perform an unsafe operation, it is
-idiomatic to write a comment starting with `SAFETY` to explain how the safety
-rules are upheld.
+Jab bhi hum ek unsafe function likhte hain, to `SAFETY` se shuru hone wala comment likhna idiomatic hai jo explain kare ke caller ko function ko safely call karne ke liye kya karna zaroori hai. Isi tarah, jab bhi hum koi unsafe operation perform karte hain, to `SAFETY` se shuru hone wala comment likhna idiomatic hai taa-ke explain kiya ja sake ke safety rules ko kaise uphold kiya ja raha hai.
 
-Additionally, the compiler will deny by default any attempt to create
-references to a mutable static variable through a compiler lint. You must
-either explicitly opt out of that lint’s protections by adding an
-`#[allow(static_mut_refs)]` annotation or access the mutable static variable
-via a raw pointer created with one of the raw borrow operators. That includes
-cases where the reference is created invisibly, as when it is used in the
-`println!` in this code listing. Requiring references to static mutable
-variables to be created via raw pointers helps make the safety requirements for
-using them more obvious.
+Is ke ilawa, compiler by default compiler lint ke zariye mutable static variable ke references create karne ki kisi bhi koshish ko deny kar dega. Aapko ya to `#[allow(static_mut_refs)]` annotation add karke us lint ki protections se explicitly opt out karna hoga, ya mutable static variable ko raw borrow operators mein se kisi ek ke zariye create kiye gaye raw pointer ke through access karna hoga. Is mein woh cases bhi shamil hain jahan reference invisibly create hota hai, jaise is code listing mein `println!` mein use hone par. Mutable static variables ke references ko raw pointers ke zariye create karna zaroori banane se unhein use karne ke safety requirements zyada obvious ho jati hain.
 
-With mutable data that is globally accessible, it’s difficult to ensure that
-there are no data races, which is why Rust considers mutable static variables
-to be unsafe. Where possible, it’s preferable to use the concurrency techniques
-and thread-safe smart pointers we discussed in Chapter 16 so that the compiler
-checks that data access from different threads is done safely.
+Globally accessible mutable data ke saath yeh ensure karna mushkil hota hai ke koi data races na hon, isi liye Rust mutable static variables ko unsafe consider karta hai. Jahan mumkin ho, behtar hai ke hum Chapter 16 mein discuss ki gayi concurrency techniques aur thread-safe smart pointers use karein taa-ke compiler check kar sake ke different threads se data access safely kiya ja raha hai.
 
 ### Implementing an Unsafe Trait
 
-We can use `unsafe` to implement an unsafe trait. A trait is unsafe when at
-least one of its methods has some invariant that the compiler can’t verify. We
-declare that a trait is `unsafe` by adding the `unsafe` keyword before `trait`
-and marking the implementation of the trait as `unsafe` too, as shown in
-Listing 20-12.
+Hum `unsafe` ko unsafe trait ko implement karne ke liye use kar sakte hain. Ek trait tab unsafe hota hai jab uske kam az kam ek method mein koi aisa invariant ho jise compiler verify nahi kar sakta. Hum `trait` se pehle `unsafe` keyword add karke declare karte hain ke koi trait `unsafe` hai aur trait ki implementation ko bhi `unsafe` mark karte hain, jaisa ke Listing 20-12 mein dikhaya gaya hai.
 
 <Listing number="20-12" caption="Defining and implementing an unsafe trait">
 
@@ -474,74 +258,33 @@ Listing 20-12.
 
 </Listing>
 
-By using `unsafe impl`, we’re promising that we’ll uphold the invariants that
-the compiler can’t verify.
+`unsafe impl` use karke, hum promise kar rahe hote hain ke hum un invariants ko uphold karenge jinhein compiler verify nahi kar sakta.
 
-As an example, recall the `Send` and `Sync` marker traits we discussed in the
-[“Extensible Concurrency with `Send` and `Sync`”][send-and-sync]<!-- ignore -->
-section in Chapter 16: The compiler implements these traits automatically if
-our types are composed entirely of other types that implement `Send` and
-`Sync`. If we implement a type that contains a type that does not implement
-`Send` or `Sync`, such as raw pointers, and we want to mark that type as `Send`
-or `Sync`, we must use `unsafe`. Rust can’t verify that our type upholds the
-guarantees that it can be safely sent across threads or accessed from multiple
-threads; therefore, we need to do those checks manually and indicate as such
-with `unsafe`.
+Misal ke taur par, Chapter 16 ke [“Extensible Concurrency with `Send` and `Sync`”][send-and-sync]<!-- ignore --> section mein discuss kiye gaye `Send` aur `Sync` marker traits ko yaad karein: Compiler in traits ko automatically implement karta hai agar hamare types poori tarah un doosre types se composed hon jo `Send` aur `Sync` implement karte hain. Agar hum aisa type implement karte hain jo kisi aise type ko contain karta hai jo `Send` ya `Sync` implement nahi karta, jaise raw pointers, aur hum us type ko `Send` ya `Sync` ke taur par mark karna chahte hain, to humein `unsafe` use karna hoga. Rust verify nahi kar sakta ke hamara type is guarantee ko uphold karta hai ke isay safely threads ke darmiyan send kiya ja sakta hai ya multiple threads se access kiya ja sakta hai; is liye humein yeh checks manually karne aur `unsafe` ke zariye is baat ko indicate karne ki zaroorat hoti hai.
 
 ### Accessing Fields of a Union
 
-The final action that works only with `unsafe` is accessing fields of a union.
-A *union* is similar to a `struct`, but only one declared field is used in a
-particular instance at one time. Unions are primarily used to interface with
-unions in C code. Accessing union fields is unsafe because Rust can’t guarantee
-the type of the data currently being stored in the union instance. You can
-learn more about unions in [the Rust Reference][unions].
+Final action jo sirf `unsafe` ke saath kaam karta hai, woh union ke fields ko access karna hai. Ek *union* `struct` ke similar hota hai, lekin kisi particular instance mein ek waqt mein sirf ek declared field use hota hai. Unions ka primary use C code mein unions ke saath interface karna hai. Union fields ko access karna unsafe hai kyun ke Rust guarantee nahi kar sakta ke is waqt union instance mein kis type ka data store hai. Aap unions ke bare mein mazeed [the Rust Reference][unions] mein jaan sakte hain.
 
 ### Using Miri to Check Unsafe Code
 
-When writing unsafe code, you might want to check that what you have written
-actually is safe and correct. One of the best ways to do that is to use Miri,
-an official Rust tool for detecting undefined behavior. Whereas the borrow
-checker is a _static_ tool that works at compile time, Miri is a _dynamic_
-tool that works at runtime. It checks your code by running your program, or
-its test suite, and detecting when you violate the rules it understands about
-how Rust should work.
+Jab aap unsafe code likh rahe hon, to aap yeh check karna chahenge ke jo aapne likha hai woh waqai safe aur correct hai. Is ka ek behtareen tareeqa Miri use karna hai, jo undefined behavior detect karne ke liye ek official Rust tool hai. Borrow checker ek *static* tool hai jo compile time par kaam karta hai, jab ke Miri ek *dynamic* tool hai jo runtime par kaam karta hai. Yeh aapke code ko aapka program, ya uski test suite, run karke check karta hai aur detect karta hai jab aap un rules ki violation karte hain jinhein yeh Rust ke kaam karne ke tareeqe ke bare mein samajhta hai.
 
-Using Miri requires a nightly build of Rust (which we talk about more in
-[Appendix G: How Rust is Made and “Nightly Rust”][nightly]<!-- ignore -->). You
-can install both a nightly version of Rust and the Miri tool by typing `rustup
-+nightly component add miri`. This does not change what version of Rust your
-project uses; it only adds the tool to your system so you can use it when you
-want to. You can run Miri on a project by typing `cargo +nightly miri run` or
-`cargo +nightly miri test`.
+Miri ko use karne ke liye Rust ka nightly build required hai (jis par hum [Appendix G: How Rust is Made and “Nightly Rust”][nightly]<!-- ignore --> mein mazeed baat karte hain). Aap `rustup +nightly component add miri` type karke Rust ka nightly version aur Miri tool dono install kar sakte hain. Is se aapke project mein use hone wale Rust ke version mein koi change nahi hota; yeh sirf tool ko aapke system mein add karta hai taa-ke jab aap chahein isay use kar saken. Aap `cargo +nightly miri run` ya `cargo +nightly miri test` type karke kisi project par Miri chala sakte hain.
 
-For an example of how helpful this can be, consider what happens when we run it
-against Listing 20-7.
+Is ki usefulness ki ek example ke liye, dekhein ke jab hum isay Listing 20-7 par run karte hain to kya hota hai.
 
 ```console
 {{#include ../listings/ch20-advanced-features/listing-20-07/output.txt}}
 ```
 
-Miri correctly warns us that we’re casting an integer to a pointer, which might
-be a problem, but Miri can’t determine whether a problem exists because it
-doesn’t know how the pointer originated. Then, Miri returns an error where
-Listing 20-7 has undefined behavior because we have a dangling pointer. Thanks
-to Miri, we now know there is a risk of undefined behavior, and we can think
-about how to make the code safe. In some cases, Miri can even make
-recommendations about how to fix errors.
+Miri humein correctly warn karta hai ke hum ek integer ko pointer mein cast kar rahe hain, jo problem ho sakti hai, lekin Miri determine nahi kar sakta ke problem exist karti hai ya nahi kyun ke usay nahi pata ke pointer originate kahan se hua. Phir, Miri ek error return karta hai jahan Listing 20-7 mein undefined behavior hai kyun ke hamare paas ek dangling pointer hai. Miri ki wajah se, ab humein pata hai ke undefined behavior ka risk hai, aur hum soch sakte hain ke code ko safe kaise banaya jaye. Kuch cases mein, Miri errors ko fix karne ke tareeqe ke bare mein recommendations bhi de sakta hai.
 
-Miri doesn’t catch everything you might get wrong when writing unsafe code.
-Miri is a dynamic analysis tool, so it only catches problems with code that
-actually gets run. That means you will need to use it in conjunction with good
-testing techniques to increase your confidence about the unsafe code you have
-written. Miri also does not cover every possible way your code can be unsound.
+Miri har woh cheez catch nahi karta jo unsafe code likhte waqt aap se ghalat ho sakti hai. Miri ek dynamic analysis tool hai, is liye yeh sirf un code ke problems catch karta hai jo waqai run hota hai. Is ka matlab hai ke aapko apne likhe hue unsafe code ke bare mein apna confidence barhane ke liye isay achhi testing techniques ke saath use karna hoga. Miri aapke code ke unsound hone ke har mumkin tareeqe ko bhi cover nahi karta.
 
-Put another way: If Miri _does_ catch a problem, you know there’s a bug, but
-just because Miri _doesn’t_ catch a bug doesn’t mean there isn’t a problem. It
-can catch a lot, though. Try running it on the other examples of unsafe code in
-this chapter and see what it says!
+Doosre alfaaz mein: Agar Miri koi problem *catch* karta hai, to aap jaante hain ke ek bug hai, lekin sirf is wajah se ke Miri koi bug *catch nahi* karta, yeh matlab nahi ke koi problem nahi hai. Lekin yeh bohat kuch catch kar sakta hai. Is chapter mein unsafe code ki doosri examples par bhi isay run karke dekhein aur dekhein ke yeh kya kehta hai!
 
-You can learn more about Miri at [its GitHub repository][miri].
+Aap [its GitHub repository][miri] par Miri ke bare mein mazeed jaan sakte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -549,16 +292,9 @@ You can learn more about Miri at [its GitHub repository][miri].
 
 ### Using Unsafe Code Correctly
 
-Using `unsafe` to use one of the five superpowers just discussed isn’t wrong or
-even frowned upon, but it is trickier to get `unsafe` code correct because the
-compiler can’t help uphold memory safety. When you have a reason to use
-`unsafe` code, you can do so, and having the explicit `unsafe` annotation makes
-it easier to track down the source of problems when they occur. Whenever you
-write unsafe code, you can use Miri to help you be more confident that the code
-you have written upholds Rust’s rules.
+Abhi discuss ki gayi paanch superpowers mein se kisi ek ko use karne ke liye `unsafe` use karna ghalat nahi hai aur na hi isay na-pasand kiya jata hai, lekin `unsafe` code ko correctly implement karna zyada tricky hota hai kyun ke compiler memory safety ko uphold karne mein madad nahi kar sakta. Jab aapke paas `unsafe` code use karne ki koi wajah ho, to aap isay use kar sakte hain, aur explicit `unsafe` annotation hone ki wajah se jab problems occur hon to unke source ko track down karna aasaan ho jata hai. Jab bhi aap unsafe code likhein, aap Miri ko use karke is baat par zyada confident ho sakte hain ke aapka likha hua code Rust ke rules ko uphold karta hai.
 
-For a much deeper exploration of how to work effectively with unsafe Rust, read
-Rust’s official guide for `unsafe`, [The Rustonomicon][nomicon].
+Unsafe Rust ke saath effectively kaam karne ki bohat zyada detailed exploration ke liye, `unsafe` ke liye Rust ki official guide, [The Rustonomicon][nomicon], parhein.
 
 [dangling-references]: ch04-02-references-and-borrowing.html#dangling-references
 [ABI]: ../reference/items/external-blocks.html#abi

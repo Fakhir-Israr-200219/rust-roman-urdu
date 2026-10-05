@@ -1,34 +1,34 @@
 ## Advanced Traits
 
-We first covered traits in the [“Defining Shared Behavior with
-Traits”][traits]<!-- ignore --> section in Chapter 10, but we didn’t discuss
-the more advanced details. Now that you know more about Rust, we can get into
-the nitty-gritty.
+Humne sab se pehle Chapter 10 ke [“Defining Shared Behavior with
+Traits”][traits]<!-- ignore --> section mein traits cover kiye thay, lekin humne
+un ki zyada advanced details discuss nahi ki thin. Ab jab aap Rust ke bare mein
+zyada jaante hain, hum in ki bareek details mein ja sakte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="specifying-placeholder-types-in-trait-definitions-with-associated-types"></a>
-<a id="associated-types"></a>
+<a id="specifying-placeholder-types-in-trait-definitions-with-associated-types"></a> <a id="associated-types"></a>
 
 ### Defining Traits with Associated Types
 
-_Associated types_ connect a type placeholder with a trait such that the trait
-method definitions can use these placeholder types in their signatures. The
-implementor of a trait will specify the concrete type to be used instead of the
-placeholder type for the particular implementation. That way, we can define a
-trait that uses some types without needing to know exactly what those types are
-until the trait is implemented.
+*Associated types* ek type placeholder ko ek trait ke saath connect karte hain,
+taa-ke trait method definitions apni signatures mein in placeholder types ko
+use kar saken. Trait ka implementor particular implementation ke liye
+placeholder type ki jagah use hone wali concrete type specify karega. Is tarah,
+hum ek aisa trait define kar sakte hain jo kuch types ko use karta ho, baghair
+yeh jaane ke ke woh types exactly kya hain, jab tak trait implement na ho.
 
-We’ve described most of the advanced features in this chapter as being rarely
-needed. Associated types are somewhere in the middle: They’re used more rarely
-than features explained in the rest of the book but more commonly than many of
-the other features discussed in this chapter.
+Humne is chapter mein zyada tar advanced features ko aise features ke taur par
+describe kiya hai jin ki rarely zaroorat hoti hai. Associated types kahin beech
+mein hain: Yeh book ke baqi hisson mein explain kiye gaye features ke muqable
+mein kam use hote hain, lekin is chapter mein discuss kiye gaye kai doosre
+features ke muqable mein zyada commonly use hote hain.
 
-One example of a trait with an associated type is the `Iterator` trait that the
-standard library provides. The associated type is named `Item` and stands in
-for the type of the values the type implementing the `Iterator` trait is
-iterating over. The definition of the `Iterator` trait is as shown in Listing
-20-13.
+Associated type wale trait ki ek example standard library ka diya hua
+`Iterator` trait hai. Associated type ka naam `Item` hai aur yeh un values ki
+type ke liye stand in karta hai jin par `Iterator` trait implement karne wali
+type iterate kar rahi hoti hai. `Iterator` trait ki definition Listing 20-13 mein
+dikhayi gayi hai.
 
 <Listing number="20-13" caption="The definition of the `Iterator` trait that has an associated type `Item`">
 
@@ -38,16 +38,16 @@ iterating over. The definition of the `Iterator` trait is as shown in Listing
 
 </Listing>
 
-The type `Item` is a placeholder, and the `next` method’s definition shows that
-it will return values of type `Option<Self::Item>`. Implementors of the
-`Iterator` trait will specify the concrete type for `Item`, and the `next`
-method will return an `Option` containing a value of that concrete type.
+Type `Item` ek placeholder hai, aur `next` method ki definition dikhati hai ke
+yeh `Option<Self::Item>` type ki values return karega. `Iterator` trait ke
+implementors `Item` ke liye concrete type specify karenge, aur `next` method
+ek `Option` return karega jismein us concrete type ki value hogi.
 
-Associated types might seem like a similar concept to generics, in that the
-latter allow us to define a function without specifying what types it can
-handle. To examine the difference between the two concepts, we’ll look at an
-implementation of the `Iterator` trait on a type named `Counter` that specifies
-the `Item` type is `u32`:
+Associated types ka concept generics ke similar lag sakta hai, kyun ke generics
+humein yeh specify kiye baghair function define karne dete hain ke woh kin
+types ko handle kar sakta hai. Dono concepts ke darmiyan difference ko examine
+karne ke liye, hum `Counter` naam ki type par `Iterator` trait ki ek
+implementation dekhenge jo specify karti hai ke `Item` type `u32` hai:
 
 <Listing file-name="src/lib.rs">
 
@@ -57,8 +57,9 @@ the `Item` type is `u32`:
 
 </Listing>
 
-This syntax seems comparable to that of generics. So, why not just define the
-`Iterator` trait with generics, as shown in Listing 20-14?
+Yeh syntax generics ke syntax ke comparable lagti hai. To phir, hum `Iterator`
+trait ko generics ke saath kyun na define karein, jaisa ke Listing 20-14 mein
+dikhaya gaya hai?
 
 <Listing number="20-14" caption="A hypothetical definition of the `Iterator` trait using generics">
 
@@ -68,26 +69,30 @@ This syntax seems comparable to that of generics. So, why not just define the
 
 </Listing>
 
-The difference is that when using generics, as in Listing 20-14, we must
-annotate the types in each implementation; because we can also implement
-`Iterator<String> for Counter` or any other type, we could have multiple
-implementations of `Iterator` for `Counter`. In other words, when a trait has a
-generic parameter, it can be implemented for a type multiple times, changing
-the concrete types of the generic type parameters each time. When we use the
-`next` method on `Counter`, we would have to provide type annotations to
-indicate which implementation of `Iterator` we want to use.
+Difference yeh hai ke jab hum generics use karte hain, jaisa ke Listing 20-14
+mein hai, to humein har implementation mein types ko annotate karna padta hai;
+kyun ke hum `Iterator<String> for Counter` ya kisi bhi doosri type ko bhi
+implement kar sakte hain, is liye hamare paas `Counter` ke liye `Iterator` ki
+multiple implementations ho sakti hain. Doosre alfaaz mein, jab kisi trait mein
+generic parameter hota hai, to usay ek type ke liye multiple times implement
+kiya ja sakta hai, aur har baar generic type parameters ki concrete types ko
+change kiya ja sakta hai. Jab hum `Counter` par `next` method use karenge, to
+humein type annotations provide karni hongi taa-ke indicate kar saken ke hum
+`Iterator` ki kis implementation ko use karna chahte hain.
 
-With associated types, we don’t need to annotate types, because we can’t
-implement a trait on a type multiple times. In Listing 20-13 with the
-definition that uses associated types, we can choose what the type of `Item`
-will be only once because there can be only one `impl Iterator for Counter`. We
-don’t have to specify that we want an iterator of `u32` values everywhere we
-call `next` on `Counter`.
+Associated types ke saath, humein types ko annotate karne ki zaroorat nahi hoti,
+kyun ke hum kisi trait ko ek type par multiple times implement nahi kar sakte.
+Listing 20-13 mein associated types use karne wali definition ke saath, hum
+sirf ek baar choose kar sakte hain ke `Item` ki type kya hogi, kyun ke sirf ek
+`impl Iterator for Counter` ho sakta hai. Jab bhi hum `Counter` par `next`
+call karte hain, humein har jagah yeh specify karne ki zaroorat nahi hoti ke hum
+`u32` values ka iterator chahte hain.
 
-Associated types also become part of the trait’s contract: Implementors of the
-trait must provide a type to stand in for the associated type placeholder.
-Associated types often have a name that describes how the type will be used,
-and documenting the associated type in the API documentation is a good practice.
+Associated types trait ke contract ka bhi hissa ban jate hain: Trait ke
+implementors ko associated type placeholder ki jagah ek type provide karni
+hoti hai. Associated types ka naam aksar is baat ko describe karta hai ke type
+ko kaise use kiya jayega, aur API documentation mein associated type ko
+document karna ek achhi practice hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -95,37 +100,39 @@ and documenting the associated type in the API documentation is a good practice.
 
 ### Using Default Generic Parameters and Operator Overloading
 
-When we use generic type parameters, we can specify a default concrete type for
-the generic type. This eliminates the need for implementors of the trait to
-specify a concrete type if the default type works. You specify a default type
-when declaring a generic type with the `<PlaceholderType=ConcreteType>` syntax.
+Jab hum generic type parameters use karte hain, to hum generic type ke liye ek
+default concrete type specify kar sakte hain. Is se trait ke implementors ke
+liye concrete type specify karne ki zaroorat khatam ho jati hai agar default
+type kaam karti ho. Aap generic type declare karte waqt
+`<PlaceholderType=ConcreteType>` syntax ke zariye default type specify karte
+hain.
 
-A great example of a situation where this technique is useful is with _operator
-overloading_, in which you customize the behavior of an operator (such as `+`)
-in particular situations.
+Ek great example jahan yeh technique useful hai *operator overloading* mein,
+jismein aap particular situations mein kisi operator (jaise `+`) ke behavior ko
+customize karte hain.
 
-Rust doesn’t allow you to create your own operators or overload arbitrary
-operators. But you can overload the operations and corresponding traits listed
-in `std::ops` by implementing the traits associated with the operator. For
-example, in Listing 20-15, we overload the `+` operator to add two `Point`
-instances together. We do this by implementing the `Add` trait on a `Point`
-struct.
+Rust aapko apne operators create karne ya arbitrary operators ko overload karne
+ki ijazat nahi deta. Lekin aap `std::ops` mein listed operations aur unke
+corresponding traits ko operator se associated traits implement karke overload
+kar sakte hain. Misal ke taur par, Listing 20-15 mein hum `+` operator ko
+overload karte hain taa-ke do `Point` instances ko ek saath add kar saken. Hum
+yeh `Point` struct par `Add` trait implement karke karte hain.
 
 <Listing number="20-15" file-name="src/main.rs" caption="Implementing the `Add` trait to overload the `+` operator for `Point` instances">
 
-```rust
+```rust id="p2s6da"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-15/src/main.rs}}
 ```
 
 </Listing>
 
-The `add` method adds the `x` values of two `Point` instances and the `y`
-values of two `Point` instances to create a new `Point`. The `Add` trait has an
-associated type named `Output` that determines the type returned from the `add`
-method.
+`add` method do `Point` instances ki `x` values aur do `Point` instances ki
+`y` values ko add karke ek naya `Point` create karta hai. `Add` trait mein
+`Output` naam ka ek associated type hai jo `add` method se return hone wali type
+ko determine karta hai.
 
-The default generic type in this code is within the `Add` trait. Here is its
-definition:
+Is code mein default generic type `Add` trait ke andar hai. Yeh uski definition
+hai:
 
 ```rust
 trait Add<Rhs=Self> {
@@ -135,210 +142,166 @@ trait Add<Rhs=Self> {
 }
 ```
 
-This code should look generally familiar: a trait with one method and an
-associated type. The new part is `Rhs=Self`: This syntax is called _default
-type parameters_. The `Rhs` generic type parameter (short for “right-hand
-side”) defines the type of the `rhs` parameter in the `add` method. If we don’t
-specify a concrete type for `Rhs` when we implement the `Add` trait, the type
-of `Rhs` will default to `Self`, which will be the type we’re implementing
-`Add` on.
+Yeh code generally familiar lagna chahiye: ek method aur ek associated type wala
+trait. Naya hissa `Rhs=Self` hai: Is syntax ko *default type parameters* kaha
+jata hai. `Rhs` generic type parameter (jo “right-hand side” ka short form hai)
+`add` method mein `rhs` parameter ki type define karta hai. Agar hum `Add` trait
+implement karte waqt `Rhs` ke liye concrete type specify nahi karte, to `Rhs`
+ki type default taur par `Self` ho jayegi, jo woh type hogi jis par hum `Add`
+implement kar rahe hain.
 
-When we implemented `Add` for `Point`, we used the default for `Rhs` because we
-wanted to add two `Point` instances. Let’s look at an example of implementing
-the `Add` trait where we want to customize the `Rhs` type rather than using the
-default.
+Jab humne `Point` ke liye `Add` implement kiya, to humne `Rhs` ka default use
+kiya kyun ke hum do `Point` instances ko add karna chahte thay. Ab ek aisi
+example dekhte hain jahan hum `Add` trait ko implement karte waqt default use
+karne ke bajaye `Rhs` type ko customize karna chahte hain.
 
-We have two structs, `Millimeters` and `Meters`, holding values in different
-units. This thin wrapping of an existing type in another struct is known as the
-_newtype pattern_, which we describe in more detail in the [“Implementing
-External Traits with the Newtype Pattern”][newtype]<!-- ignore --> section. We
-want to add values in millimeters to values in meters and have the
-implementation of `Add` do the conversion correctly. We can implement `Add` for
-`Millimeters` with `Meters` as the `Rhs`, as shown in Listing 20-16.
+Hamare paas do structs, `Millimeters` aur `Meters`, hain jo different units mein
+values hold karte hain. Kisi existing type ko doosre struct mein is tarah thin
+wrapping karna *newtype pattern* kehlata hai, jise hum [“Implementing
+External Traits with the Newtype Pattern”][newtype]<!-- ignore --> section mein
+mazeed detail mein describe karte hain. Hum millimeters mein values ko meters
+mein values ke saath add karna chahte hain aur chahte hain ke `Add` ki
+implementation conversion correctly kare. Hum `Millimeters` ke liye `Add` ko
+`Meters` ko `Rhs` ke taur par use karke implement kar sakte hain, jaisa ke
+Listing 20-16 mein dikhaya gaya hai.
 
 <Listing number="20-16" file-name="src/lib.rs" caption="Implementing the `Add` trait on `Millimeters` to add `Millimeters` and `Meters`">
 
-```rust,noplayground
+```rust,noplayground id="y9k2cn"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-16/src/lib.rs}}
 ```
 
 </Listing>
 
-To add `Millimeters` and `Meters`, we specify `impl Add<Meters>` to set the
-value of the `Rhs` type parameter instead of using the default of `Self`.
+`Millimeters` aur `Meters` ko add karne ke liye, hum `Rhs` type parameter ki
+value ko `Self` ke default ke bajaye set karne ke liye `impl Add<Meters>`
+specify karte hain.
 
-You’ll use default type parameters in two main ways:
+Aap default type parameters ko do main tareeqon se use karenge:
 
-1. To extend a type without breaking existing code
-2. To allow customization in specific cases most users won’t need
+1. Kisi type ko existing code ko break kiye baghair extend karna
+2. Specific cases mein customization allow karna jis ki zyada tar users ko zaroorat nahi hogi
 
-The standard library’s `Add` trait is an example of the second purpose:
-Usually, you’ll add two like types, but the `Add` trait provides the ability to
-customize beyond that. Using a default type parameter in the `Add` trait
-definition means you don’t have to specify the extra parameter most of the
-time. In other words, a bit of implementation boilerplate isn’t needed, making
-it easier to use the trait.
+Standard library ka `Add` trait doosre purpose ki ek example hai:
+Aam taur par, aap same types ko add karenge, lekin `Add` trait is se aage
+customize karne ki ability provide karta hai. `Add` trait ki definition mein
+default type parameter use karne ka matlab hai ke zyada tar waqt aapko extra
+parameter specify karne ki zaroorat nahi hoti. Doosre alfaaz mein, thori si
+implementation boilerplate ki zaroorat nahi hoti, jis se trait ko use karna
+aasaan ho jata hai.
 
-The first purpose is similar to the second but in reverse: If you want to add a
-type parameter to an existing trait, you can give it a default to allow
-extension of the functionality of the trait without breaking the existing
-implementation code.
+Pehla purpose doosre ke similar hai lekin ulta: Agar aap kisi existing trait mein
+ek type parameter add karna chahte hain, to aap usay ek default de sakte hain
+taa-ke existing implementation code ko break kiye baghair trait ki
+functionality ko extend kiya ja sake.
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name"></a>
-<a id="disambiguating-between-methods-with-the-same-name"></a>
+<a id="fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name"></a> <a id="disambiguating-between-methods-with-the-same-name"></a>
 
 ### Disambiguating Between Identically Named Methods
 
-Nothing in Rust prevents a trait from having a method with the same name as
-another trait’s method, nor does Rust prevent you from implementing both traits
-on one type. It’s also possible to implement a method directly on the type with
-the same name as methods from traits.
+Rust mein koi cheez kisi trait ko doosre trait ke method ke same name wala method rakhne se nahi rokti, aur na hi Rust aapko ek hi type par dono traits implement karne se rokta hai. Kisi type par directly bhi aisa method implement karna possible hai jiska name traits ke methods ke same ho.
 
-When calling methods with the same name, you’ll need to tell Rust which one you
-want to use. Consider the code in Listing 20-17 where we’ve defined two traits,
-`Pilot` and `Wizard`, that both have a method called `fly`. We then implement
-both traits on a type `Human` that already has a method named `fly` implemented
-on it. Each `fly` method does something different.
+Jab same name wale methods ko call kiya jaye, to aapko Rust ko batana hoga ke aap in mein se kis method ko use karna chahte hain. Listing 20-17 ke code par ghour karein jahan humne do traits, `Pilot` aur `Wizard`, define kiye hain, jin dono mein `fly` naam ka method hai. Phir hum dono traits ko ek `Human` type par implement karte hain jismein pehle se `fly` naam ka method directly implement kiya gaya hai. Har `fly` method kuch different karta hai.
 
 <Listing number="20-17" file-name="src/main.rs" caption="Two traits are defined to have a `fly` method and are implemented on the `Human` type, and a `fly` method is implemented on `Human` directly.">
 
-```rust
+```rust id="v8y5k1"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-17/src/main.rs:here}}
 ```
 
 </Listing>
 
-When we call `fly` on an instance of `Human`, the compiler defaults to calling
-the method that is directly implemented on the type, as shown in Listing 20-18.
+Jab hum `Human` ke ek instance par `fly` call karte hain, to compiler default taur par us method ko call karta hai jo directly type par implement kiya gaya hai, jaisa ke Listing 20-18 mein dikhaya gaya hai.
 
 <Listing number="20-18" file-name="src/main.rs" caption="Calling `fly` on an instance of `Human`">
 
-```rust
+```rust id="j3q7nc"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-18/src/main.rs:here}}
 ```
 
 </Listing>
 
-Running this code will print `*waving arms furiously*`, showing that Rust
-called the `fly` method implemented on `Human` directly.
+Is code ko run karne se `*waving arms furiously*` print hoga, jo dikhata hai ke Rust ne `Human` par directly implement kiye gaye `fly` method ko call kiya.
 
-To call the `fly` methods from either the `Pilot` trait or the `Wizard` trait,
-we need to use more explicit syntax to specify which `fly` method we mean.
-Listing 20-19 demonstrates this syntax.
+`Pilot` trait ya `Wizard` trait ke `fly` methods ko call karne ke liye, humein zyada explicit syntax use karni hogi taa-ke specify kar saken ke hum kis `fly` method ki baat kar rahe hain. Listing 20-19 is syntax ko demonstrate karti hai.
 
 <Listing number="20-19" file-name="src/main.rs" caption="Specifying which trait’s `fly` method we want to call">
 
-```rust
+```rust id="z6w2mp"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-19/src/main.rs:here}}
 ```
 
 </Listing>
 
-Specifying the trait name before the method name clarifies to Rust which
-implementation of `fly` we want to call. We could also write
-`Human::fly(&person)`, which is equivalent to the `person.fly()` that we used
-in Listing 20-19, but this is a bit longer to write if we don’t need to
-disambiguate.
+Method name se pehle trait name specify karne se Rust ke liye yeh clear ho jata hai ke hum `fly` ki kis implementation ko call karna chahte hain. Hum `Human::fly(&person)` bhi likh sakte hain, jo us `person.fly()` ke equivalent hai jo humne Listing 20-19 mein use kiya tha, lekin agar humein disambiguate karne ki zaroorat na ho to yeh likhne mein thora zyada lamba hai.
 
-Running this code prints the following:
+Is code ko run karne se yeh output print hoga:
 
-```console
+```console id="4f8m1x"
 {{#include ../listings/ch20-advanced-features/listing-20-19/output.txt}}
 ```
 
-Because the `fly` method takes a `self` parameter, if we had two _types_ that
-both implement one _trait_, Rust could figure out which implementation of a
-trait to use based on the type of `self`.
+Kyun ke `fly` method `self` parameter leta hai, agar hamare paas do *types* hon jo dono ek *trait* ko implement karte hon, to Rust `self` ki type ki bunyaad par yeh pata laga sakta hai ke trait ki kis implementation ko use karna hai.
 
-However, associated functions that are not methods don’t have a `self`
-parameter. When there are multiple types or traits that define non-method
-functions with the same function name, Rust doesn’t always know which type you
-mean unless you use fully qualified syntax. For example, in Listing 20-20, we
-create a trait for an animal shelter that wants to name all baby dogs Spot. We
-make an `Animal` trait with an associated non-method function `baby_name`. The
-`Animal` trait is implemented for the struct `Dog`, on which we also provide an
-associated non-method function `baby_name` directly.
+Lekin associated functions jo methods nahi hain unke paas `self` parameter nahi hota. Jab multiple types ya traits non-method functions ko same function name ke saath define karte hain, to Rust hamesha yeh nahi jaan pata ke aap kis type ki baat kar rahe hain jab tak aap fully qualified syntax use na karein. Misal ke taur par, Listing 20-20 mein hum ek animal shelter ke liye ek trait create karte hain jo tamam baby dogs ka naam Spot rakhna chahta hai. Hum `Animal` trait banate hain jismein `baby_name` naam ka ek associated non-method function hai. `Animal` trait ko `Dog` struct ke liye implement kiya gaya hai, aur hum `Dog` par directly bhi ek associated non-method function `baby_name` provide karte hain.
 
 <Listing number="20-20" file-name="src/main.rs" caption="A trait with an associated function and a type with an associated function of the same name that also implements the trait">
 
-```rust
+```rust id="r1m6tb"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-20/src/main.rs}}
 ```
 
 </Listing>
 
-We implement the code for naming all puppies Spot in the `baby_name` associated
-function that is defined on `Dog`. The `Dog` type also implements the trait
-`Animal`, which describes characteristics that all animals have. Baby dogs are
-called puppies, and that is expressed in the implementation of the `Animal`
-trait on `Dog` in the `baby_name` function associated with the `Animal` trait.
+Hum `Dog` par define kiye gaye `baby_name` associated function mein tamam puppies ka naam Spot rakhne wala code implement karte hain. `Dog` type `Animal` trait ko bhi implement karta hai, jo un characteristics ko describe karta hai jo tamam animals mein hoti hain. Baby dogs ko puppies kaha jata hai, aur yeh baat `Dog` par `Animal` trait ki implementation mein `Animal` trait se associated `baby_name` function ke andar express ki gayi hai.
 
-In `main`, we call the `Dog::baby_name` function, which calls the associated
-function defined on `Dog` directly. This code prints the following:
+`main` mein, hum `Dog::baby_name` function call karte hain, jo directly `Dog` par defined associated function ko call karta hai. Yeh code yeh output print karta hai:
 
-```console
+```console id="k9x4wd"
 {{#include ../listings/ch20-advanced-features/listing-20-20/output.txt}}
 ```
 
-This output isn’t what we wanted. We want to call the `baby_name` function that
-is part of the `Animal` trait that we implemented on `Dog` so that the code
-prints `A baby dog is called a puppy`. The technique of specifying the trait
-name that we used in Listing 20-19 doesn’t help here; if we change `main` to
-the code in Listing 20-21, we’ll get a compilation error.
+Yeh output woh nahi hai jo hum chahte thay. Hum `Animal` trait ka woh `baby_name` function call karna chahte hain jo humne `Dog` par implement kiya hai taa-ke code `A baby dog is called a puppy` print kare. Listing 20-19 mein jo trait name specify karne ki technique humne use ki thi, woh yahan madad nahi karti; agar hum `main` ko Listing 20-21 ke code mein change karein, to humein compilation error milega.
 
 <Listing number="20-21" file-name="src/main.rs" caption="Attempting to call the `baby_name` function from the `Animal` trait, but Rust doesn’t know which implementation to use">
 
-```rust,ignore,does_not_compile
+```rust,ignore,does_not_compile id="p0c7vn"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-21/src/main.rs:here}}
 ```
 
 </Listing>
 
-Because `Animal::baby_name` doesn’t have a `self` parameter, and there could be
-other types that implement the `Animal` trait, Rust can’t figure out which
-implementation of `Animal::baby_name` we want. We’ll get this compiler error:
+Kyun ke `Animal::baby_name` mein `self` parameter nahi hai, aur aisi doosri types bhi ho sakti hain jo `Animal` trait ko implement karti hon, Rust yeh figure out nahi kar sakta ke hum `Animal::baby_name` ki kis implementation ko chahte hain. Humein yeh compiler error milega:
 
-```console
+```console id="b5n2qh"
 {{#include ../listings/ch20-advanced-features/listing-20-21/output.txt}}
 ```
 
-To disambiguate and tell Rust that we want to use the implementation of
-`Animal` for `Dog` as opposed to the implementation of `Animal` for some other
-type, we need to use fully qualified syntax. Listing 20-22 demonstrates how to
-use fully qualified syntax.
+Disambiguate karne aur Rust ko yeh batane ke liye ke hum `Dog` ke liye `Animal` ki implementation use karna chahte hain, na ke kisi doosri type ke liye `Animal` ki implementation, humein fully qualified syntax use karni hogi. Listing 20-22 demonstrate karti hai ke fully qualified syntax ko kaise use kiya jata hai.
 
 <Listing number="20-22" file-name="src/main.rs" caption="Using fully qualified syntax to specify that we want to call the `baby_name` function from the `Animal` trait as implemented on `Dog`">
 
-```rust
+```rust id="s7h3qe"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-22/src/main.rs:here}}
 ```
 
 </Listing>
 
-We’re providing Rust with a type annotation within the angle brackets, which
-indicates we want to call the `baby_name` method from the `Animal` trait as
-implemented on `Dog` by saying that we want to treat the `Dog` type as an
-`Animal` for this function call. This code will now print what we want:
+Hum angle brackets ke andar Rust ko ek type annotation provide kar rahe hain, jo indicate karti hai ke hum `Dog` par implement kiye gaye `Animal` trait ke `baby_name` method ko call karna chahte hain, yeh keh kar ke hum is function call ke liye `Dog` type ko `Animal` ke taur par treat karna chahte hain. Ab yeh code woh print karega jo hum chahte hain:
 
-```console
+```console id="w2d6sf"
 {{#include ../listings/ch20-advanced-features/listing-20-22/output.txt}}
 ```
 
-In general, fully qualified syntax is defined as follows:
+Generally, fully qualified syntax is tarah define hoti hai:
 
-```rust,ignore
+```rust,ignore id="m4q8jc"
 <Type as Trait>::function(receiver_if_method, next_arg, ...);
 ```
 
-For associated functions that aren’t methods, there would not be a `receiver`:
-There would only be the list of other arguments. You could use fully qualified
-syntax everywhere that you call functions or methods. However, you’re allowed
-to omit any part of this syntax that Rust can figure out from other information
-in the program. You only need to use this more verbose syntax in cases where
-there are multiple implementations that use the same name and Rust needs help
-to identify which implementation you want to call.
+Associated functions ke liye jo methods nahi hain, koi `receiver` nahi hoga: Sirf doosre arguments ki list hogi. Aap fully qualified syntax ko har jagah use kar sakte hain jahan aap functions ya methods call karte hain. Lekin aapko is syntax ka koi bhi hissa omit karne ki ijazat hai jise Rust program ki doosri information se khud figure out kar sakta ho. Aapko sirf un cases mein is zyada verbose syntax ko use karne ki zaroorat hoti hai jahan multiple implementations same name use karti hain aur Rust ko yeh identify karne mein madad chahiye hoti hai ke aap kis implementation ko call karna chahte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -346,18 +309,20 @@ to identify which implementation you want to call.
 
 ### Using Supertraits
 
-Sometimes you might write a trait definition that depends on another trait: For
-a type to implement the first trait, you want to require that type to also
-implement the second trait. You would do this so that your trait definition can
-make use of the associated items of the second trait. The trait your trait
-definition is relying on is called a _supertrait_ of your trait.
+Kabhi kabhi aap aisi trait definition likhenge jo kisi doosre trait par depend karti
+hai: Kisi type ko pehle trait ko implement karne ke liye, aap chahte hain ke woh
+type doosre trait ko bhi implement kare. Aap aisa is liye karenge taa-ke aapki
+trait definition doosre trait ke associated items ko use kar sake. Jis trait par
+aapki trait definition depend kar rahi hoti hai, usay aapke trait ka
+*supertrait* kaha jata hai.
 
-For example, let’s say we want to make an `OutlinePrint` trait with an
-`outline_print` method that will print a given value formatted so that it’s
-framed in asterisks. That is, given a `Point` struct that implements the
-standard library trait `Display` to result in `(x, y)`, when we call
-`outline_print` on a `Point` instance that has `1` for `x` and `3` for `y`, it
-should print the following:
+Misal ke taur par, maan lein ke hum `OutlinePrint` trait banana chahte hain
+jismein ek `outline_print` method hoga jo di gayi value ko is tarah formatted
+print karega ke woh asterisks ke frame mein ho. Yani, agar hamare paas ek
+`Point` struct hai jo standard library ke `Display` trait ko implement karta hai
+taa-ke result `(x, y)` ki form mein aaye, to jab hum `Point` ke aise instance par
+`outline_print` call karein jismein `x` ke liye `1` aur `y` ke liye `3` ho, to
+usay yeh print karna chahiye:
 
 ```text
 **********
@@ -367,13 +332,14 @@ should print the following:
 **********
 ```
 
-In the implementation of the `outline_print` method, we want to use the
-`Display` trait’s functionality. Therefore, we need to specify that the
-`OutlinePrint` trait will work only for types that also implement `Display` and
-provide the functionality that `OutlinePrint` needs. We can do that in the
-trait definition by specifying `OutlinePrint: Display`. This technique is
-similar to adding a trait bound to the trait. Listing 20-23 shows an
-implementation of the `OutlinePrint` trait.
+`outline_print` method ki implementation mein hum `Display` trait ki
+functionality use karna chahte hain. Is liye, humein specify karna hoga ke
+`OutlinePrint` trait sirf un types ke liye kaam karega jo `Display` ko bhi
+implement karti hon aur woh functionality provide karti hon jis ki
+`OutlinePrint` ko zaroorat hai. Hum trait definition mein `OutlinePrint: Display`
+specify karke aisa kar sakte hain. Yeh technique trait mein trait bound add
+karne ke similar hai. Listing 20-23 `OutlinePrint` trait ki implementation
+dikhati hai.
 
 <Listing number="20-23" file-name="src/main.rs" caption="Implementing the `OutlinePrint` trait that requires the functionality from `Display`">
 
@@ -383,15 +349,16 @@ implementation of the `OutlinePrint` trait.
 
 </Listing>
 
-Because we’ve specified that `OutlinePrint` requires the `Display` trait, we
-can use the `to_string` function that is automatically implemented for any type
-that implements `Display`. If we tried to use `to_string` without adding a
-colon and specifying the `Display` trait after the trait name, we’d get an
-error saying that no method named `to_string` was found for the type `&Self` in
-the current scope.
+Kyun ke humne specify kiya hai ke `OutlinePrint` ko `Display` trait ki zaroorat
+hai, hum `to_string` function use kar sakte hain jo `Display` implement karne
+wali har type ke liye automatically implement hota hai. Agar hum trait name ke
+baad colon add karke `Display` trait specify kiye baghair `to_string` use karne
+ki koshish karte, to humein ek error milta jo kehta ke current scope mein type
+`&Self` ke liye `to_string` naam ka koi method nahi mila.
 
-Let’s see what happens when we try to implement `OutlinePrint` on a type that
-doesn’t implement `Display`, such as the `Point` struct:
+Ab dekhte hain ke jab hum `OutlinePrint` ko aisi type par implement karne ki
+koshish karte hain jo `Display` implement nahi karti, jaise `Point` struct, to
+kya hota hai:
 
 <Listing file-name="src/main.rs">
 
@@ -401,14 +368,15 @@ doesn’t implement `Display`, such as the `Point` struct:
 
 </Listing>
 
-We get an error saying that `Display` is required but not implemented:
+Humein ek error milta hai jo kehta hai ke `Display` required hai lekin
+implement nahi kiya gaya:
 
 ```console
 {{#include ../listings/ch20-advanced-features/no-listing-02-impl-outlineprint-for-point/output.txt}}
 ```
 
-To fix this, we implement `Display` on `Point` and satisfy the constraint that
-`OutlinePrint` requires, like so:
+Isay fix karne ke liye, hum `Point` par `Display` implement karte hain aur woh
+constraint satisfy karte hain jo `OutlinePrint` require karta hai, is tarah:
 
 <Listing file-name="src/main.rs">
 
@@ -418,35 +386,36 @@ To fix this, we implement `Display` on `Point` and satisfy the constraint that
 
 </Listing>
 
-Then, implementing the `OutlinePrint` trait on `Point` will compile
-successfully, and we can call `outline_print` on a `Point` instance to display
-it within an outline of asterisks.
+Phir, `Point` par `OutlinePrint` trait ko implement karna successfully compile
+ho jayega, aur hum `Point` ke instance par `outline_print` call karke usay
+asterisks ke outline ke andar display kar sakte hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
-<a id="using-the-newtype-pattern-to-implement-external-traits-on-external-types"></a>
-<a id="using-the-newtype-pattern-to-implement-external-traits"></a>
+<a id="using-the-newtype-pattern-to-implement-external-traits-on-external-types"></a> <a id="using-the-newtype-pattern-to-implement-external-traits"></a>
 
 ### Implementing External Traits with the Newtype Pattern
 
-In the [“Implementing a Trait on a Type”][implementing-a-trait-on-a-type]<!--
-ignore --> section in Chapter 10, we mentioned the orphan rule that states
-we’re only allowed to implement a trait on a type if either the trait or the
-type, or both, are local to our crate. It’s possible to get around this
-restriction using the newtype pattern, which involves creating a new type in a
-tuple struct. (We covered tuple structs in the [“Creating Different Types with
-Tuple Structs”][tuple-structs]<!-- ignore --> section in Chapter 5.) The tuple
-struct will have one field and be a thin wrapper around the type for which we
-want to implement a trait. Then, the wrapper type is local to our crate, and we
-can implement the trait on the wrapper. _Newtype_ is a term that originates
-from the Haskell programming language. There is no runtime performance penalty
-for using this pattern, and the wrapper type is elided at compile time.
+Chapter 10 ke [“Implementing a Trait on a Type”][implementing-a-trait-on-a-type]<!--
+ignore --> section mein humne orphan rule ka zikr kiya tha, jo kehta hai
+ke hum kisi type par sirf us waqt trait implement kar sakte hain jab ya to
+trait ya type, ya dono, hamare crate ke local hon. Is restriction ko newtype
+pattern use karke bypass karna mumkin hai, jismein ek tuple struct mein ek
+nayi type create ki jati hai. (Humne Chapter 5 ke [“Creating Different Types with
+Tuple Structs”][tuple-structs]<!-- ignore --> section mein tuple structs cover
+kiye thay.) Tuple struct mein ek field hogi aur yeh us type ke around ek thin
+wrapper hogi jis par hum trait implement karna chahte hain. Phir, wrapper type
+hamare crate ke liye local hoti hai, aur hum wrapper par trait implement kar
+sakte hain. *Newtype* ek term hai jo Haskell programming language se originate
+hui hai. Is pattern ko use karne par runtime performance mein koi penalty nahi
+hoti, aur wrapper type compile time par elide kar di jati hai.
 
-As an example, let’s say we want to implement `Display` on `Vec<T>`, which the
-orphan rule prevents us from doing directly because the `Display` trait and the
-`Vec<T>` type are defined outside our crate. We can make a `Wrapper` struct
-that holds an instance of `Vec<T>`; then, we can implement `Display` on
-`Wrapper` and use the `Vec<T>` value, as shown in Listing 20-24.
+Misal ke taur par, maan lein ke hum `Vec<T>` par `Display` implement karna
+chahte hain, lekin orphan rule humein seedha aisa karne se rokta hai kyun ke
+`Display` trait aur `Vec<T>` type dono hamare crate ke bahar defined hain.
+Hum ek `Wrapper` struct bana sakte hain jo `Vec<T>` ka ek instance hold kare;
+phir, hum `Wrapper` par `Display` implement kar sakte hain aur `Vec<T>` value
+ko use kar sakte hain, jaisa ke Listing 20-24 mein dikhaya gaya hai.
 
 <Listing number="20-24" file-name="src/main.rs" caption="Creating a `Wrapper` type around `Vec<String>` to implement `Display`">
 
@@ -456,24 +425,27 @@ that holds an instance of `Vec<T>`; then, we can implement `Display` on
 
 </Listing>
 
-The implementation of `Display` uses `self.0` to access the inner `Vec<T>`
-because `Wrapper` is a tuple struct and `Vec<T>` is the item at index 0 in the
-tuple. Then, we can use the functionality of the `Display` trait on `Wrapper`.
+`Display` ki implementation inner `Vec<T>` ko access karne ke liye `self.0`
+use karti hai kyun ke `Wrapper` ek tuple struct hai aur `Vec<T>` tuple mein
+index 0 par item hai. Phir, hum `Wrapper` par `Display` trait ki functionality
+use kar sakte hain.
 
-The downside of using this technique is that `Wrapper` is a new type, so it
-doesn’t have the methods of the value it’s holding. We would have to implement
-all the methods of `Vec<T>` directly on `Wrapper` such that the methods
-delegate to `self.0`, which would allow us to treat `Wrapper` exactly like a
-`Vec<T>`. If we wanted the new type to have every method the inner type has,
-implementing the `Deref` trait on the `Wrapper` to return the inner type would
-be a solution (we discussed implementing the `Deref` trait in the [“Treating
+Is technique ka downside yeh hai ke `Wrapper` ek new type hai, is liye is ke
+paas us value ke methods nahi hote jise yeh hold kar rahi hai. Humein
+`Vec<T>` ke tamam methods directly `Wrapper` par implement karne padenge taa-ke
+woh methods `self.0` ko delegate karein, jo humein `Wrapper` ko bilkul
+`Vec<T>` ki tarah treat karne ki ijazat dega. Agar hum chahte ke new type ke
+paas inner type ka har method ho, to `Wrapper` par `Deref` trait implement karna
+ek solution hota jo inner type return kare (humne Chapter 15 ke [“Treating
 Smart Pointers Like Regular References”][smart-pointer-deref]<!-- ignore -->
-section in Chapter 15). If we didn’t want the `Wrapper` type to have all the
-methods of the inner type—for example, to restrict the `Wrapper` type’s
-behavior—we would have to implement just the methods we do want manually.
+section mein `Deref` trait ko implement karne par discussion ki thi). Agar hum
+nahi chahte ke `Wrapper` type ke paas inner type ke tamam methods hon—misal ke
+taur par, `Wrapper` type ke behavior ko restrict karna ho—to humein sirf woh
+methods manually implement karne padenge jo hum chahte hain.
 
-This newtype pattern is also useful even when traits are not involved. Let’s
-switch focus and look at some advanced ways to interact with Rust’s type system.
+Yeh newtype pattern tab bhi useful hai jab traits involved na hon. Ab apna
+focus badalte hain aur Rust ke type system ke saath interact karne ke kuch
+advanced tareeqon ko dekhte hain.
 
 [newtype]: ch20-02-advanced-traits.html#implementing-external-traits-with-the-newtype-pattern
 [implementing-a-trait-on-a-type]: ch10-02-traits.html#implementing-a-trait-on-a-type

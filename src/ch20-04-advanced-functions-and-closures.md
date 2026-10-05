@@ -1,26 +1,27 @@
 ## Advanced Functions and Closures
 
-This section explores some advanced features related to functions and closures,
-including function pointers and returning closures.
+Yeh section functions aur closures se related kuch advanced features explore
+karta hai, jin mein function pointers aur closures return karna shamil hai.
 
 ### Function Pointers
 
-We’ve talked about how to pass closures to functions; you can also pass regular
-functions to functions! This technique is useful when you want to pass a
-function you’ve already defined rather than defining a new closure. Functions
-coerce to the type `fn` (with a lowercase _f_), not to be confused with the
-`Fn` closure trait. The `fn` type is called a _function pointer_. Passing
-functions with function pointers will allow you to use functions as arguments
-to other functions.
+Humne baat ki hai ke functions ko closures kaise pass kiye jate hain; aap
+regular functions ko bhi functions mein pass kar sakte hain! Yeh technique us
+waqt useful hoti hai jab aap koi naya closure define karne ke bajaye pehle se
+defined function pass karna chahte hain. Functions `fn` type (lowercase *f*) mein
+coerce hoti hain, isay `Fn` closure trait ke saath confuse nahi karna chahiye.
+`fn` type ko *function pointer* kaha jata hai. Functions ko function pointers
+ke saath pass karne se aap functions ko doosre functions ke arguments ke taur
+par use kar sakte hain.
 
-The syntax for specifying that a parameter is a function pointer is similar to
-that of closures, as shown in Listing 20-28, where we’ve defined a function
-`add_one` that adds 1 to its parameter. The function `do_twice` takes two
-parameters: a function pointer to any function that takes an `i32` parameter
-and returns an `i32`, and one `i32` value. The `do_twice` function calls the
-function `f` twice, passing it the `arg` value, then adds the two function call
-results together. The `main` function calls `do_twice` with the arguments
-`add_one` and `5`.
+Yeh specify karne ka syntax ke koi parameter function pointer hai, closures ke
+syntax ke similar hai, jaisa ke Listing 20-28 mein dikhaya gaya hai, jahan humne
+ek `add_one` function define kiya hai jo apne parameter mein 1 add karta hai.
+`do_twice` function do parameters leta hai: kisi bhi aise function ka function
+pointer jo `i32` parameter leta ho aur `i32` return karta ho, aur ek `i32` value.
+`do_twice` function `f` function ko do baar call karta hai, usay `arg` value
+pass karta hai, phir dono function calls ke results ko aapas mein add karta hai.
+`main` function `do_twice` ko `add_one` aur `5` arguments ke saath call karta hai.
 
 <Listing number="20-28" file-name="src/main.rs" caption="Using the `fn` type to accept a function pointer as an argument">
 
@@ -30,29 +31,34 @@ results together. The `main` function calls `do_twice` with the arguments
 
 </Listing>
 
-This code prints `The answer is: 12`. We specify that the parameter `f` in
-`do_twice` is an `fn` that takes one parameter of type `i32` and returns an
-`i32`. We can then call `f` in the body of `do_twice`. In `main`, we can pass
-the function name `add_one` as the first argument to `do_twice`.
+Yeh code `The answer is: 12` print karta hai. Hum specify karte hain ke
+`do_twice` mein parameter `f` ek `fn` hai jo `i32` type ka ek parameter leta
+hai aur `i32` return karta hai. Phir hum `do_twice` ke body mein `f` ko call
+kar sakte hain. `main` mein hum function name `add_one` ko `do_twice` ke pehle
+argument ke taur par pass kar sakte hain.
 
-Unlike closures, `fn` is a type rather than a trait, so we specify `fn` as the
-parameter type directly rather than declaring a generic type parameter with one
-of the `Fn` traits as a trait bound.
+Closures ke unlike, `fn` ek trait ke bajaye ek type hai, is liye hum `fn` ko
+directly parameter type ke taur par specify karte hain, bajaye is ke ke `Fn`
+traits mein se kisi ek ko trait bound ke taur par use karke generic type
+parameter declare karein.
 
-Function pointers implement all three of the closure traits (`Fn`, `FnMut`, and
-`FnOnce`), meaning you can always pass a function pointer as an argument for a
-function that expects a closure. It’s best to write functions using a generic
-type and one of the closure traits so that your functions can accept either
-functions or closures.
+Function pointers closure ke teeno traits (`Fn`, `FnMut`, aur `FnOnce`) ko
+implement karte hain, jis ka matlab hai ke aap hamesha function pointer ko aise
+function ke argument ke taur par pass kar sakte hain jo closure expect karta hai.
+Functions ko generic type aur closure traits mein se kisi ek ke saath likhna
+behtar hota hai taa-ke aapke functions functions ya closures dono ko accept kar
+sakein.
 
-That said, one example of where you would want to only accept `fn` and not
-closures is when interfacing with external code that doesn’t have closures: C
-functions can accept functions as arguments, but C doesn’t have closures.
+Is ke bawajood, ek example jahan aap sirf `fn` accept karna chahenge aur
+closures nahi, woh external code ke saath interface karte waqt hai jahan
+closures available nahi hoti: C functions functions ko arguments ke taur par
+accept kar sakte hain, lekin C mein closures nahi hoti.
 
-As an example of where you could use either a closure defined inline or a named
-function, let’s look at a use of the `map` method provided by the `Iterator`
-trait in the standard library. To use the `map` method to turn a vector of
-numbers into a vector of strings, we could use a closure, as in Listing 20-29.
+Ek example jahan aap inline defined closure ya named function mein se kisi ko
+bhi use kar sakte hain, us ke liye standard library mein `Iterator` trait ke
+provided `map` method ke ek use ko dekhte hain. Numbers ki ek vector ko strings
+ki vector mein convert karne ke liye `map` method use karte hue, hum ek closure
+use kar sakte hain, jaisa ke Listing 20-29 mein hai.
 
 <Listing number="20-29" caption="Using a closure with the `map` method to convert numbers to strings">
 
@@ -62,8 +68,8 @@ numbers into a vector of strings, we could use a closure, as in Listing 20-29.
 
 </Listing>
 
-Or we could name a function as the argument to `map` instead of the closure.
-Listing 20-30 shows what this would look like.
+Ya hum closure ke bajaye `map` ko argument ke taur par ek function ka naam de
+sakte hain. Listing 20-30 dikhati hai ke yeh kaisa nazar aayega.
 
 <Listing number="20-30" caption="Using the `String::to_string` function with the `map` method to convert numbers to strings">
 
@@ -73,19 +79,20 @@ Listing 20-30 shows what this would look like.
 
 </Listing>
 
-Note that we must use the fully qualified syntax that we talked about in the
-[“Advanced Traits”][advanced-traits]<!-- ignore --> section because there are
-multiple functions available named `to_string`.
+Note karein ke humein woh fully qualified syntax use karni hogi jis par humne
+[“Advanced Traits”][advanced-traits]<!-- ignore --> section mein baat ki thi,
+kyun ke `to_string` naam ke multiple functions available hain.
 
-Here, we’re using the `to_string` function defined in the `ToString` trait,
-which the standard library has implemented for any type that implements
-`Display`.
+Yahan, hum `ToString` trait mein defined `to_string` function use kar rahe hain,
+jise standard library ne har us type ke liye implement kiya hai jo `Display` ko
+implement karti hai.
 
-Recall from the [“Enum Values”][enum-values]<!-- ignore --> section in Chapter
-6 that the name of each enum variant that we define also becomes an initializer
-function. We can use these initializer functions as function pointers that
-implement the closure traits, which means we can specify the initializer
-functions as arguments for methods that take closures, as seen in Listing 20-31.
+Chapter 6 ke [“Enum Values”][enum-values]<!-- ignore --> section se yaad karein
+ke har enum variant ka naam jo hum define karte hain, ek initializer function
+bhi ban jata hai. Hum in initializer functions ko function pointers ke taur par
+use kar sakte hain jo closure traits ko implement karte hain, jis ka matlab hai
+ke hum initializer functions ko un methods ke arguments ke taur par specify kar
+sakte hain jo closures lete hain, jaisa ke Listing 20-31 mein dekha gaya hai.
 
 <Listing number="20-31" caption="Using an enum initializer with the `map` method to create a `Status` instance from numbers">
 
@@ -95,81 +102,87 @@ functions as arguments for methods that take closures, as seen in Listing 20-31.
 
 </Listing>
 
-Here, we create `Status::Value` instances using each `u32` value in the range
-that `map` is called on by using the initializer function of `Status::Value`.
-Some people prefer this style and some people prefer to use closures. They
-compile to the same code, so use whichever style is clearer to you.
+Yahan, hum `Status::Value` ke initializer function ko use karke `map` par call
+ki gayi range mein har `u32` value se `Status::Value` instances create karte
+hain. Kuch log is style ko prefer karte hain aur kuch log closures use karna
+prefer karte hain. Yeh dono same code mein compile hote hain, is liye woh style
+use karein jo aapko zyada clear lage.
 
 ### Returning Closures
 
-Closures are represented by traits, which means you can’t return closures
-directly. In most cases where you might want to return a trait, you can instead
-use the concrete type that implements the trait as the return value of the
-function. However, you can’t usually do that with closures because they don’t
-have a concrete type that is returnable; you’re not allowed to use the function
-pointer `fn` as a return type if the closure captures any values from its
-scope, for example.
+Closures ko traits ke through represent kiya jata hai, jis ka matlab hai ke aap
+closures ko directly return nahi kar sakte. Zyada tar cases mein jahan aap koi
+trait return karna chahte hon, aap is ke bajaye us concrete type ko function ki
+return value ke taur par use kar sakte hain jo us trait ko implement karti hai.
+Lekin, closures ke saath aam tor par aisa nahi kar sakte kyun ke un ki koi
+concrete type nahi hoti jise return kiya ja sake; misal ke taur par, agar
+closure apne scope se koi values capture karti ho to aap function pointer `fn`
+ko return type ke taur par use nahi kar sakte.
 
-Instead, you will normally use the `impl Trait` syntax we learned about in
-Chapter 10. You can return any function type, using `Fn`, `FnOnce`, and `FnMut`.
-For example, the code in Listing 20-32 will compile just fine.
+Is ke bajaye, aap aam tor par Chapter 10 mein seekhi hui `impl Trait` syntax use
+karenge. Aap `Fn`, `FnOnce`, aur `FnMut` ko use karke kisi bhi function type ko
+return kar sakte hain. Misal ke taur par, Listing 20-32 ka code bilkul theek
+compile hoga.
 
 <Listing number="20-32" caption="Returning a closure from a function using the `impl Trait` syntax">
 
-```rust
+```rust id="w9f8v2"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-32/src/lib.rs}}
 ```
 
 </Listing>
 
-However, as we noted in the [“Inferring and Annotating Closure
-Types”][closure-types]<!-- ignore --> section in Chapter 13, each closure is
-also its own distinct type. If you need to work with multiple functions that
-have the same signature but different implementations, you will need to use a
-trait object for them. Consider what happens if you write code like that shown
-in Listing 20-33.
+Lekin, jaisa ke humne Chapter 13 ke [“Inferring and Annotating Closure
+Types”][closure-types]<!-- ignore --> section mein note kiya tha, har closure
+bhi apni ek distinct type hoti hai. Agar aapko multiple functions ke saath kaam
+karna ho jin ki signature same ho lekin implementations different hon, to aapko
+un ke liye trait object use karna hoga. Consider karein ke agar aap Listing
+20-33 mein dikhaye gaye code jaisa code likhte hain to kya hota hai.
 
 <Listing file-name="src/main.rs" number="20-33" caption="Creating a `Vec<T>` of closures defined by functions that return `impl Fn` types">
 
-```rust,ignore,does_not_compile
+```rust,ignore,does_not_compile id="5k4d7a"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-33/src/main.rs}}
 ```
 
 </Listing>
 
-Here we have two functions, `returns_closure` and `returns_initialized_closure`,
-which both return `impl Fn(i32) -> i32`. Notice that the closures that they
-return are different, even though they implement the same type. If we try to
-compile this, Rust lets us know that it won’t work:
+Yahan hamare paas do functions hain, `returns_closure` aur
+`returns_initialized_closure`, jo dono `impl Fn(i32) -> i32` return karte hain.
+Notice karein ke jo closures woh return karte hain woh different hain, chahe
+woh same type ko implement karte hon. Agar hum isay compile karne ki koshish
+karein, to Rust humein batata hai ke yeh kaam nahi karega:
 
-```text
+```text id="p6at7m"
 {{#include ../listings/ch20-advanced-features/listing-20-33/output.txt}}
 ```
 
-The error message tells us that whenever we return an `impl Trait`, Rust
-creates a unique _opaque type_, a type where we cannot see into the details of
-what Rust constructs for us, nor can we guess the type Rust will generate to
-write ourselves. So, even though these functions return closures that implement
-the same trait, `Fn(i32) -> i32`, the opaque types Rust generates for each are
-distinct. (This is similar to how Rust produces different concrete types for
-distinct async blocks even when they have the same output type, as we saw in
-[“The `Pin` Type and the `Unpin` Trait”][future-types]<!-- ignore --> in
-Chapter 17.) We have seen a solution to this problem a few times now: We can
-use a trait object, as in Listing 20-34.
+Error message humein batata hai ke jab bhi hum `impl Trait` return karte hain,
+Rust ek unique *opaque type* create karta hai, yani aisi type jis ke andar
+Rust hamare liye kya construct karta hai, us ki details hum nahi dekh sakte, aur
+na hi hum guess kar sakte hain ke Rust kaunsi type generate karega taa-ke khud
+usay likh sakein. Is liye, agarche yeh functions aisi closures return karte hain
+jo same trait, `Fn(i32) -> i32`, ko implement karti hain, Rust jo opaque types
+har function ke liye generate karta hai woh distinct hoti hain. (Yeh usi tarah
+hai jaise Rust distinct async blocks ke liye different concrete types produce
+karta hai, chahe un ka output type same ho, jaisa ke humne Chapter 17 ke
+[“The `Pin` Type and the `Unpin` Trait”][future-types]<!-- ignore --> section
+mein dekha tha.) Humne is problem ka solution ab tak kuch baar dekha hai: Hum
+trait object use kar sakte hain, jaisa ke Listing 20-34 mein hai.
 
 <Listing number="20-34" caption="Creating a `Vec<T>` of closures defined by functions that return `Box<dyn Fn>` so that they have the same type">
 
-```rust
+```rust id="y1w5j9"
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-34/src/main.rs:here}}
 ```
 
 </Listing>
 
-This code will compile just fine. For more about trait objects, refer to the
-section [“Using Trait Objects To Abstract over Shared
-Behavior”][trait-objects]<!-- ignore --> in Chapter 18.
+Yeh code bilkul theek compile hoga. Trait objects ke bare mein mazeed jaanne
+ke liye Chapter 18 ke [“Using Trait Objects To Abstract over Shared
+Behavior”][trait-objects]<!-- ignore --> section ko refer karein.
 
-Next, let’s look at macros!
+Agla topic macros hai!
 
 [advanced-traits]: ch20-02-advanced-traits.html#advanced-traits
 [enum-values]: ch06-01-defining-an-enum.html#enum-values
