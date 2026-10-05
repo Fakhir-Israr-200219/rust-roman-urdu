@@ -1,44 +1,50 @@
 ## Using `Box<T>` to Point to Data on the Heap
 
-The most straightforward smart pointer is a box, whose type is written
-`Box<T>`. _Boxes_ allow you to store data on the heap rather than the stack.
-What remains on the stack is the pointer to the heap data. Refer to Chapter 4
-to review the difference between the stack and the heap.
+Sab se straightforward smart pointer box hai, jis ki type `Box<T>` likhi jati
+hai. *Boxes* aapko data ko stack ke bajaye heap par store karne deti hain.
+Stack par jo cheez rehti hai woh heap data ka pointer hota hai. Stack aur heap
+ke darmiyan difference ko review karne ke liye Chapter 4 dekhein.
 
-Boxes don’t have performance overhead, other than storing their data on the
-heap instead of on the stack. But they don’t have many extra capabilities
-either. You’ll use them most often in these situations:
+Boxes ka koi performance overhead nahi hota, siwaye is ke ke in ka data stack
+ke bajaye heap par store hota hai. Lekin in mein bohat zyada extra
+capabilities bhi nahi hotin. Aap inhein zyada tar in situations mein use
+karenge:
 
-- When you have a type whose size can’t be known at compile time, and you want
-  to use a value of that type in a context that requires an exact size
-- When you have a large amount of data, and you want to transfer ownership but
-  ensure that the data won’t be copied when you do so
-- When you want to own a value, and you care only that it’s a type that
-  implements a particular trait rather than being of a specific type
+* Jab aapke paas aisi type ho jis ka size compile time par maloom nahi kiya ja
+  sakta, aur aap us type ki value ko aise context mein use karna chahte hon jahan
+  exact size required ho
+* Jab aapke paas bohat zyada data ho, aur aap ownership transfer karna chahte
+  hon lekin yeh ensure karna chahte hon ke aisa karte waqt data copy na ho
+* Jab aap kisi value ko own karna chahte hon, aur aapko sirf yeh parwah ho ke
+  woh ek particular trait implement karti ho, na ke woh kisi specific type ki
+  ho
 
-We’ll demonstrate the first situation in [“Enabling Recursive Types with
-Boxes”](#enabling-recursive-types-with-boxes)<!-- ignore -->. In the second
-case, transferring ownership of a large amount of data can take a long time
-because the data is copied around on the stack. To improve performance in this
-situation, we can store the large amount of data on the heap in a box. Then,
-only the small amount of pointer data is copied around on the stack, while the
-data it references stays in one place on the heap. The third case is known as a
-_trait object_, and [“Using Trait Objects to Abstract over Shared
-Behavior”][trait-objects]<!-- ignore --> in Chapter 18 is devoted to that
-topic. So, what you learn here you’ll apply again in that section!
+Hum pehli situation ko [“Enabling Recursive Types with
+Boxes”](#enabling-recursive-types-with-boxes)<!-- ignore --> mein demonstrate
+karenge. Doosri situation mein, large amount of data ki ownership transfer karna
+time le sakta hai kyun ke data stack par idhar-udhar copy hota hai. Is situation
+mein performance improve karne ke liye, hum large amount of data ko box mein
+heap par store kar sakte hain. Phir, stack par sirf pointer data ki chhoti si
+amount copy hoti hai, jabke jis data ko woh reference karta hai woh heap par ek
+hi jagah rehta hai. Teesri situation ko *trait object* kaha jata hai, aur
+Chapter 18 mein [“Using Trait Objects to Abstract over Shared
+Behavior”][trait-objects]<!-- ignore --> isi topic ke liye dedicated hai. Is
+liye, jo aap yahan seekhenge usay aap us section mein dobara apply karenge!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-boxt-to-store-data-on-the-heap"></a>
 
-### Storing Data on the Heap
+### Heap par Data Store Karna
 
-Before we discuss the heap storage use case for `Box<T>`, we’ll cover the
-syntax and how to interact with values stored within a `Box<T>`.
+`Box<T>` ke liye heap storage ke use case par baat karne se pehle, hum iska
+syntax aur `Box<T>` ke andar stored values ke saath interact karne ka tareeqa
+dekhenge.
 
-Listing 15-1 shows how to use a box to store an `i32` value on the heap.
+Listing 15-1 dikhati hai ke heap par ek `i32` value store karne ke liye box ko
+kaise use kiya jata hai.
 
-<Listing number="15-1" file-name="src/main.rs" caption="Storing an `i32` value on the heap using a box">
+<Listing number="15-1" file-name="src/main.rs" caption="Box ko use karke heap par ek `i32` value store karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-01/src/main.rs}}
@@ -46,73 +52,78 @@ Listing 15-1 shows how to use a box to store an `i32` value on the heap.
 
 </Listing>
 
-We define the variable `b` to have the value of a `Box` that points to the
-value `5`, which is allocated on the heap. This program will print `b = 5`; in
-this case, we can access the data in the box similarly to how we would if this
-data were on the stack. Just like any owned value, when a box goes out of
-scope, as `b` does at the end of `main`, it will be deallocated. The
-deallocation happens both for the box (stored on the stack) and the data it
-points to (stored on the heap).
+Hum variable `b` ko ek `Box` ki value dete hain jo `5` ki taraf point karti
+hai, aur `5` heap par allocate hoti hai. Yeh program `b = 5` print karega; is
+case mein hum box ke andar data ko bilkul usi tarah access kar sakte hain jaise
+hum karte agar yeh data stack par hota. Kisi bhi owned value ki tarah, jab box
+scope se bahar chala jata hai, jaise `main` ke end par `b` hota hai, to woh
+deallocated ho jata hai. Deallocation box (jo stack par stored hai) aur us data
+dono ke liye hoti hai jiski taraf box point karta hai (jo heap par stored hai).
 
-Putting a single value on the heap isn’t very useful, so you won’t use boxes by
-themselves in this way very often. Having values like a single `i32` on the
-stack, where they’re stored by default, is more appropriate in the majority of
-situations. Let’s look at a case where boxes allow us to define types that we
-wouldn’t be allowed to define if we didn’t have boxes.
+Heap par ek single value rakhna zyada useful nahi hai, is liye aap boxes ko
+akelay is tarah bohat zyada use nahi karenge. Zyada tar situations mein stack
+par single `i32` jaisi values rakhna, jahan woh default taur par stored hoti
+hain, zyada munasib hai. Ab ek aisi situation dekhte hain jahan boxes humein
+aisi types define karne ki ijazat dete hain jinhein hum boxes ke baghair define
+nahi kar sakte.
 
-### Enabling Recursive Types with Boxes
+### Boxes ke Saath Recursive Types ko Enable Karna
 
-A value of a _recursive type_ can have another value of the same type as part of
-itself. Recursive types pose an issue because Rust needs to know at compile time
-how much space a type takes up. However, the nesting of values of recursive
-types could theoretically continue infinitely, so Rust can’t know how much space
-the value needs. Because boxes have a known size, we can enable recursive types
-by inserting a box in the recursive type definition.
+Ek *recursive type* ki value ke andar khud usi type ki ek aur value uska hissa
+ho sakti hai. Recursive types ek issue paida karti hain kyun ke Rust ko compile time
+par yeh pata hona zaroori hai ke kisi type ko kitni space chahiye. Lekin recursive
+types ki values ki nesting theoretically infinitely continue ho sakti hai, is liye
+Rust yeh nahi jaan sakta ke value ko kitni space ki zaroorat hai. Kyun ke boxes ka
+size known hota hai, hum recursive type ki definition mein ek box insert karke
+recursive types ko enable kar sakte hain.
 
-As an example of a recursive type, let’s explore the cons list. This is a data
-type commonly found in functional programming languages. The cons list type
-we’ll define is straightforward except for the recursion; therefore, the
-concepts in the example we’ll work with will be useful anytime you get into
-more complex situations involving recursive types.
+Recursive type ki ek example ke taur par, aaiye cons list ko explore karte hain.
+Yeh ek data type hai jo functional programming languages mein commonly milta hai.
+Jo cons list type hum define karenge woh recursion ke ilawa straightforward hai;
+is liye, is example mein jin concepts ke saath hum kaam karenge woh kisi bhi waqt
+useful honge jab aap recursive types se related zyada complex situations mein
+kaam karenge.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="more-information-about-the-cons-list"></a>
 
-#### Understanding the Cons List
+#### Cons List ko Samajhna
 
-A _cons list_ is a data structure that comes from the Lisp programming language
-and its dialects, is made up of nested pairs, and is the Lisp version of a
-linked list. Its name comes from the `cons` function (short for _construct
-function_) in Lisp that constructs a new pair from its two arguments. By
-calling `cons` on a pair consisting of a value and another pair, we can
-construct cons lists made up of recursive pairs.
+Ek *cons list* ek data structure hai jo Lisp programming language aur uski
+dialects se aata hai, nested pairs par mushtamil hota hai, aur linked list ka
+Lisp version hai. Iska naam Lisp ke `cons` function se aata hai (*construct
+function* ka short form), jo apne do arguments se ek naya pair construct karta
+hai. Kisi value aur doosre pair par mushtamil pair par `cons` call karke hum
+recursive pairs se bani hui cons lists construct kar sakte hain.
 
-For example, here’s a pseudocode representation of a cons list containing the
-list `1, 2, 3` with each pair in parentheses:
+Misal ke taur par, yahan `1, 2, 3` list par mushtamil cons list ki pseudocode
+representation hai, jisme har pair parentheses mein hai:
 
 ```text
 (1, (2, (3, Nil)))
 ```
 
-Each item in a cons list contains two elements: the value of the current item
-and of the next item. The last item in the list contains only a value called
-`Nil` without a next item. A cons list is produced by recursively calling the
-`cons` function. The canonical name to denote the base case of the recursion is
-`Nil`. Note that this is not the same as the “null” or “nil” concept discussed
-in Chapter 6, which is an invalid or absent value.
+Cons list mein har item do elements contain karta hai: current item ki value aur
+next item ki value. List ke aakhri item mein sirf ek value hoti hai jise
+`Nil` kaha jata hai aur uske baad koi next item nahi hota. Ek cons list
+`cons` function ko recursively call karne se produce hoti hai. Recursion ke
+base case ko denote karne ke liye canonical name `Nil` hai. Note karein ke yeh
+Chapter 6 mein discuss kiye gaye “null” ya “nil” concept ke samaan nahi hai,
+jo ek invalid ya absent value hoti hai.
 
-The cons list isn’t a commonly used data structure in Rust. Most of the time
-when you have a list of items in Rust, `Vec<T>` is a better choice to use.
-Other, more complex recursive data types _are_ useful in various situations,
-but by starting with the cons list in this chapter, we can explore how boxes
-let us define a recursive data type without much distraction.
+Cons list Rust mein commonly used data structure nahi hai. Zyada tar waqt jab
+aapke paas Rust mein items ki list hoti hai, to `Vec<T>` use karna behtar choice
+hota hai. Doosri, zyada complex recursive data types mukhtalif situations mein
+useful *hain*, lekin is chapter mein cons list se shuru karke hum yeh explore
+kar sakte hain ke boxes humein zyada distraction ke baghair recursive data type
+define karne kaise dete hain.
 
-Listing 15-2 contains an enum definition for a cons list. Note that this code
-won’t compile yet, because the `List` type doesn’t have a known size, which
-we’ll demonstrate.
+Listing 15-2 mein cons list ke liye ek enum definition hai. Note karein ke yeh
+code abhi compile nahi hoga, kyun ke `List` type ka size known nahi hai, jise
+hum demonstrate karenge.
 
-<Listing number="15-2" file-name="src/main.rs" caption="The first attempt at defining an enum to represent a cons list data structure of `i32` values">
+<Listing number="15-2" file-name="src/main.rs" caption="`i32` values ke cons list data structure ko represent karne ke liye enum define karne ki pehli koshish">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-02/src/main.rs:here}}
@@ -120,15 +131,16 @@ we’ll demonstrate.
 
 </Listing>
 
-> Note: We’re implementing a cons list that holds only `i32` values for the
-> purposes of this example. We could have implemented it using generics, as we
-> discussed in Chapter 10, to define a cons list type that could store values of
-> any type.
+> Note: Is example ke maqsad ke liye hum ek aisi cons list implement kar rahe
+> hain jo sirf `i32` values hold karti hai. Hum generics ko use karke bhi ise
+> implement kar sakte the, jaisa ke humne Chapter 10 mein discuss kiya tha, taake
+> ek aisi cons list type define ki ja sake jo kisi bhi type ki values store kar
+> sake.
 
-Using the `List` type to store the list `1, 2, 3` would look like the code in
-Listing 15-3.
+`List` type ko `1, 2, 3` list store karne ke liye use karna Listing 15-3 ke code
+jaisa hoga.
 
-<Listing number="15-3" file-name="src/main.rs" caption="Using the `List` enum to store the list `1, 2, 3`">
+<Listing number="15-3" file-name="src/main.rs" caption="`List` enum ko `1, 2, 3` list store karne ke liye use karna">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-03/src/main.rs:here}}
@@ -136,15 +148,16 @@ Listing 15-3.
 
 </Listing>
 
-The first `Cons` value holds `1` and another `List` value. This `List` value is
-another `Cons` value that holds `2` and another `List` value. This `List` value
-is one more `Cons` value that holds `3` and a `List` value, which is finally
-`Nil`, the non-recursive variant that signals the end of the list.
+Pehli `Cons` value `1` aur ek doosri `List` value hold karti hai. Yeh `List`
+value ek aur `Cons` value hai jo `2` aur ek doosri `List` value hold karti hai.
+Yeh `List` value ek aur `Cons` value hai jo `3` aur ek `List` value hold karti
+hai, jo aakhir mein `Nil` hai, yani non-recursive variant jo list ke end ko
+signal karta hai.
 
-If we try to compile the code in Listing 15-3, we get the error shown in
-Listing 15-4.
+Agar hum Listing 15-3 ke code ko compile karne ki koshish karein, to humein
+Listing 15-4 mein dikhaya gaya error milta hai.
 
-<Listing number="15-4" caption="The error we get when attempting to define a recursive enum">
+<Listing number="15-4" caption="Recursive enum ko define karne ki koshish karne par milne wala error">
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-03/output.txt}}
@@ -152,50 +165,55 @@ Listing 15-4.
 
 </Listing>
 
-The error shows this type “has infinite size.” The reason is that we’ve defined
-`List` with a variant that is recursive: It holds another value of itself
-directly. As a result, Rust can’t figure out how much space it needs to store a
-`List` value. Let’s break down why we get this error. First, we’ll look at how
-Rust decides how much space it needs to store a value of a non-recursive type.
+Error dikhata hai ke is type ka “infinite size” hai. Iski wajah yeh hai ke humne
+`List` ko ek aise variant ke saath define kiya hai jo recursive hai: Yeh directly
+khud ki ek aur value hold karta hai. Iske result mein, Rust yeh figure out nahi
+kar sakta ke `List` value ko store karne ke liye kitni space ki zaroorat hai.
+Aaiye is baat ko breakdown karte hain ke humein yeh error kyun milta hai. Sab se
+pehle, hum dekhenge ke Rust kaise decide karta hai ke non-recursive type ki value
+ko store karne ke liye kitni space ki zaroorat hai.
 
-#### Computing the Size of a Non-Recursive Type
+#### Non-Recursive Type ka Size Calculate Karna
 
-Recall the `Message` enum we defined in Listing 6-2 when we discussed enum
-definitions in Chapter 6:
+Chapter 6 mein enum definitions discuss karte waqt Listing 6-2 mein define kiye gaye
+`Message` enum ko yaad karein:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-02/src/main.rs:here}}
 ```
 
-To determine how much space to allocate for a `Message` value, Rust goes
-through each of the variants to see which variant needs the most space. Rust
-sees that `Message::Quit` doesn’t need any space, `Message::Move` needs enough
-space to store two `i32` values, and so forth. Because only one variant will be
-used, the most space a `Message` value will need is the space it would take to
-store the largest of its variants.
+Yeh determine karne ke liye ke `Message` value ke liye kitni space allocate karni
+hai, Rust har variant ko dekhta hai taake pata chal sake ke kis variant ko sab se
+zyada space chahiye. Rust dekhta hai ke `Message::Quit` ko kisi space ki zaroorat
+nahi, `Message::Move` ko do `i32` values store karne ke liye kaafi space chahiye,
+aur isi tarah baaqi variants ko dekhta hai. Kyun ke ek waqt mein sirf ek variant
+use hoga, is liye `Message` value ko jitni sab se zyada space chahiye hogi, woh
+uske sab se bade variant ko store karne jitni space hogi.
 
-Contrast this with what happens when Rust tries to determine how much space a
-recursive type like the `List` enum in Listing 15-2 needs. The compiler starts
-by looking at the `Cons` variant, which holds a value of type `i32` and a value
-of type `List`. Therefore, `Cons` needs an amount of space equal to the size of
-an `i32` plus the size of a `List`. To figure out how much memory the `List`
-type needs, the compiler looks at the variants, starting with the `Cons`
-variant. The `Cons` variant holds a value of type `i32` and a value of type
-`List`, and this process continues infinitely, as shown in Figure 15-1.
+Iska muqabla is baat se karein ke jab Rust Listing 15-2 mein diye gaye `List`
+enum jaise recursive type ke liye required space determine karne ki koshish
+karta hai to kya hota hai. Compiler `Cons` variant ko dekhne se shuru karta hai,
+jo `i32` type ki ek value aur `List` type ki ek value hold karta hai. Is liye
+`Cons` ko ek `i32` ke size ke barabar space plus ek `List` ke size ke barabar
+space chahiye. Yeh figure out karne ke liye ke `List` type ko kitni memory
+chahiye, compiler variants ko dekhta hai, `Cons` variant se shuru karte hue.
+`Cons` variant `i32` type ki ek value aur `List` type ki ek value hold karta hai,
+aur yeh process infinitely continue hota rehta hai, jaisa ke Figure 15-1 mein
+dikhaya gaya hai.
 
 <img alt="An infinite Cons list: a rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Cons' and a smaller version of the outer 'Cons' rectangle. The 'Cons' rectangles continue to hold smaller and smaller versions of themselves until the smallest comfortably sized rectangle holds an infinity symbol, indicating that this repetition goes on forever." src="img/trpl15-01.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 15-1: An infinite `List` consisting of infinite
-`Cons` variants</span>
+<span class="caption">Figure 15-1: Infinite `Cons` variants par mushtamil ek infinite `List`</span>
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-boxt-to-get-a-recursive-type-with-a-known-size"></a>
 
-#### Getting a Recursive Type with a Known Size
+#### Known Size ke Saath Recursive Type Hasil Karna
 
-Because Rust can’t figure out how much space to allocate for recursively
-defined types, the compiler gives an error with this helpful suggestion:
+Kyun ke Rust yeh figure out nahi kar sakta ke recursively defined types ke liye
+kitni space allocate karni hai, compiler is helpful suggestion ke saath error
+deta hai:
 
 <!-- manual-regeneration
 after doing automatic regeneration, look at listings/ch15-smart-pointers/listing-15-03/output.txt and copy the relevant line
@@ -208,23 +226,23 @@ help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to break the cycle
   |               ++++    +
 ```
 
-In this suggestion, _indirection_ means that instead of storing a value
-directly, we should change the data structure to store the value indirectly by
-storing a pointer to the value instead.
+Is suggestion mein, *indirection* ka matlab hai ke value ko directly store karne
+ke bajaye, humein data structure ko is tarah change karna chahiye ke value ko
+indirectly store kiya jaye, yani value ke pointer ko store kiya jaye.
 
-Because a `Box<T>` is a pointer, Rust always knows how much space a `Box<T>`
-needs: A pointer’s size doesn’t change based on the amount of data it’s
-pointing to. This means we can put a `Box<T>` inside the `Cons` variant instead
-of another `List` value directly. The `Box<T>` will point to the next `List`
-value that will be on the heap rather than inside the `Cons` variant.
-Conceptually, we still have a list, created with lists holding other lists, but
-this implementation is now more like placing the items next to one another
-rather than inside one another.
+Kyun ke `Box<T>` ek pointer hai, Rust hamesha jaanta hai ke `Box<T>` ko kitni
+space chahiye: Pointer ka size us data ki amount ke mutabiq change nahi hota
+jis ki taraf woh point kar raha hota hai. Iska matlab hai ke hum `Cons` variant
+ke andar directly ek aur `List` value rakhne ke bajaye `Box<T>` rakh sakte hain.
+`Box<T>` next `List` value ki taraf point karega jo heap par hogi, `Cons` variant
+ke andar nahi. Conceptually, hamare paas ab bhi ek list hai, jo aisi lists se
+bani hai jo doosri lists ko hold karti hain, lekin ab yeh implementation ek
+doosre ke andar items rakhne ke bajaye unhein ek doosre ke paas rakhne jaisi hai.
 
-We can change the definition of the `List` enum in Listing 15-2 and the usage
-of the `List` in Listing 15-3 to the code in Listing 15-5, which will compile.
+Hum Listing 15-2 mein `List` enum ki definition aur Listing 15-3 mein `List` ke
+usage ko Listing 15-5 ke code mein change kar sakte hain, jo compile ho jayega.
 
-<Listing number="15-5" file-name="src/main.rs" caption="The definition of `List` that uses `Box<T>` in order to have a known size">
+<Listing number="15-5" file-name="src/main.rs" caption="Known size hasil karne ke liye `Box<T>` use karne wali `List` ki definition">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-05/src/main.rs}}
@@ -232,32 +250,33 @@ of the `List` in Listing 15-3 to the code in Listing 15-5, which will compile.
 
 </Listing>
 
-The `Cons` variant needs the size of an `i32` plus the space to store the box’s
-pointer data. The `Nil` variant stores no values, so it needs less space on the
-stack than the `Cons` variant. We now know that any `List` value will take up
-the size of an `i32` plus the size of a box’s pointer data. By using a box,
-we’ve broken the infinite, recursive chain, so the compiler can figure out the
-size it needs to store a `List` value. Figure 15-2 shows what the `Cons`
-variant looks like now.
+`Cons` variant ko ek `i32` ke size ke saath box ke pointer data ko store karne
+ke liye required space chahiye. `Nil` variant koi values store nahi karta, is
+liye ise `Cons` variant ke muqable mein stack par kam space chahiye. Ab hum jaante
+hain ke koi bhi `List` value ek `i32` ke size plus box ke pointer data ke size
+jitni space legi. Box use karke humne infinite, recursive chain ko break kar diya
+hai, is liye compiler ab yeh figure out kar sakta hai ke `List` value ko store
+karne ke liye kitni space chahiye. Figure 15-2 dikhati hai ke ab `Cons` variant
+kaisa nazar aata hai.
 
 <img alt="A rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Box' with one inner rectangle that contains the label 'usize', representing the finite size of the box's pointer." src="img/trpl15-02.svg" class="center" />
 
-<span class="caption">Figure 15-2: A `List` that is not infinitely sized,
-because `Cons` holds a `Box`</span>
+<span class="caption">Figure 15-2: Ek `List` jo infinitely sized nahi hai, kyun ke `Cons` ek `Box` hold karta hai</span>
 
-Boxes provide only the indirection and heap allocation; they don’t have any
-other special capabilities, like those we’ll see with the other smart pointer
-types. They also don’t have the performance overhead that these special
-capabilities incur, so they can be useful in cases like the cons list where the
-indirection is the only feature we need. We’ll look at more use cases for boxes
-in Chapter 18.
+Boxes sirf indirection aur heap allocation provide karte hain; inke paas koi
+doosri special capabilities nahi hoti, jaisi ke hum doosri smart pointer types
+ke saath dekhenge. Inke paas woh performance overhead bhi nahi hota jo in special
+capabilities ki wajah se incur hota hai, is liye yeh cons list jaise cases mein
+useful ho sakte hain jahan indirection hi woh ek feature hai jiski humein
+zaroorat hai. Chapter 18 mein hum boxes ke aur use cases dekhenge.
 
-The `Box<T>` type is a smart pointer because it implements the `Deref` trait,
-which allows `Box<T>` values to be treated like references. When a `Box<T>`
-value goes out of scope, the heap data that the box is pointing to is cleaned
-up as well because of the `Drop` trait implementation. These two traits will be
-even more important to the functionality provided by the other smart pointer
-types we’ll discuss in the rest of this chapter. Let’s explore these two traits
-in more detail.
+`Box<T>` type ek smart pointer hai kyun ke yeh `Deref` trait implement karta hai,
+jo `Box<T>` values ko references ki tarah treat karne ki ijazat deta hai. Jab
+`Box<T>` value scope se bahar chali jati hai, to box jis heap data ki taraf point
+kar raha hota hai woh bhi clean up ho jata hai kyun ke `Drop` trait ki
+implementation hoti hai. Yeh dono traits un doosre smart pointer types ki
+functionality ke liye aur bhi important honge jin par hum is chapter ke baqi
+hisson mein baat karenge. Aaiye in dono traits ko zyada detail mein explore
+karte hain.
 
 [trait-objects]: ch18-02-trait-objects.html#using-trait-objects-to-abstract-over-shared-behavior

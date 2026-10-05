@@ -1,46 +1,54 @@
 # Smart Pointers
 
-A pointer is a general concept for a variable that contains an address in
-memory. This address refers to, or “points at,” some other data. The most
-common kind of pointer in Rust is a reference, which you learned about in
-Chapter 4. References are indicated by the `&` symbol and borrow the value they
-point to. They don’t have any special capabilities other than referring to
-data, and they have no overhead.
+Pointer ek general concept hai jo aise variable ke liye use hota hai jo memory
+mein kisi address ko contain karta hai. Yeh address kisi doosre data ko refer
+karta hai, ya “point at” karta hai. Rust mein pointer ki sab se common type
+reference hai, jiske baare mein aap Chapter 4 mein seekh chuke hain. References
+ko `&` symbol se indicate kiya jata hai aur yeh us value ko borrow karte hain
+jise woh point kar rahe hote hain. Data ko refer karne ke ilawa in mein koi
+special capabilities nahi hotin, aur in ka koi overhead nahi hota.
 
-_Smart pointers_, on the other hand, are data structures that act like a
-pointer but also have additional metadata and capabilities. The concept of
-smart pointers isn’t unique to Rust: Smart pointers originated in C++ and exist
-in other languages as well. Rust has a variety of smart pointers defined in the
-standard library that provide functionality beyond that provided by references.
-To explore the general concept, we’ll look at a couple of different examples of
-smart pointers, including a _reference counting_ smart pointer type. This
-pointer enables you to allow data to have multiple owners by keeping track of
-the number of owners and, when no owners remain, cleaning up the data.
+*Is ke muqable mein, smart pointers* aisi data structures hain jo pointer ki
+tarah act karti hain lekin in ke paas additional metadata aur capabilities
+bhi hoti hain. Smart pointers ka concept sirf Rust ke liye unique nahi hai:
+Smart pointers C++ mein originate hue aur doosri languages mein bhi maujood
+hain. Rust ki standard library mein variety of smart pointers defined hain jo
+references ki provided functionality se beyond functionality provide karte
+hain. General concept ko explore karne ke liye, hum smart pointers ki kuch
+different examples dekhenge, jin mein ek *reference counting* smart pointer
+type bhi shamil hai. Yeh pointer aapko data ke multiple owners rakhne ki
+ijazat deta hai, kyun ke yeh owners ki tadaad ko track karta hai aur jab koi
+owner baqi nahi rehta to data ko clean up karta hai.
 
-In Rust, with its concept of ownership and borrowing, there is an additional
-difference between references and smart pointers: While references only borrow
-data, in many cases smart pointers _own_ the data they point to.
+Rust mein, ownership aur borrowing ke concept ki wajah se references aur smart
+pointers ke darmiyan ek additional difference hai: References sirf data ko
+borrow karti hain, jabke bohat se cases mein smart pointers us data ko *own*
+karte hain jise woh point karte hain.
 
-Smart pointers are usually implemented using structs. Unlike an ordinary
-struct, smart pointers implement the `Deref` and `Drop` traits. The `Deref`
-trait allows an instance of the smart pointer struct to behave like a reference
-so that you can write your code to work with either references or smart
-pointers. The `Drop` trait allows you to customize the code that’s run when an
-instance of the smart pointer goes out of scope. In this chapter, we’ll discuss
-both of these traits and demonstrate why they’re important to smart pointers.
+Smart pointers aam tor par structs ko use karke implement kiye jate hain.
+Ordinary struct ke unlike, smart pointers `Deref` aur `Drop` traits implement
+karte hain. `Deref` trait smart pointer struct ke instance ko reference ki tarah
+behave karne ki ijazat deta hai, taa-ke aap apna code is tarah likh saken ke
+woh references ya smart pointers, dono ke saath kaam kare. `Drop` trait aapko
+us code ko customize karne ki ijazat deta hai jo smart pointer ke instance ke
+scope se bahar jane par run hota hai. Is chapter mein, hum in dono traits par
+discussion karenge aur demonstrate karenge ke yeh smart pointers ke liye kyun
+important hain.
 
-Given that the smart pointer pattern is a general design pattern used
-frequently in Rust, this chapter won’t cover every existing smart pointer. Many
-libraries have their own smart pointers, and you can even write your own. We’ll
-cover the most common smart pointers in the standard library:
+Kyun ke smart pointer pattern ek general design pattern hai jo Rust mein
+frequently use hota hai, is chapter mein har existing smart pointer cover nahi
+kiya jayega. Bohat si libraries ke apne smart pointers hote hain, aur aap apna
+smart pointer bhi likh sakte hain. Hum standard library ke sab se common smart
+pointers cover karenge:
 
-- `Box<T>`, for allocating values on the heap
-- `Rc<T>`, a reference counting type that enables multiple ownership
-- `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces
-  the borrowing rules at runtime instead of compile time
+* `Box<T>`, heap par values allocate karne ke liye
+* `Rc<T>`, ek reference counting type jo multiple ownership ko enable karta hai
+* `Ref<T>` aur `RefMut<T>`, `RefCell<T>` ke through access kiye jate hain, jo
+  borrowing rules ko compile time ke bajaye runtime par enforce karta hai
 
-In addition, we’ll cover the _interior mutability_ pattern where an immutable
-type exposes an API for mutating an interior value. We’ll also discuss
-reference cycles: how they can leak memory and how to prevent them.
+Is ke ilawa, hum *interior mutability* pattern cover karenge jahan ek immutable
+type interior value ko mutate karne ke liye ek API expose karta hai. Hum
+reference cycles par bhi discussion karenge: yeh memory ko kaise leak kar sakte
+hain aur inhein kaise prevent kiya ja sakta hai.
 
-Let’s dive in!
+Aaiye shuru karte hain!

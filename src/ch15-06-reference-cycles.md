@@ -1,21 +1,20 @@
-## Reference Cycles Can Leak Memory
+## Reference Cycles Memory Leak Kar Sakte Hain
 
-Rust’s memory safety guarantees make it difficult, but not impossible, to
-accidentally create memory that is never cleaned up (known as a _memory leak_).
-Preventing memory leaks entirely is not one of Rust’s guarantees, meaning
-memory leaks are memory safe in Rust. We can see that Rust allows memory leaks
-by using `Rc<T>` and `RefCell<T>`: It’s possible to create references where
-items refer to each other in a cycle. This creates memory leaks because the
-reference count of each item in the cycle will never reach 0, and the values
-will never be dropped.
+Rust ki memory safety guarantees ki wajah se aisi memory accidentally create karna mushkil hai, lekin
+namumkin nahi, jo kabhi clean up na ho (jise *memory leak* kaha jata hai).
+Memory leaks ko completely prevent karna Rust ki guarantees mein shamil nahi hai, yani
+memory leaks Rust mein memory safe hain. Hum dekh sakte hain ke Rust `Rc<T>` aur
+`RefCell<T>` ko use karke memory leaks allow karta hai: Aise references create karna
+mumkin hai jahan items ek doosre ko ek cycle mein refer karte hain. Is se memory leaks
+create hote hain kyun ke cycle mein har item ka reference count kabhi bhi 0 tak nahi pohanchega,
+aur values kabhi drop nahi hongi.
 
-### Creating a Reference Cycle
+### Reference Cycle Create Karna
 
-Let’s look at how a reference cycle might happen and how to prevent it,
-starting with the definition of the `List` enum and a `tail` method in Listing
-15-25.
+Aaiye dekhte hain ke reference cycle kis tarah ho sakti hai aur ise kaise prevent kiya ja sakta hai,
+Listing 15-25 mein `List` enum ki definition aur ek `tail` method se shuru karte hue.
 
-<Listing number="15-25" file-name="src/main.rs" caption="A cons list definition that holds a `RefCell<T>` so that we can modify what a `Cons` variant is referring to">
+<Listing number="15-25" file-name="src/main.rs" caption="Ek cons list definition jo `RefCell<T>` hold karti hai taake hum modify kar saken ke `Cons` variant kis cheez ko refer kar raha hai">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-25/src/main.rs:here}}
@@ -23,20 +22,21 @@ starting with the definition of the `List` enum and a `tail` method in Listing
 
 </Listing>
 
-We’re using another variation of the `List` definition from Listing 15-5. The
-second element in the `Cons` variant is now `RefCell<Rc<List>>`, meaning that
-instead of having the ability to modify the `i32` value as we did in Listing
-15-24, we want to modify the `List` value a `Cons` variant is pointing to.
-We’re also adding a `tail` method to make it convenient for us to access the
-second item if we have a `Cons` variant.
+Hum Listing 15-5 ki `List` definition ka ek aur variation use kar rahe hain. `Cons`
+variant ka second element ab `RefCell<Rc<List>>` hai, jis ka matlab hai ke
+Listing 15-24 ki tarah `i32` value ko modify karne ki ability rakhne ke bajaye,
+hum us `List` value ko modify karna chahte hain jis ki taraf `Cons` variant point kar raha hai.
+Hum ek `tail` method bhi add kar rahe hain taake jab hamare paas `Cons` variant ho to
+humare liye second item tak access karna convenient ho.
 
-In Listing 15-26, we’re adding a `main` function that uses the definitions in
-Listing 15-25. This code creates a list in `a` and a list in `b` that points to
-the list in `a`. Then, it modifies the list in `a` to point to `b`, creating a
-reference cycle. There are `println!` statements along the way to show what the
-reference counts are at various points in this process.
+Listing 15-26 mein hum ek `main` function add kar rahe hain jo Listing 15-25 mein
+di gayi definitions ko use karta hai. Yeh code `a` mein ek list aur `b` mein ek list
+create karta hai jo `a` wali list ko point karti hai. Phir, yeh `a` wali list ko modify
+karke use `b` ki taraf point karwata hai, jis se ek reference cycle create hoti hai.
+Is process ke mukhtalif points par reference counts kya hain, yeh dikhane ke liye
+raaste mein `println!` statements bhi hain.
 
-<Listing number="15-26" file-name="src/main.rs" caption="Creating a reference cycle of two `List` values pointing to each other">
+<Listing number="15-26" file-name="src/main.rs" caption="Do `List` values ki ek reference cycle create karna jo ek doosre ko point karti hain">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-26/src/main.rs:here}}
@@ -44,115 +44,115 @@ reference counts are at various points in this process.
 
 </Listing>
 
-We create an `Rc<List>` instance holding a `List` value in the variable `a`
-with an initial list of `5, Nil`. We then create an `Rc<List>` instance holding
-another `List` value in the variable `b` that contains the value `10` and
-points to the list in `a`.
+Hum variable `a` mein ek `Rc<List>` instance create karte hain jo ek `List` value
+hold karta hai, jismein shuru mein `5, Nil` ki list hoti hai. Phir hum variable `b`
+mein ek aur `Rc<List>` instance create karte hain jo ek aur `List` value hold karta hai
+jismein value `10` hoti hai aur jo `a` wali list ko point karti hai.
 
-We modify `a` so that it points to `b` instead of `Nil`, creating a cycle. We
-do that by using the `tail` method to get a reference to the
-`RefCell<Rc<List>>` in `a`, which we put in the variable `link`. Then, we use
-the `borrow_mut` method on the `RefCell<Rc<List>>` to change the value inside
-from an `Rc<List>` that holds a `Nil` value to the `Rc<List>` in `b`.
+Hum `a` ko modify karte hain taake woh `Nil` ke bajaye `b` ko point kare, jis se ek
+cycle create hoti hai. Hum yeh `tail` method ko use karke `a` mein mojood
+`RefCell<Rc<List>>` ka ek reference hasil karne se karte hain, jise hum variable
+`link` mein rakhte hain. Phir hum `RefCell<Rc<List>>` par `borrow_mut` method use
+karke andar ki value ko ek aise `Rc<List>` se, jo `Nil` value hold karta hai, badal kar
+`b` mein mojood `Rc<List>` kar dete hain.
 
-When we run this code, keeping the last `println!` commented out for the
-moment, we’ll get this output:
+Jab hum is code ko run karte hain, aur filhaal aakhri `println!` ko commented out
+rakhte hain, to humein yeh output milega:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-26/output.txt}}
 ```
 
-The reference count of the `Rc<List>` instances in both `a` and `b` is 2 after
-we change the list in `a` to point to `b`. At the end of `main`, Rust drops the
-variable `b`, which decreases the reference count of the `b` `Rc<List>`
-instance from 2 to 1. The memory that `Rc<List>` has on the heap won’t be
-dropped at this point because its reference count is 1, not 0. Then, Rust drops
-`a`, which decreases the reference count of the `a` `Rc<List>` instance from 2
-to 1 as well. This instance’s memory can’t be dropped either, because the other
-`Rc<List>` instance still refers to it. The memory allocated to the list will
-remain uncollected forever. To visualize this reference cycle, we’ve created
-the diagram in Figure 15-4.
+`a` aur `b` dono mein mojood `Rc<List>` instances ka reference count `a` wali list ko
+`b` ki taraf point karne ke baad 2 ho jata hai. `main` ke end par Rust variable `b`
+ko drop karta hai, jis se `b` wale `Rc<List>` instance ka reference count 2 se 1 ho jata hai.
+Is point par `Rc<List>` ke paas heap par mojood memory drop nahi hogi kyun ke iska
+reference count 1 hai, 0 nahi. Phir Rust `a` ko drop karta hai, jis se `a` wale
+`Rc<List>` instance ka reference count bhi 2 se 1 ho jata hai. Is instance ki memory
+bhi drop nahi ki ja sakti, kyun ke doosra `Rc<List>` instance abhi bhi ise refer kar raha hai.
+List ke liye allocate ki gayi memory hamesha ke liye uncollected rahegi. Is reference
+cycle ko visualize karne ke liye humne Figure 15-4 mein diagram create kiya hai.
 
-<img alt="A rectangle labeled 'a' that points to a rectangle containing the integer 5. A rectangle labeled 'b' that points to a rectangle containing the integer 10. The rectangle containing 5 points to the rectangle containing 10, and the rectangle containing 10 points back to the rectangle containing 5, creating a cycle." src="img/trpl15-04.svg" class="center" />
+<img alt="Ek rectangle jis par 'a' label hai aur jo ek aise rectangle ki taraf point karta hai jisme integer 5 hai. Ek rectangle jis par 'b' label hai aur jo ek aise rectangle ki taraf point karta hai jisme integer 10 hai. 5 wala rectangle 10 wale rectangle ki taraf point karta hai, aur 10 wala rectangle wapas 5 wale rectangle ki taraf point karta hai, jis se ek cycle create hoti hai." src="img/trpl15-04.svg" class="center" />
 
-<span class="caption">Figure 15-4: A reference cycle of lists `a` and `b`
-pointing to each other</span>
+<span class="caption">Figure 15-4: Lists `a` aur `b` ki ek reference cycle
+jo ek doosre ko point karti hain</span>
 
-If you uncomment the last `println!` and run the program, Rust will try to
-print this cycle with `a` pointing to `b` pointing to `a` and so forth until it
-overflows the stack.
+Agar aap aakhri `println!` ko uncomment karke program run karein, to Rust is cycle ko
+print karne ki koshish karega, jahan `a`, `b` ko point karta hai, jo `a` ko point karta hai,
+aur isi tarah aage, jab tak stack overflow nahi ho jata.
 
-Compared to a real-world program, the consequences of creating a reference
-cycle in this example aren’t very dire: Right after we create the reference
-cycle, the program ends. However, if a more complex program allocated lots of
-memory in a cycle and held onto it for a long time, the program would use more
-memory than it needed and might overwhelm the system, causing it to run out of
-available memory.
+Ek real-world program ke muqable mein, is example mein reference cycle create karne ke
+consequences bohot serious nahi hain: Reference cycle create karne ke foran baad hi
+program end ho jata hai. Lekin agar koi zyada complex program cycle mein bohot saari
+memory allocate kare aur use lambe waqt tak hold karke rakhe, to program apni zaroorat se
+zyada memory use karega aur system ko overwhelm kar sakta hai, jis ki wajah se available
+memory khatam ho sakti hai.
 
-Creating reference cycles is not easily done, but it’s not impossible either.
-If you have `RefCell<T>` values that contain `Rc<T>` values or similar nested
-combinations of types with interior mutability and reference counting, you must
-ensure that you don’t create cycles; you can’t rely on Rust to catch them.
-Creating a reference cycle would be a logic bug in your program that you should
-use automated tests, code reviews, and other software development practices to
-minimize.
+Reference cycles create karna aasaan nahi hai, lekin yeh namumkin bhi nahi hai.
+Agar aapke paas `RefCell<T>` values hain jo `Rc<T>` values ya isi tarah ke nested
+combinations of types with interior mutability aur reference counting contain karti hain,
+to aapko ensure karna hoga ke aap cycles create na karein; aap Rust par inhein catch karne
+ke liye rely nahi kar sakte. Reference cycle create karna aapke program mein ek logic bug
+hoga, jise minimize karne ke liye aapko automated tests, code reviews, aur doosri software
+development practices use karni chahiye.
 
-Another solution for avoiding reference cycles is reorganizing your data
-structures so that some references express ownership and some references don’t.
-As a result, you can have cycles made up of some ownership relationships and
-some non-ownership relationships, and only the ownership relationships affect
-whether or not a value can be dropped. In Listing 15-25, we always want `Cons`
-variants to own their list, so reorganizing the data structure isn’t possible.
-Let’s look at an example using graphs made up of parent nodes and child nodes
-to see when non-ownership relationships are an appropriate way to prevent
-reference cycles.
+Reference cycles avoid karne ka ek aur solution yeh hai ke apni data structures ko
+reorganize kiya jaye taake kuch references ownership express karein aur kuch references
+ownership express na karein. Is ke result mein aapke paas kuch ownership relationships
+aur kuch non-ownership relationships se bani hui cycles ho sakti hain, aur sirf ownership
+relationships is baat par effect dalti hain ke koi value drop ki ja sakti hai ya nahi.
+Listing 15-25 mein hum hamesha chahte hain ke `Cons` variants apni list ki ownership
+rakhein, is liye data structure ko reorganize karna possible nahi hai. Aaiye parent nodes
+aur child nodes se bani hui graphs ki example dekhein taake samajh saken ke reference cycles
+ko prevent karne ke liye non-ownership relationships kab appropriate hoti hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="preventing-reference-cycles-turning-an-rct-into-a-weakt"></a>
 
-### Preventing Reference Cycles Using `Weak<T>`
+### `Weak<T>` ko Use Karke Reference Cycles Prevent Karna
 
-So far, we’ve demonstrated that calling `Rc::clone` increases the
-`strong_count` of an `Rc<T>` instance, and an `Rc<T>` instance is only cleaned
-up if its `strong_count` is 0. You can also create a weak reference to the
-value within an `Rc<T>` instance by calling `Rc::downgrade` and passing a
-reference to the `Rc<T>`. *Strong references* are how you can share ownership
-of an `Rc<T>` instance. *Weak references* don’t express an ownership
-relationship, and their count doesn’t affect when an `Rc<T>` instance is
-cleaned up. They won’t cause a reference cycle, because any cycle involving
-some weak references will be broken once the strong reference count of values
-involved is 0.
+Ab tak humne demonstrate kiya hai ke `Rc::clone` call karne se kisi
+`Rc<T>` instance ka `strong_count` increase hota hai, aur `Rc<T>` instance tabhi clean
+up hota hai jab uska `strong_count` 0 ho. Aap `Rc::downgrade` call karke aur
+`Rc<T>` ka reference pass karke `Rc<T>` instance ke andar mojood value ka weak reference
+bhi create kar sakte hain. *Strong references* woh references hain jin ke zariye aap
+`Rc<T>` instance ki ownership share kar sakte hain. *Weak references* ownership
+relationship express nahi karte, aur inki count is baat par effect nahi karti ke
+`Rc<T>` instance kab clean up hoga. Yeh reference cycle cause nahi karenge, kyun ke
+kisi bhi aisi cycle mein jismein kuch weak references shamil hon, involved values ka
+strong reference count 0 hote hi cycle break ho jayegi.
 
-When you call `Rc::downgrade`, you get a smart pointer of type `Weak<T>`.
-Instead of increasing the `strong_count` in the `Rc<T>` instance by 1, calling
-`Rc::downgrade` increases the `weak_count` by 1. The `Rc<T>` type uses
-`weak_count` to keep track of how many `Weak<T>` references exist, similar to
-`strong_count`. The difference is the `weak_count` doesn’t need to be 0 for the
-`Rc<T>` instance to be cleaned up.
+Jab aap `Rc::downgrade` call karte hain, to aapko `Weak<T>` type ka smart pointer milta hai.
+`Rc<T>` instance mein `strong_count` ko 1 se increase karne ke bajaye, `Rc::downgrade`
+call karne se `weak_count` 1 se increase hota hai. `Rc<T>` type `weak_count` ko
+track karne ke liye use karta hai ke kitne `Weak<T>` references exist karte hain,
+bilkul `strong_count` ki tarah. Farq yeh hai ke `Rc<T>` instance ko clean up hone ke
+liye `weak_count` ka 0 hona zaroori nahi hai.
 
-Because the value that `Weak<T>` references might have been dropped, to do
-anything with the value that a `Weak<T>` is pointing to you must make sure the
-value still exists. Do this by calling the `upgrade` method on a `Weak<T>`
-instance, which will return an `Option<Rc<T>>`. You’ll get a result of `Some`
-if the `Rc<T>` value has not been dropped yet and a result of `None` if the
-`Rc<T>` value has been dropped. Because `upgrade` returns an `Option<Rc<T>>`,
-Rust will ensure that the `Some` case and the `None` case are handled, and
-there won’t be an invalid pointer.
+Kyun ke jis value ko `Weak<T>` reference karta hai woh shayad drop ho chuki ho, is liye
+`Weak<T>` jis value ki taraf point kar raha hai uske saath kuch bhi karne ke liye aapko
+pehle ensure karna hoga ke woh value abhi exist karti hai. Is ke liye `Weak<T>` instance
+par `upgrade` method call karein, jo `Option<Rc<T>>` return karega. Agar `Rc<T>` value
+abhi drop nahi hui to aapko `Some` ka result milega aur agar `Rc<T>` value drop ho chuki
+hai to `None` ka result milega. Kyun ke `upgrade` ek `Option<Rc<T>>` return karta hai,
+Rust ensure karega ke `Some` aur `None` dono cases handle kiye jayen, aur koi invalid
+pointer nahi hoga.
 
-As an example, rather than using a list whose items know only about the next
-item, we’ll create a tree whose items know about their child items _and_ their
-parent items.
+Misal ke taur par, aisi list use karne ke bajaye jiske items sirf next item ke baare mein
+jaante hain, hum ek tree create karenge jiske items apne child items *aur* parent items
+ke baare mein jaante hon.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-a-tree-data-structure-a-node-with-child-nodes"></a>
 
-#### Creating a Tree Data Structure
+#### Tree Data Structure Create Karna
 
-To start, we’ll build a tree with nodes that know about their child nodes.
-We’ll create a struct named `Node` that holds its own `i32` value as well as
-references to its child `Node` values:
+Shuru karne ke liye, hum aisa tree build karenge jiske nodes apne child nodes ke baare mein
+jaante hon. Hum `Node` naam ka ek struct create karenge jo apni `i32` value ke saath-saath
+apne child `Node` values ke references bhi hold karega:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -160,17 +160,18 @@ references to its child `Node` values:
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-27/src/main.rs:here}}
 ```
 
-We want a `Node` to own its children, and we want to share that ownership with
-variables so that we can access each `Node` in the tree directly. To do this,
-we define the `Vec<T>` items to be values of type `Rc<Node>`. We also want to
-modify which nodes are children of another node, so we have a `RefCell<T>` in
-`children` around the `Vec<Rc<Node>>`.
+Hum chahte hain ke ek `Node` apne children ka owner ho, aur hum is ownership ko variables ke
+saath share karna chahte hain taake hum tree ke har `Node` ko directly access kar saken. Is ke
+liye, hum `Vec<T>` ke items ko `Rc<Node>` type ki values define karte hain. Hum yeh bhi chahte hain
+ke hum modify kar saken ke kaun se nodes kisi doosre node ke children hain, is liye `children`
+mein `Vec<Rc<Node>>` ke around ek `RefCell<T>` hai.
 
-Next, we’ll use our struct definition and create one `Node` instance named
-`leaf` with the value `3` and no children, and another instance named `branch`
-with the value `5` and `leaf` as one of its children, as shown in Listing 15-27.
+Ab hum apni struct definition ko use karenge aur ek `leaf` naam ka `Node` instance create
+karेंगे jis ki value `3` hai aur koi children nahi hain, aur ek aur instance `branch` naam ka
+create karenge jis ki value `5` hai aur `leaf` uske children mein se ek hai, jaisa ke Listing
+15-27 mein dikhaya gaya hai.
 
-<Listing number="15-27" file-name="src/main.rs" caption="Creating a `leaf` node with no children and a `branch` node with `leaf` as one of its children">
+<Listing number="15-27" file-name="src/main.rs" caption="Bina children wale `leaf` node aur `leaf` ko apne children mein rakhne wale `branch` node ko create karna">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-27/src/main.rs:there}}
@@ -178,30 +179,30 @@ with the value `5` and `leaf` as one of its children, as shown in Listing 15-27.
 
 </Listing>
 
-We clone the `Rc<Node>` in `leaf` and store that in `branch`, meaning the
-`Node` in `leaf` now has two owners: `leaf` and `branch`. We can get from
-`branch` to `leaf` through `branch.children`, but there’s no way to get from
-`leaf` to `branch`. The reason is that `leaf` has no reference to `branch` and
-doesn’t know they’re related. We want `leaf` to know that `branch` is its
-parent. We’ll do that next.
+Hum `leaf` mein mojood `Rc<Node>` ko clone karke usay `branch` mein store karte hain, jis ka
+matlab hai ke `leaf` mein mojood `Node` ke ab do owners hain: `leaf` aur `branch`. Hum
+`branch.children` ke zariye `branch` se `leaf` tak ja sakte hain, lekin `leaf` se `branch` tak
+jaane ka koi tareeqa nahi hai. Is ki wajah yeh hai ke `leaf` ka `branch` ke saath koi reference
+nahi hai aur woh nahi jaanta ke dono related hain. Hum chahte hain ke `leaf` ko pata ho ke
+`branch` uska parent hai. Ab hum yeh karenge.
 
-#### Adding a Reference from a Child to Its Parent
+#### Child se Uske Parent ka Reference Add Karna
 
-To make the child node aware of its parent, we need to add a `parent` field to
-our `Node` struct definition. The trouble is in deciding what the type of
-`parent` should be. We know it can’t contain an `Rc<T>`, because that would
-create a reference cycle with `leaf.parent` pointing to `branch` and
-`branch.children` pointing to `leaf`, which would cause their `strong_count`
-values to never be 0.
+Child node ko apne parent ke baare mein aware karne ke liye, humein apni `Node` struct
+definition mein ek `parent` field add karni hogi. Mushkil yeh decide karne mein hai ke
+`parent` ka type kya hona chahiye. Hum jaante hain ke ismein `Rc<T>` nahi ho sakta, kyun ke
+is se `leaf.parent` ka `branch` ki taraf point karna aur `branch.children` ka `leaf` ki
+taraf point karna ek reference cycle create karega, jis ki wajah se unki `strong_count`
+values kabhi 0 nahi hongi.
 
-Thinking about the relationships another way, a parent node should own its
-children: If a parent node is dropped, its child nodes should be dropped as
-well. However, a child should not own its parent: If we drop a child node, the
-parent should still exist. This is a case for weak references!
+In relationships ko ek doosre tareeqe se dekhein to parent node ko apne children ka owner
+hona chahiye: Agar parent node drop ho jaye, to uske child nodes bhi drop ho jane chahiye.
+Lekin child ko apne parent ka owner nahi hona chahiye: Agar hum child node ko drop karein,
+to parent phir bhi exist karna chahiye. Yeh weak references ke liye ek case hai!
 
-So, instead of `Rc<T>`, we’ll make the type of `parent` use `Weak<T>`,
-specifically a `RefCell<Weak<Node>>`. Now our `Node` struct definition looks
-like this:
+Is liye, `Rc<T>` ke bajaye, hum `parent` ka type `Weak<T>` use karenge,
+specifically `RefCell<Weak<Node>>`. Ab hamari `Node` struct definition kuch is tarah
+dikhai degi:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -209,11 +210,11 @@ like this:
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-28/src/main.rs:here}}
 ```
 
-A node will be able to refer to its parent node but doesn’t own its parent. In
-Listing 15-28, we update `main` to use this new definition so that the `leaf`
-node will have a way to refer to its parent, `branch`.
+Ek node apne parent node ko refer kar sakega, lekin apne parent ka owner nahi hoga. Listing
+15-28 mein hum `main` ko update karte hain taake is nayi definition ko use kiya ja sake aur
+`leaf` node ke paas apne parent, `branch`, ko refer karne ka tareeqa ho.
 
-<Listing number="15-28" file-name="src/main.rs" caption="A `leaf` node with a weak reference to its parent node, `branch`">
+<Listing number="15-28" file-name="src/main.rs" caption="Ek `leaf` node jismein apne parent node, `branch`, ka weak reference hai">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-28/src/main.rs:there}}
@@ -221,30 +222,32 @@ node will have a way to refer to its parent, `branch`.
 
 </Listing>
 
-Creating the `leaf` node looks similar to Listing 15-27 with the exception of
-the `parent` field: `leaf` starts out without a parent, so we create a new,
-empty `Weak<Node>` reference instance.
+`leaf` node create karna Listing 15-27 jaisa hi hai, sirf `parent` field mein farq hai:
+`leaf` shuru mein bina parent ke hota hai, is liye hum ek naya, empty `Weak<Node>` reference
+instance create karte hain.
 
-At this point, when we try to get a reference to the parent of `leaf` by using
-the `upgrade` method, we get a `None` value. We see this in the output from the
-first `println!` statement:
+Is point par, jab hum `upgrade` method use karke `leaf` ke parent ka reference hasil karne ki
+koshish karte hain, to humein `None` value milti hai. Hum isay pehle `println!` statement ke
+output mein dekh sakte hain:
 
 ```text
 leaf parent = None
 ```
 
-When we create the `branch` node, it will also have a new `Weak<Node>`
-reference in the `parent` field because `branch` doesn’t have a parent node. We
-still have `leaf` as one of the children of `branch`. Once we have the `Node`
-instance in `branch`, we can modify `leaf` to give it a `Weak<Node>` reference
-to its parent. We use the `borrow_mut` method on the `RefCell<Weak<Node>>` in
-the `parent` field of `leaf`, and then we use the `Rc::downgrade` function to
-create a `Weak<Node>` reference to `branch` from the `Rc<Node>` in `branch`.
+Jab hum `branch` node create karte hain, to iske `parent` field mein bhi ek naya
+`Weak<Node>` reference hoga kyun ke `branch` ka koi parent node nahi hai. Hamare paas ab bhi
+`branch` ke children mein se ek ke taur par `leaf` hai. Jab hamare paas `branch` mein
+`Node` instance aa jata hai, to hum `leaf` ko modify kar sakte hain taake uske paas apne
+parent ka ek `Weak<Node>` reference ho. Hum `leaf` ke `parent` field mein mojood
+`RefCell<Weak<Node>>` par `borrow_mut` method use karte hain, aur phir `branch` mein
+mojood `Rc<Node>` se `branch` ka `Weak<Node>` reference create karne ke liye
+`Rc::downgrade` function use karte hain.
 
-When we print the parent of `leaf` again, this time we’ll get a `Some` variant
-holding `branch`: Now `leaf` can access its parent! When we print `leaf`, we
-also avoid the cycle that eventually ended in a stack overflow like we had in
-Listing 15-26; the `Weak<Node>` references are printed as `(Weak)`:
+Jab hum dobara `leaf` ka parent print karte hain, to is baar humein `branch` ko hold karne
+wala ek `Some` variant milega: Ab `leaf` apne parent ko access kar sakta hai! Jab hum
+`leaf` ko print karte hain, to hum us cycle se bhi bach jate hain jo aakhir mein stack
+overflow par khatam hoti thi, jaisa ke Listing 15-26 mein hua tha; `Weak<Node>` references
+`(Weak)` ke taur par print hote hain:
 
 ```text
 leaf parent = Some(Node { value: 5, parent: RefCell { value: (Weak) },
@@ -252,72 +255,69 @@ children: RefCell { value: [Node { value: 3, parent: RefCell { value: (Weak) },
 children: RefCell { value: [] } }] } })
 ```
 
-The lack of infinite output indicates that this code didn’t create a reference
-cycle. We can also tell this by looking at the values we get from calling
-`Rc::strong_count` and `Rc::weak_count`.
+Infinite output ka na hona indicate karta hai ke is code ne reference cycle create nahi ki.
+Hum is baat ko `Rc::strong_count` aur `Rc::weak_count` call karne se milne wali values ko
+dekh kar bhi samajh sakte hain.
 
-#### Visualizing Changes to `strong_count` and `weak_count`
+#### `strong_count` aur `weak_count` mein Changes ko Visualize Karna
 
-Let’s look at how the `strong_count` and `weak_count` values of the `Rc<Node>`
-instances change by creating a new inner scope and moving the creation of
-`branch` into that scope. By doing so, we can see what happens when `branch` is
-created and then dropped when it goes out of scope. The modifications are shown
-in Listing 15-29.
+Aaiye dekhte hain ke `Rc<Node>` instances ki `strong_count` aur `weak_count` values kis tarah
+change hoti hain, ek naya inner scope create karke aur `branch` ki creation ko us scope mein
+move karke. Aisa karne se hum dekh sakte hain ke `branch` create hone aur phir scope se bahar
+nikalne par drop hone ke waqt kya hota hai. Yeh modifications Listing 15-29 mein dikhayi gayi hain.
 
-<Listing number="15-29" file-name="src/main.rs" caption="Creating `branch` in an inner scope and examining strong and weak reference counts">
+<Listing number="15-29" file-name="src/main.rs" caption="Ek inner scope mein `branch` create karna aur strong aur weak reference counts ko examine karna">
 
-```rust
+```rust id="r4x9kp"
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-29/src/main.rs:here}}
 ```
 
 </Listing>
 
-After `leaf` is created, its `Rc<Node>` has a strong count of 1 and a weak
-count of 0. In the inner scope, we create `branch` and associate it with
-`leaf`, at which point when we print the counts, the `Rc<Node>` in `branch`
-will have a strong count of 1 and a weak count of 1 (for `leaf.parent` pointing
-to `branch` with a `Weak<Node>`). When we print the counts in `leaf`, we’ll see
-it will have a strong count of 2 because `branch` now has a clone of the
-`Rc<Node>` of `leaf` stored in `branch.children` but will still have a weak
-count of 0.
+`leaf` create hone ke baad, uske `Rc<Node>` ka strong count 1 aur weak count 0 hota hai. Inner
+scope mein hum `branch` create karte hain aur use `leaf` ke saath associate karte hain. Is point
+par jab hum counts print karte hain, to `branch` mein mojood `Rc<Node>` ka strong count 1 aur
+weak count 1 hoga (`leaf.parent` ke `Weak<Node>` ke saath `branch` ki taraf point karne ki wajah
+se). Jab hum `leaf` mein counts print karenge, to hum dekhenge ke iska strong count 2 ho gaya hai
+kyun ke `branch` ke paas ab `leaf` ke `Rc<Node>` ka ek clone `branch.children` mein stored hai,
+lekin iska weak count ab bhi 0 hoga.
 
-When the inner scope ends, `branch` goes out of scope and the strong count of
-the `Rc<Node>` decreases to 0, so its `Node` is dropped. The weak count of 1
-from `leaf.parent` has no bearing on whether or not `Node` is dropped, so we
-don’t get any memory leaks!
+Jab inner scope khatam hota hai, `branch` scope se bahar chala jata hai aur `Rc<Node>` ka strong
+count 0 ho jata hai, is liye iska `Node` drop ho jata hai. `leaf.parent` se aane wale weak count
+1 ka `Node` ke drop hone par koi asar nahi hota, is liye humein koi memory leaks nahi milte!
 
-If we try to access the parent of `leaf` after the end of the scope, we’ll get
-`None` again. At the end of the program, the `Rc<Node>` in `leaf` has a strong
-count of 1 and a weak count of 0 because the variable `leaf` is now the only
-reference to the `Rc<Node>` again.
+Agar hum scope khatam hone ke baad `leaf` ke parent ko access karne ki koshish karein, to humein
+dobara `None` milega. Program ke end par, `leaf` mein mojood `Rc<Node>` ka strong count 1 aur
+weak count 0 hota hai kyun ke ab variable `leaf` dobara `Rc<Node>` ka sirf ek reference hai.
 
-All of the logic that manages the counts and value dropping is built into
-`Rc<T>` and `Weak<T>` and their implementations of the `Drop` trait. By
-specifying that the relationship from a child to its parent should be a
-`Weak<T>` reference in the definition of `Node`, you’re able to have parent
-nodes point to child nodes and vice versa without creating a reference cycle
-and memory leaks.
+Counts ko manage karne aur values ko drop karne wali tamam logic `Rc<T>` aur `Weak<T>` mein aur
+unke `Drop` trait ki implementations mein built-in hai. `Node` ki definition mein yeh specify
+karke ke child se parent ka relationship ek `Weak<T>` reference hona chahiye, aap parent nodes ko
+child nodes ki taraf aur child nodes ko parent nodes ki taraf point karwa sakte hain, bina
+reference cycle aur memory leaks create kiye.
 
 ## Summary
 
-This chapter covered how to use smart pointers to make different guarantees and
-trade-offs from those Rust makes by default with regular references. The
-`Box<T>` type has a known size and points to data allocated on the heap. The
-`Rc<T>` type keeps track of the number of references to data on the heap so
-that the data can have multiple owners. The `RefCell<T>` type with its interior
-mutability gives us a type that we can use when we need an immutable type but
-need to change an inner value of that type; it also enforces the borrowing
-rules at runtime instead of at compile time.
+Is chapter mein humne dekha ke smart pointers ko kaise use kiya ja sakta hai taake
+un guarantees aur trade-offs ko provide kiya ja sake jo Rust regular references ke
+saath default taur par nahi deta. `Box<T>` type ka size known hota hai aur yeh heap par
+allocate kiye gaye data ki taraf point karta hai. `Rc<T>` type heap par mojood data ke
+references ki tadaad ko track karta hai taake data ke multiple owners ho saken.
+`RefCell<T>` type apni interior mutability ke saath humein aisi type deta hai jise hum
+us waqt use kar sakte hain jab humein immutable type chahiye ho lekin us type ki inner
+value ko change karna ho; yeh borrowing rules ko compile time ke bajaye runtime par
+enforce bhi karta hai.
 
-Also discussed were the `Deref` and `Drop` traits, which enable a lot of the
-functionality of smart pointers. We explored reference cycles that can cause
-memory leaks and how to prevent them using `Weak<T>`.
+Humne `Deref` aur `Drop` traits par bhi baat ki, jo smart pointers ki bohot si
+functionality ko enable karte hain. Humne reference cycles ko explore kiya jo memory
+leaks ka sabab ban sakti hain, aur yeh bhi dekha ke `Weak<T>` ko use karke unhein kaise
+prevent kiya ja sakta hai.
 
-If this chapter has piqued your interest and you want to implement your own
-smart pointers, check out [“The Rustonomicon”][nomicon] for more useful
-information.
+Agar is chapter ne aapki interest barha di hai aur aap apne smart pointers implement
+karna chahte hain, to mazeed useful information ke liye [“The Rustonomicon”][nomicon]
+dekhein.
 
-Next, we’ll talk about concurrency in Rust. You’ll even learn about a few new
-smart pointers.
+Agla chapter mein hum Rust mein concurrency ke baare mein baat karenge. Aap kuch naye
+smart pointers ke baare mein bhi seekhenge.
 
 [nomicon]: ../nomicon/index.html
