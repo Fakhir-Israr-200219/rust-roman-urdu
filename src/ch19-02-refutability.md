@@ -1,31 +1,12 @@
 ## Refutability: Whether a Pattern Might Fail to Match
 
-Patterns come in two forms: refutable and irrefutable. Patterns that will match
-for any possible value passed are _irrefutable_. An example would be `x` in the
-statement `let x = 5;` because `x` matches anything and therefore cannot fail
-to match. Patterns that can fail to match for some possible value are
-_refutable_. An example would be `Some(x)` in the expression `if let Some(x) =
-a_value` because if the value in the `a_value` variable is `None` rather than
-`Some`, the `Some(x)` pattern will not match.
+Patterns do forms mein hoti hain: refutable aur irrefutable. Woh patterns jo pass ki jane wali kisi bhi possible value ke saath match karengi *irrefutable* hoti hain. Is ki ek misaal `let x = 5;` statement mein `x` hai, kyun ke `x` kisi bhi cheez se match karta hai aur is liye match karne mein fail nahi ho sakta. Woh patterns jo kisi possible value ke liye match karne mein fail ho sakti hain *refutable* hoti hain. Is ki ek misaal `if let Some(x) = a_value` expression mein `Some(x)` hai, kyun ke agar `a_value` variable mein value `Some` ke bajaye `None` ho, to `Some(x)` pattern match nahi karegi.
 
-Function parameters, `let` statements, and `for` loops can only accept
-irrefutable patterns because the program cannot do anything meaningful when
-values don’t match. The `if let` and `while let` expressions and the
-`let...else` statement accept refutable and irrefutable patterns, but the
-compiler warns against irrefutable patterns because, by definition, they’re
-intended to handle possible failure: The functionality of a conditional is in
-its ability to perform differently depending on success or failure.
+Function parameters, `let` statements, aur `for` loops sirf irrefutable patterns accept kar sakte hain kyun ke jab values match na karein to program kuch meaningful nahi kar sakta. `if let` aur `while let` expressions aur `let...else` statement refutable aur irrefutable dono patterns accept karte hain, lekin compiler irrefutable patterns ke against warning deta hai kyun ke definition ke mutabiq, in constructs ka maqsad possible failure ko handle karna hota hai: conditional ki functionality is baat mein hai ke woh success ya failure ke mutabiq different tareeqe se perform kar sakti hai.
 
-In general, you shouldn’t have to worry about the distinction between refutable
-and irrefutable patterns; however, you do need to be familiar with the concept
-of refutability so that you can respond when you see it in an error message. In
-those cases, you’ll need to change either the pattern or the construct you’re
-using the pattern with, depending on the intended behavior of the code.
+Aam tor par, aapko refutable aur irrefutable patterns ke darmiyan distinction ki zyada fikr nahi honi chahiye; lekin aapko refutability ke concept se familiar hona zaroori hai taake jab aap ise error message mein dekhein to us ka response de sakein. Un cases mein, aapko ya to pattern change karna hoga ya us construct ko jiske saath aap pattern use kar rahe hain, yeh code ke intended behavior par depend karta hai.
 
-Let’s look at an example of what happens when we try to use a refutable pattern
-where Rust requires an irrefutable pattern and vice versa. Listing 19-8 shows a
-`let` statement, but for the pattern, we’ve specified `Some(x)`, a refutable
-pattern. As you might expect, this code will not compile.
+Aaiye ek example dekhte hain ke jab hum refutable pattern ko wahan use karne ki koshish karte hain jahan Rust ko irrefutable pattern chahiye, aur vice versa, to kya hota hai. Listing 19-8 mein ek `let` statement hai, lekin pattern ke liye humne `Some(x)` specify kiya hai, jo ek refutable pattern hai. Jaisa ke aap expect kar sakte hain, yeh code compile nahi hoga.
 
 <Listing number="19-8" caption="Attempting to use a refutable pattern with `let`">
 
@@ -35,24 +16,15 @@ pattern. As you might expect, this code will not compile.
 
 </Listing>
 
-If `some_option_value` were a `None` value, it would fail to match the pattern
-`Some(x)`, meaning the pattern is refutable. However, the `let` statement can
-only accept an irrefutable pattern because there is nothing valid the code can
-do with a `None` value. At compile time, Rust will complain that we’ve tried to
-use a refutable pattern where an irrefutable pattern is required:
+Agar `some_option_value` ki value `None` hoti, to yeh `Some(x)` pattern ke saath match karne mein fail hoti, yani yeh pattern refutable hai. Lekin `let` statement sirf ek irrefutable pattern accept kar sakta hai kyun ke `None` value ke saath code kuch valid nahi kar sakta. Compile time par, Rust shikayat karega ke humne wahan refutable pattern use karne ki koshish ki hai jahan irrefutable pattern required hai:
 
 ```console
 {{#include ../listings/ch19-patterns-and-matching/listing-19-08/output.txt}}
 ```
 
-Because we didn’t cover (and couldn’t cover!) every valid value with the
-pattern `Some(x)`, Rust rightfully produces a compiler error.
+Kyun ke humne `Some(x)` pattern ke saath har valid value ko cover nahi kiya (aur cover kar bhi nahi sakte the!), Rust bilkul durust tor par compiler error produce karta hai.
 
-If we have a refutable pattern where an irrefutable pattern is needed, we can
-fix it by changing the code that uses the pattern: Instead of using `let`, we
-can use `let...else`. Then, if the pattern doesn’t match, the code in the curly
-brackets will handle the value. Listing 19-9 shows how to fix the code in
-Listing 19-8.
+Agar hamare paas wahan refutable pattern ho jahan irrefutable pattern ki zaroorat hai, to hum pattern ko use karne wale code ko change karke ise fix kar sakte hain: `let` use karne ke bajaye, hum `let...else` use kar sakte hain. Phir, agar pattern match nahi karta, to curly brackets mein maujood code us value ko handle karega. Listing 19-9 dikhati hai ke Listing 19-8 ke code ko kaise fix kiya ja sakta hai.
 
 <Listing number="19-9" caption="Using `let...else` and a block with refutable patterns instead of `let`">
 
@@ -62,10 +34,7 @@ Listing 19-8.
 
 </Listing>
 
-We’ve given the code an out! This code is perfectly valid, although it means we
-cannot use an irrefutable pattern without receiving a warning. If we give
-`let...else` a pattern that will always match, such as `x`, as shown in Listing
-19-10, the compiler will give a warning.
+Humne code ko ek exit de diya hai! Yeh code bilkul valid hai, halaanke iska matlab hai ke hum irrefutable pattern ko warning receive kiye baghair use nahi kar sakte. Agar hum `let...else` ko aisa pattern dein jo hamesha match kare, jaise `x`, jaisa ke Listing 19-10 mein dikhaya gaya hai, to compiler warning dega.
 
 <Listing number="19-10" caption="Attempting to use an irrefutable pattern with `let...else`">
 
@@ -75,19 +44,12 @@ cannot use an irrefutable pattern without receiving a warning. If we give
 
 </Listing>
 
-Rust complains that it doesn’t make sense to use `let...else` with an
-irrefutable pattern because the `else` will never be reached:
+Rust shikayat karta hai ke `let...else` ko irrefutable pattern ke saath use karna sense nahi banata kyun ke `else` kabhi reach nahi hoga:
 
 ```console
 {{#include ../listings/ch19-patterns-and-matching/listing-19-10/output.txt}}
 ```
 
-For this reason, match arms must use refutable patterns, except for the last
-arm, which should match any remaining values with an irrefutable pattern. Rust
-allows us to use an irrefutable pattern in a `match` with only one arm, but
-this syntax isn’t particularly useful and could be replaced with a simpler
-`let` statement.
+Isi wajah se, `match` arms ko refutable patterns use karni chahiye, siwaye last arm ke, jo irrefutable pattern ke saath baqi reh jane wali tamam values se match karna chahiye. Rust humein sirf ek arm wali `match` mein irrefutable pattern use karne ki permission deta hai, lekin yeh syntax khaas useful nahi hai aur isay ek simpler `let` statement se replace kiya ja sakta hai.
 
-Now that you know where to use patterns and the difference between refutable
-and irrefutable patterns, let’s cover all the syntax we can use to create
-patterns.
+Ab jab aap jaante hain ke patterns ko kahan use karna hai aur refutable aur irrefutable patterns mein kya difference hai, to aaiye un tamam syntax ko cover karte hain jinhein hum patterns create karne ke liye use kar sakte hain.

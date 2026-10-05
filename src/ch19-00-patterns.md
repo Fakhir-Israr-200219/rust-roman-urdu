@@ -1,29 +1,15 @@
 # Patterns and Matching
 
-Patterns are a special syntax in Rust for matching against the structure of
-types, both complex and simple. Using patterns in conjunction with `match`
-expressions and other constructs gives you more control over a program’s
-control flow. A pattern consists of some combination of the following:
+Patterns Rust mein ek special syntax hain jo types ke structure, chahe woh complex hon ya simple, ke against matching ke liye use hoti hain. Patterns ko `match` expressions aur doosre constructs ke saath use karne se aap program ke control flow par zyada control hasil karte hain. Ek pattern mein neeche diye gaye elements mein se kuch ka combination hota hai:
 
-- Literals
-- Destructured arrays, enums, structs, or tuples
-- Variables
-- Wildcards
-- Placeholders
+* Literals
+* Destructured arrays, enums, structs, ya tuples
+* Variables
+* Wildcards
+* Placeholders
 
-Some example patterns include `x`, `(a, 3)`, and `Some(Color::Red)`. In the
-contexts in which patterns are valid, these components describe the shape of
-data. Our program then matches values against the patterns to determine whether
-it has the correct shape of data to continue running a particular piece of code.
+Kuch example patterns `x`, `(a, 3)`, aur `Some(Color::Red)` hain. Jin contexts mein patterns valid hoti hain, wahan ye components data ki shape ko describe karte hain. Phir hamara program values ko patterns ke against match karta hai taake determine kiya ja sake ke particular piece of code ko continue run karne ke liye data ki shape correct hai ya nahi.
 
-To use a pattern, we compare it to some value. If the pattern matches the
-value, we use the value parts in our code. Recall the `match` expressions in
-Chapter 6 that used patterns, such as the coin-sorting machine example. If the
-value fits the shape of the pattern, we can use the named pieces. If it
-doesn’t, the code associated with the pattern won’t run.
+Pattern ko use karne ke liye, hum usay kisi value ke saath compare karte hain. Agar pattern value se match karti hai, to hum value ke parts ko apne code mein use karte hain. Chapter 6 mein `match` expressions ko yaad karein jo patterns use karti thin, jaise coin-sorting machine ka example. Agar value pattern ki shape mein fit hoti hai, to hum named pieces ko use kar sakte hain. Agar fit nahi hoti, to pattern se associated code run nahi hoga.
 
-This chapter is a reference on all things related to patterns. We’ll cover the
-valid places to use patterns, the difference between refutable and irrefutable
-patterns, and the different kinds of pattern syntax that you might see. By the
-end of the chapter, you’ll know how to use patterns to express many concepts in
-a clear way.
+Yeh chapter patterns se related tamam cheezon ke liye ek reference hai. Hum patterns ko use karne ki valid places, refutable aur irrefutable patterns ke darmiyan difference, aur mukhtalif kinds of pattern syntax ko cover karenge jo aap dekh sakte hain. Chapter ke end tak, aap patterns ko bohat se concepts ko clear way mein express karne ke liye use karna jaante honge.
