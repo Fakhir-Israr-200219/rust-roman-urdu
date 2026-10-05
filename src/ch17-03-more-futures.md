@@ -5,24 +5,25 @@
 
 ### Yielding Control to the Runtime
 
-Recall from the [“Our First Async Program”][async-program]<!-- ignore -->
-section that at each await point, Rust gives a runtime a chance to pause the
-task and switch to another one if the future being awaited isn’t ready. The
-inverse is also true: Rust _only_ pauses async blocks and hands control back to
-a runtime at an await point. Everything between await points is synchronous.
+[“Our First Async Program”][async-program]<!-- ignore -->
+section se yaad karein ke har await point par, Rust runtime ko yeh mauqa deta hai ke agar jis
+future ko await kiya ja raha hai woh ready nahi hai, to woh task ko pause karke kisi doosre task
+par switch kar sake. Is ka ulta bhi true hai: Rust *sirf* await point par async blocks ko pause
+karta hai aur control runtime ko wapas deta hai. Await points ke darmiyan sab kuch synchronous
+hota hai.
 
-That means if you do a bunch of work in an async block without an await point,
-that future will block any other futures from making progress. You may sometimes
-hear this referred to as one future _starving_ other futures. In some cases,
-that may not be a big deal. However, if you are doing some kind of expensive
-setup or long-running work, or if you have a future that will keep doing some
-particular task indefinitely, you’ll need to think about when and where to hand
-control back to the runtime.
+Is ka matlab hai ke agar aap kisi async block mein await point ke baghair bohot sara kaam karte
+hain, to woh future kisi doosre future ko progress karne se rok dega. Aap kabhi kabhi isay yeh
+kehte hue sun sakte hain ke ek future doosre futures ko *starve* kar raha hai. Kuch cases mein,
+yeh koi bara masla nahi hota. Lekin agar aap kisi qisam ka expensive setup ya long-running
+work kar rahe hain, ya aapke paas koi aisa future hai jo kisi particular task ko indefinitely
+karta rahega, to aapko sochna hoga ke runtime ko control kab aur kahan wapas dena hai.
 
-Let’s simulate a long-running operation to illustrate the starvation problem,
-then explore how to solve it. Listing 17-14 introduces a `slow` function.
+Starvation problem ko illustrate karne ke liye aaiye ek long-running operation ko simulate
+karte hain, phir explore karte hain ke isay solve kaise kiya ja sakta hai. Listing 17-14 ek
+`slow` function introduce karti hai.
 
-<Listing number="17-14" caption="Using `thread::sleep` to simulate slow operations" file-name="src/main.rs">
+<Listing number="17-14" caption="Slow operations ko simulate karne ke liye `thread::sleep` use karna" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-14/src/main.rs:slow}}
@@ -30,15 +31,14 @@ then explore how to solve it. Listing 17-14 introduces a `slow` function.
 
 </Listing>
 
-This code uses `std::thread::sleep` instead of `trpl::sleep` so that calling
-`slow` will block the current thread for some number of milliseconds. We can
-use `slow` to stand in for real-world operations that are both long-running and
-blocking.
+Yeh code `trpl::sleep` ke bajaye `std::thread::sleep` use karta hai taake `slow` ko call karna
+current thread ko kuch milliseconds ke liye block kare. Hum `slow` ko un real-world operations
+ki jagah use kar sakte hain jo long-running aur blocking dono hoti hain.
 
-In Listing 17-15, we use `slow` to emulate doing this kind of CPU-bound work in
-a pair of futures.
+Listing 17-15 mein, hum `slow` ko CPU-bound work ki is qisam ko futures ke ek pair mein emulate
+karne ke liye use karte hain.
 
-<Listing number="17-15" caption="Calling the `slow` function to simulate slow operations" file-name="src/main.rs">
+<Listing number="17-15" caption="Slow operations ko simulate karne ke liye `slow` function ko call karna" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-15/src/main.rs:slow-futures}}
@@ -46,8 +46,8 @@ a pair of futures.
 
 </Listing>
 
-Each future hands control back to the runtime only _after_ carrying out a bunch
-of slow operations. If you run this code, you will see this output:
+Har future bohot sari slow operations carry out karne ke *baad* hi control runtime ko wapas
+deta hai. Agar aap yeh code run karein, to aapko yeh output nazar aayega:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-15/
@@ -68,22 +68,22 @@ copy just the output
 'a' finished.
 ```
 
-As with Listing 17-5 where we used `trpl::select` to race futures fetching two
-URLs, `select` still finishes as soon as `a` is done. There’s no interleaving
-between the calls to `slow` in the two futures, though. The `a` future does all
-of its work until the `trpl::sleep` call is awaited, then the `b` future does
-all of its work until its own `trpl::sleep` call is awaited, and finally the
-`a` future completes. To allow both futures to make progress between their slow
-tasks, we need await points so we can hand control back to the runtime. That
-means we need something we can await!
+Listing 17-5 ki tarah, jahan humne do URLs fetch karne wale futures ko race karne ke liye
+`trpl::select` use kiya tha, `select` usi waqt finish hota hai jab `a` complete ho jata hai.
+Lekin dono futures mein `slow` calls ke darmiyan koi interleaving nahi hoti. `a` future apna
+tamam kaam karta hai jab tak `trpl::sleep` call ko await nahi kiya jata, phir `b` future apna
+tamam kaam karta hai jab tak uski apni `trpl::sleep` call ko await nahi kiya jata, aur aakhir
+mein `a` future complete ho jata hai. Dono futures ko unke slow tasks ke darmiyan progress
+karne dene ke liye, humein await points chahiye taake hum control runtime ko wapas de saken.
+Is ka matlab hai ke humein koi aisi cheez chahiye jise hum await kar saken!
 
-We can already see this kind of handoff happening in Listing 17-15: if we
-removed the `trpl::sleep` at the end of the `a` future, it would complete
-without the `b` future running _at all_. Let’s try using the `trpl::sleep`
-function as a starting point for letting operations switch off making progress,
-as shown in Listing 17-16.
+Hum Listing 17-15 mein is qisam ka handoff pehle se hota hua dekh sakte hain: agar hum `a`
+future ke end par `trpl::sleep` ko remove kar dein, to woh `b` future ke *bilkul bhi* run kiye
+baghair complete ho jayega. Aaiye `trpl::sleep` function ko operations ko progress karne se
+switch off karne dene ke liye starting point ke taur par use karne ki koshish karte hain, jaisa
+ke Listing 17-16 mein dikhaya gaya hai.
 
-<Listing number="17-16" caption="Using `trpl::sleep` to let operations switch off making progress" file-name="src/main.rs">
+<Listing number="17-16" caption="Operations ko progress karne se switch off karne dene ke liye `trpl::sleep` use karna" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-16/src/main.rs:here}}
@@ -91,8 +91,8 @@ as shown in Listing 17-16.
 
 </Listing>
 
-We’ve added `trpl::sleep` calls with await points between each call to `slow`.
-Now the two futures’ work is interleaved:
+Humne har `slow` call ke darmiyan await points ke saath `trpl::sleep` calls add ki hain.
+Ab dono futures ka work interleaved hai:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-16
@@ -112,18 +112,18 @@ copy just the output
 'a' finished.
 ```
 
-The `a` future still runs for a bit before handing off control to `b`, because
-it calls `slow` before ever calling `trpl::sleep`, but after that the futures
-swap back and forth each time one of them hits an await point. In this case, we
-have done that after every call to `slow`, but we could break up the work in
-whatever way makes the most sense to us.
+`a` future ab bhi `b` ko control hand off karne se pehle kuch der run karta hai, kyun ke woh
+`trpl::sleep` ko call karne se pehle `slow` ko call karta hai, lekin us ke baad futures har
+baar ek doosre ke saath switch karte hain jab un mein se koi await point tak pohanchta hai.
+Is case mein, humne yeh har `slow` call ke baad kiya hai, lekin hum work ko apni zaroorat ke
+mutabiq kisi bhi tarah break up kar sakte hain.
 
-We don’t really want to _sleep_ here, though: we want to make progress as fast
-as we can. We just need to hand back control to the runtime. We can do that
-directly, using the `trpl::yield_now` function. In Listing 17-17, we replace
-all those `trpl::sleep` calls with `trpl::yield_now`.
+Lekin hum yahan asal mein *sleep* nahi karna chahte: hum jitni tezi se ho sake progress karna
+chahte hain. Humein sirf control runtime ko wapas dena hai. Hum yeh directly `trpl::yield_now`
+function ko use karke kar sakte hain. Listing 17-17 mein, hum un tamam `trpl::sleep` calls ko
+`trpl::yield_now` se replace karte hain.
 
-<Listing number="17-17" caption="Using `yield_now` to let operations switch off making progress" file-name="src/main.rs">
+<Listing number="17-17" caption="Operations ko progress karne se switch off karne dene ke liye `yield_now` use karna" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-17/src/main.rs:yields}}
@@ -131,42 +131,43 @@ all those `trpl::sleep` calls with `trpl::yield_now`.
 
 </Listing>
 
-This code is both clearer about the actual intent and can be significantly
-faster than using `sleep`, because timers such as the one used by `sleep` often
-have limits on how granular they can be. The version of `sleep` we are using,
-for example, will always sleep for at least a millisecond, even if we pass it a
-`Duration` of one nanosecond. Again, modern computers are _fast_: they can do a
-lot in one millisecond!
+Yeh code actual intent ke baare mein zyada clear hai aur `sleep` use karne ke muqable mein
+significantly faster bhi ho sakta hai, kyun ke `sleep` jaise timers ki aksar is baat par limits
+hoti hain ke woh kitni granular ho sakti hain. Misal ke taur par, `sleep` ka jo version hum use
+kar rahe hain, woh hamesha kam az kam ek millisecond ke liye sleep karega, chahe hum usay
+one nanosecond ki `Duration` dein. Dobara, modern computers *fast* hain: woh ek millisecond
+mein bohot kuch kar sakte hain!
 
-This means that async can be useful even for compute-bound tasks, depending on
-what else your program is doing, because it provides a useful tool for
-structuring the relationships between different parts of the program (but at a
-cost of the overhead of the async state machine). This is a form of
-_cooperative multitasking_, where each future has the power to determine when
-it hands over control via await points. Each future therefore also has the
-responsibility to avoid blocking for too long. In some Rust-based embedded
-operating systems, this is the _only_ kind of multitasking!
+Is ka matlab hai ke async compute-bound tasks ke liye bhi useful ho sakta hai, yeh is baat par
+depend karta hai ke aapka program aur kya kar raha hai, kyun ke yeh program ke different parts
+ke darmiyan relationships ko structure karne ke liye ek useful tool provide karta hai (lekin
+async state machine ke overhead ki cost ke saath). Yeh *cooperative multitasking* ki ek form
+hai, jahan har future ke paas await points ke zariye yeh determine karne ki power hoti hai ke
+woh control kab hand over kare. Is liye har future ki yeh responsibility bhi hoti hai ke woh
+bohot der tak blocking na kare. Kuch Rust-based embedded operating systems mein, multitasking
+ki *sirf* yahi qisam hoti hai!
 
-In real-world code, you won’t usually be alternating function calls with await
-points on every single line, of course. While yielding control in this way is
-relatively inexpensive, it’s not free. In many cases, trying to break up a
-compute-bound task might make it significantly slower, so sometimes it’s better
-for _overall_ performance to let an operation block briefly. Always
-measure to see what your code’s actual performance bottlenecks are. The
-underlying dynamic is important to keep in mind, though, if you _are_ seeing a
-lot of work happening in serial that you expected to happen concurrently!
+Real-world code mein, aap aam tor par har single line par function calls ko await points ke
+saath alternate nahi karenge, bilkul obvious hai. Is tarah control yield karna relatively
+inexpensive hai, lekin free nahi hai. Bohot se cases mein, compute-bound task ko break up
+karne ki koshish usay significantly slower bana sakti hai, is liye kabhi kabhi *overall*
+performance ke liye operation ko thori der block hone dena behtar hota hai. Hamesha measure
+karein taake pata chal sake ke aapke code ke actual performance bottlenecks kya hain. Lekin
+underlying dynamic ko zehan mein rakhna important hai, khaas taur par agar aapko *serial* mein
+bohot sara work hota hua nazar aa raha ho jab ke aap expect kar rahe thay ke woh concurrently
+hoga!
 
 ### Building Our Own Async Abstractions
 
-We can also compose futures together to create new patterns. For example, we can
-build a `timeout` function with async building blocks we already have. When
-we’re done, the result will be another building block we could use to create
-still more async abstractions.
+Hum futures ko ek doosre ke saath compose karke naye patterns bhi create kar sakte hain. Misal ke taur par, hum
+pehle se maujood async building blocks ko use karke ek `timeout` function bana sakte hain. Jab hum complete
+kar lenge, to result mein hamare paas ek aur building block hoga jise hum mazeed async abstractions create
+karne ke liye use kar sakenge.
 
-Listing 17-18 shows how we would expect this `timeout` to work with a slow
-future.
+Listing 17-18 dikhati hai ke hum expect karenge ke yeh `timeout` ek slow
+future ke saath kaise work kare.
 
-<Listing number="17-18" caption="Using our imagined `timeout` to run a slow operation with a time limit" file-name="src/main.rs">
+<Listing number="17-18" caption="Time limit ke saath slow operation ko run karne ke liye hamare imagined `timeout` ko use karna" file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-18/src/main.rs:here}}
@@ -174,23 +175,22 @@ future.
 
 </Listing>
 
-Let’s implement this! To begin, let’s think about the API for `timeout`:
+Aaiye isay implement karte hain! Shuru karne ke liye, aaiye `timeout` ke API ke baare mein sochte hain:
 
-- It needs to be an async function itself so we can await it.
-- Its first parameter should be a future to run. We can make it generic to allow
-  it to work with any future.
-- Its second parameter will be the maximum time to wait. If we use a `Duration`,
-  that will make it easy to pass along to `trpl::sleep`.
-- It should return a `Result`. If the future completes successfully, the
-  `Result` will be `Ok` with the value produced by the future. If the timeout
-  elapses first, the `Result` will be `Err` with the duration that the timeout
-  waited for.
+* Isay khud ek async function hona chahiye taake hum isay await kar saken.
+* Is ka pehla parameter ek future hona chahiye jise run karna hai. Hum isay generic bana sakte hain taake
+  yeh kisi bhi future ke saath work kar sake.
+* Is ka doosra parameter wait karne ka maximum time hoga. Agar hum `Duration` use karein, to isay
+  `trpl::sleep` ko pass karna easy hoga.
+* Isay ek `Result` return karna chahiye. Agar future successfully complete ho jata hai, to `Result` future
+  ki produced value ke saath `Ok` hoga. Agar timeout pehle elapse ho jata hai, to `Result` us duration ke
+  saath `Err` hoga jitni der timeout ne wait kiya.
 
-Listing 17-19 shows this declaration.
+Listing 17-19 mein yeh declaration dikhayi gayi hai.
 
 <!-- This is not tested because it intentionally does not compile. -->
 
-<Listing number="17-19" caption="Defining the signature of `timeout`" file-name="src/main.rs">
+<Listing number="17-19" caption="`timeout` ki signature define karna" file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-19/src/main.rs:declaration}}
@@ -198,15 +198,14 @@ Listing 17-19 shows this declaration.
 
 </Listing>
 
-That satisfies our goals for the types. Now let’s think about the _behavior_ we
-need: we want to race the future passed in against the duration. We can use
-`trpl::sleep` to make a timer future from the duration, and use `trpl::select`
-to run that timer with the future the caller passes in.
+Yeh hamare types ke goals ko satisfy karta hai. Ab aaiye us *behavior* ke baare mein sochte hain jo
+humein chahiye: hum passed-in future ko duration ke against race karna chahte hain. Hum duration se ek
+timer future banane ke liye `trpl::sleep` use kar sakte hain, aur us timer ko caller ke passed-in future
+ke saath run karne ke liye `trpl::select` use kar sakte hain.
 
-In Listing 17-20, we implement `timeout` by matching on the result of awaiting
-`trpl::select`.
+Listing 17-20 mein, hum `trpl::select` ko await karne ke result par match karke `timeout` implement karte hain.
 
-<Listing number="17-20" caption="Defining `timeout` with `select` and `sleep`" file-name="src/main.rs">
+<Listing number="17-20" caption="`select` aur `sleep` ke saath `timeout` define karna" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-20/src/main.rs:implementation}}
@@ -214,36 +213,34 @@ In Listing 17-20, we implement `timeout` by matching on the result of awaiting
 
 </Listing>
 
-The implementation of `trpl::select` is not fair: it always polls arguments in
-the order in which they are passed (other `select` implementations will
-randomly choose which argument to poll first). Thus, we pass `future_to_try` to
-`select` first so it gets a chance to complete even if `max_time` is a very
-short duration. If `future_to_try` finishes first, `select` will return `Left`
-with the output from `future_to_try`. If `timer` finishes first, `select` will
-return `Right` with the timer’s output of `()`.
+`trpl::select` ki implementation fair nahi hai: yeh hamesha arguments ko usi order mein poll karti hai jis
+order mein woh pass kiye jate hain (doosri `select` implementations randomly choose karengi ke pehle kis
+argument ko poll karna hai). Is liye, hum `future_to_try` ko `select` ko sab se pehle pass karte hain taake
+usay complete hone ka mauqa mile, chahe `max_time` bohot short duration hi kyun na ho. Agar `future_to_try`
+pehle finish hota hai, to `select`, `future_to_try` ke output ke saath `Left` return karega. Agar `timer`
+pehle finish hota hai, to `select` timer ke output `()` ke saath `Right` return karega.
 
-If the `future_to_try` succeeds and we get a `Left(output)`, we return
-`Ok(output)`. If the sleep timer elapses instead and we get a `Right(())`, we
-ignore the `()` with `_` and return `Err(max_time)` instead.
+Agar `future_to_try` successfully complete hota hai aur humein `Left(output)` milta hai, to hum
+`Ok(output)` return karte hain. Agar is ke bajaye sleep timer elapse ho jata hai aur humein `Right(())`
+milta hai, to hum `_` ke zariye `()` ko ignore karte hain aur is ke bajaye `Err(max_time)` return karte hain.
 
-With that, we have a working `timeout` built out of two other async helpers. If
-we run our code, it will print the failure mode after the timeout:
+Is ke saath, hamare paas do doosre async helpers se bana hua ek working `timeout` hai. Agar hum apna code
+run karein, to yeh timeout ke baad failure mode print karega:
 
 ```text
 Failed after 2 seconds
 ```
 
-Because futures compose with other futures, you can build really powerful tools
-using smaller async building blocks. For example, you can use this same
-approach to combine timeouts with retries, and in turn use those with
-operations such as network calls (such as those in Listing 17-5).
+Kyun ke futures doosre futures ke saath compose ho sakte hain, aap chhote async building blocks ko use
+karke bohot powerful tools build kar sakte hain. Misal ke taur par, aap isi approach ko timeouts ko
+retries ke saath combine karne ke liye use kar sakte hain, aur phir unhein network calls jaisi operations
+ke saath use kar sakte hain (jaise Listing 17-5 mein).
 
-In practice, you’ll usually work directly with `async` and `await`, and
-secondarily with functions such as `select` and macros such as the `join!`
-macro to control how the outermost futures are executed.
+Practice mein, aap aam tor par directly `async` aur `await` ke saath kaam karenge, aur secondary taur par
+`select` jaise functions aur `join!` macro jaise macros ko use karenge taake yeh control kiya ja sake ke
+outermost futures kaise execute hote hain.
 
-We’ve now seen a number of ways to work with multiple futures at the same time.
-Up next, we’ll look at how we can work with multiple futures in a sequence over
-time with _streams_.
+Ab humne ek hi waqt mein multiple futures ke saath kaam karne ke kai tareeqe dekhe hain. Agay, hum dekhenge
+ke *streams* ke saath waqt ke saath sequence mein multiple futures ke saath kaise kaam kiya ja sakta hai.
 
 [async-program]: ch17-01-futures-and-syntax.html#our-first-async-program

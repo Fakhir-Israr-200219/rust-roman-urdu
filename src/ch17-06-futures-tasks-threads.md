@@ -1,66 +1,23 @@
 ## Putting It All Together: Futures, Tasks, and Threads
 
-As we saw in [Chapter 16][ch16]<!-- ignore -->, threads provide one approach to
-concurrency. We’ve seen another approach in this chapter: using async with
-futures and streams. If you’re wondering when to choose one method over the other,
-the answer is: it depends! And in many cases, the choice isn’t threads _or_
-async but rather threads _and_ async.
+Jaisa ke humne [Chapter 16][ch16]<!-- ignore --> mein dekha, threads concurrency ke liye ek approach provide karte hain. Is chapter mein humne ek aur approach dekhi hai: futures aur streams ke saath async use karna. Agar aap soch rahe hain ke ek method ko doosre par kab choose karna chahiye, to jawab hai: yeh depend karta hai! Aur bohot se cases mein choice threads *ya* async nahi, balkay threads *aur* async hoti hai.
 
-Many operating systems have supplied threading-based concurrency models for
-decades now, and many programming languages support them as a result. However,
-these models are not without their tradeoffs. On many operating systems, they
-use a fair bit of memory for each thread. Threads are also only an option when
-your operating system and hardware support them. Unlike mainstream desktop and
-mobile computers, some embedded systems don’t have an OS at all, so they also
-don’t have threads.
+Bohot se operating systems ne decades se threading-based concurrency models provide kiye hue hain, aur natije ke taur par bohot si programming languages unhein support karti hain. Lekin in models ke apne tradeoffs hain. Bohot se operating systems par har thread ke liye kaafi memory use hoti hai. Threads tabhi ek option hain jab aapka operating system aur hardware unhein support karein. Mainstream desktop aur mobile computers ke unlike, kuch embedded systems mein bilkul OS nahi hota, is liye un mein threads bhi nahi hote.
 
-The async model provides a different—and ultimately complementary—set of
-tradeoffs. In the async model, concurrent operations don’t require their own
-threads. Instead, they can run on tasks, as when we used `trpl::spawn_task` to
-kick off work from a synchronous function in the streams section. A task is
-similar to a thread, but instead of being managed by the operating system, it’s
-managed by library-level code: the runtime.
+Async model tradeoffs ka ek different—aur aakhirkar complementary—set provide karta hai. Async model mein concurrent operations ke liye apne threads ki zaroorat nahi hoti. Is ke bajaye, woh tasks par run kar sakte hain, jaise humne streams section mein synchronous function se work start karne ke liye `trpl::spawn_task` use kiya tha. Task thread ke similar hota hai, lekin operating system ke bajaye library-level code: runtime, usay manage karta hai.
 
-There’s a reason the APIs for spawning threads and spawning tasks are so
-similar. Threads act as a boundary for sets of synchronous operations;
-concurrency is possible _between_ threads. Tasks act as a boundary for sets of
-_asynchronous_ operations; concurrency is possible both _between_ and _within_
-tasks, because a task can switch between futures in its body. Finally, futures
-are Rust’s most granular unit of concurrency, and each future may represent a
-tree of other futures. The runtime—specifically, its executor—manages tasks,
-and tasks manage futures. In that regard, tasks are similar to lightweight,
-runtime-managed threads with added capabilities that come from being managed by
-a runtime instead of by the operating system.
+Threads spawn karne aur tasks spawn karne ki APIs itni similar hone ki ek wajah hai. Threads synchronous operations ke sets ke liye ek boundary ki tarah act karte hain; concurrency threads *ke darmiyan* possible hoti hai. Tasks *asynchronous* operations ke sets ke liye ek boundary ki tarah act karte hain; concurrency tasks *ke darmiyan* aur tasks *ke andar* dono possible hoti hai, kyun ke ek task apne body mein futures ke darmiyan switch kar sakta hai. Aakhir mein, futures Rust ki concurrency ki sab se granular unit hain, aur har future doosre futures ke ek tree ko represent kar sakta hai. Runtime—specifically, us ka executor—tasks ko manage karta hai, aur tasks futures ko manage karte hain. Is hawale se, tasks lightweight, runtime-managed threads ke similar hain jin mein kuch additional capabilities hoti hain jo operating system ke bajaye runtime ke managed hone se aati hain.
 
-This doesn’t mean that async tasks are always better than threads (or vice
-versa). Concurrency with threads is in some ways a simpler programming model
-than concurrency with `async`. That can be a strength or a weakness. Threads are
-somewhat “fire and forget”; they have no native equivalent to a future, so they
-simply run to completion without being interrupted except by the operating
-system itself.
+Is ka matlab yeh nahi ke async tasks hamesha threads se behtar hain (ya is ke baraks). Threads ke saath concurrency kuch ways mein `async` ke saath concurrency se simpler programming model hai. Yeh ek strength ya weakness ho sakti hai. Threads kuch had tak “fire and forget” hote hain; un ka future ke barabar koi native equivalent nahi hota, is liye woh simply completion tak run karte hain aur sirf operating system khud hi unhein interrupt kar sakta hai.
 
-And it turns out that threads and tasks often work
-very well together, because tasks can (at least in some runtimes) be moved
-around between threads. In fact, under the hood, the runtime we’ve been
-using—including the `spawn_blocking` and `spawn_task` functions—is multithreaded
-by default! Many runtimes use an approach called _work stealing_ to
-transparently move tasks around between threads, based on how the threads are
-currently being utilized, to improve the system’s overall performance. That
-approach actually requires threads _and_ tasks, and therefore futures.
+Aur yeh pata chalta hai ke threads aur tasks aksar ek saath bohot achi tarah work karte hain, kyun ke tasks ko (kam az kam kuch runtimes mein) threads ke darmiyan move kiya ja sakta hai. Darasal, under the hood, jis runtime ko hum use kar rahe hain—jis mein `spawn_blocking` aur `spawn_task` functions bhi shamil hain—woh default tor par multithreaded hai! Bohot se runtimes *work stealing* naam ka approach use karte hain taake threads ke current utilization ki bunyaad par tasks ko transparently threads ke darmiyan move kiya ja sake aur system ki overall performance improve ho. Is approach ke liye asal mein threads *aur* tasks, aur is liye futures, ki zaroorat hoti hai.
 
-When thinking about which method to use when, consider these rules of thumb:
+Jab aap soch rahe hon ke kab kaunsa method use karna hai, to in rules of thumb ko consider karein:
 
-- If the work is _very parallelizable_ (that is, CPU-bound), such as processing
-  a bunch of data where each part can be processed separately, threads are a
-  better choice.
-- If the work is _very concurrent_ (that is, I/O-bound), such as handling
-  messages from a bunch of different sources that may come in at different
-  intervals or different rates, async is a better choice.
+* Agar work *very parallelizable* hai (yani CPU-bound), jaise data ke ek bunch ko process karna jahan har part ko separately process kiya ja sakta hai, to threads behtar choice hain.
+* Agar work *very concurrent* hai (yani I/O-bound), jaise bohot se different sources se messages handle karna jo different intervals ya different rates par aa sakte hain, to async behtar choice hai.
 
-And if you need both parallelism and concurrency, you don’t have to choose
-between threads and async. You can use them together freely, letting each
-play the part it’s best at. For example, Listing 17-25 shows a fairly common
-example of this kind of mix in real-world Rust code.
+Aur agar aapko parallelism aur concurrency dono ki zaroorat hai, to aapko threads aur async mein se ek choose karne ki zaroorat nahi. Aap unhein freely ek saath use kar sakte hain aur har ek ko woh role de sakte hain jis ke liye woh sab se suitable hai. Misal ke taur par, Listing 17-25 real-world Rust code mein is tarah ke mix ki ek fairly common example dikhati hai.
 
 <Listing number="17-25" caption="Sending messages with blocking code in a thread and awaiting the messages in an async block" file-name="src/main.rs">
 
@@ -70,34 +27,17 @@ example of this kind of mix in real-world Rust code.
 
 </Listing>
 
-We begin by creating an async channel, then spawning a thread that takes
-ownership of the sender side of the channel using the `move` keyword. Within
-the thread, we send the numbers 1 through 10, sleeping for a second between
-each. Finally, we run a future created with an async block passed to
-`trpl::block_on` just as we have throughout the chapter. In that future, we
-await those messages, just as in the other message-passing examples we have
-seen.
+Hum ek async channel create karke shuru karte hain, phir ek thread spawn karte hain jo `move` keyword use karke channel ke sender side ki ownership le leta hai. Thread ke andar hum 1 se 10 tak numbers send karte hain, har ek ke darmiyan ek second ke liye sleep karte hue. Aakhir mein, hum ek async block ke zariye create kiye gaye future ko `trpl::block_on` ko pass karke run karte hain, bilkul waise hi jaise humne poore chapter mein kiya hai. Us future mein hum un messages ko await karte hain, bilkul un doosre message-passing examples ki tarah jo humne dekhe hain.
 
-To return to the scenario we opened the chapter with, imagine running a set of
-video encoding tasks using a dedicated thread (because video encoding is
-compute-bound) but notifying the UI that those operations are done with an
-async channel. There are countless examples of these kinds of combinations in
-real-world use cases.
+Chapter ke shuru mein jis scenario se humne baat start ki thi, us ki taraf wapas aate hue, imagine karein ke aap video encoding tasks ka ek set dedicated thread use karke run kar rahe hain (kyun ke video encoding compute-bound hai), lekin UI ko in operations ke complete hone ki notification ek async channel ke zariye de rahe hain. Real-world use cases mein is tarah ke combinations ki countless examples hain.
 
 ## Summary
 
-This isn’t the last you’ll see of concurrency in this book. The project in
-[Chapter 21][ch21]<!-- ignore --> will apply these concepts in a more realistic
-situation than the simpler examples discussed here and compare problem-solving
-with threading versus tasks and futures more directly.
+Yeh is book mein concurrency ke hawale se aapki aakhri mulaqat nahi hai. [Chapter 21][ch21]<!-- ignore --> ka project in concepts ko yahan discuss kiye gaye simpler examples se zyada realistic situation mein apply karega aur threading versus tasks aur futures ke saath problem-solving ka zyada direct comparison karega.
 
-No matter which of these approaches you choose, Rust gives you the tools you
-need to write safe, fast, concurrent code—whether for a high-throughput web
-server or an embedded operating system.
+Chahe aap in approaches mein se kaunsa bhi choose karein, Rust aapko safe, fast, concurrent code likhne ke liye zaroori tools deta hai—chahe woh high-throughput web server ke liye ho ya embedded operating system ke liye.
 
-Next, we’ll talk about idiomatic ways to model problems and structure solutions
-as your Rust programs get bigger. In addition, we’ll discuss how Rust’s idioms
-relate to those you might be familiar with from object-oriented programming.
+Next, hum is baat par discuss karenge ke jaise jaise aapke Rust programs bigger hote jate hain, problems ko model karne aur solutions ko structure karne ke idiomatic tareeqe kya hain. Is ke ilawa, hum discuss karenge ke Rust ke idioms un idioms se kis tarah related hain jin se aap object-oriented programming se familiar ho sakte hain.
 
 [ch16]: ch16-00-concurrency.html
 [combining-futures]: ch17-03-more-futures.html#building-our-own-async-abstractions

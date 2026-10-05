@@ -1,110 +1,106 @@
 # Fundamentals of Asynchronous Programming: Async, Await, Futures, and Streams
 
-Many operations we ask the computer to do can take a while to finish. It would
-be nice if we could do something else while we’re waiting for those
-long-running processes to complete. Modern computers offer two techniques for
-working on more than one operation at a time: parallelism and concurrency. Our
-programs’ logic, however, is written in a mostly linear fashion. We’d like to
-be able to specify the operations a program should perform and points at which
-a function could pause and some other part of the program could run instead,
-without needing to specify up front exactly the order and manner in which each
-bit of code should run. _Asynchronous programming_ is an abstraction that lets
-us express our code in terms of potential pausing points and eventual results
-that takes care of the details of coordination for us.
+Computer se hum jo bohot se operations karne ko kehte hain, unhein complete hone mein kuch
+waqt lag sakta hai. Agar hum in long-running processes ke complete hone ka wait karte hue
+kuch aur kar saken to acha hoga. Modern computers ek waqt mein ek se zyada operations par
+kaam karne ke liye do techniques offer karte hain: parallelism aur concurrency. Hamare
+programs ki logic, however, zyada tar linear fashion mein likhi jati hai. Hum yeh specify
+karne ke qabil hona chahte hain ke program ko kaun se operations perform karne chahiye aur
+woh points jahan ek function pause ho sakta hai aur program ka koi doosra hissa is ke bajaye
+run ho sakta hai, bina is ke ke humein pehle se exactly order aur manner specify karna pade
+ke code ka har hissa kis tarah run hona chahiye. *Asynchronous programming* ek abstraction
+hai jo humein apne code ko potential pausing points aur eventual results ke terms mein
+express karne deti hai aur coordination ki details khud handle karti hai.
 
-This chapter builds on Chapter 16’s use of threads for parallelism and
-concurrency by introducing an alternative approach to writing code: Rust’s
-futures, streams, and the `async` and `await` syntax that let us express how
-operations could be asynchronous, and the third-party crates that implement
-asynchronous runtimes: code that manages and coordinates the execution of
-asynchronous operations.
+Yeh chapter Chapter 16 mein parallelism aur concurrency ke liye threads ke use par build karta
+hai aur code likhne ke ek alternative approach ko introduce karta hai: Rust ke futures,
+streams, aur `async` aur `await` syntax, jo humein express karne dete hain ke operations
+asynchronous ho sakte hain, aur third-party crates jo asynchronous runtimes implement karti
+hain: yani aisa code jo asynchronous operations ki execution ko manage aur coordinate karta hai.
 
-Let’s consider an example. Say you’re exporting a video you’ve created of a
-family celebration, an operation that could take anywhere from minutes to
-hours. The video export will use as much CPU and GPU power as it can. If you
-had only one CPU core and your operating system didn’t pause that export until
-it completed—that is, if it executed the export _synchronously_—you couldn’t do
-anything else on your computer while that task was running. That would be a
-pretty frustrating experience. Fortunately, your computer’s operating system
-can, and does, invisibly interrupt the export often enough to let you get other
-work done simultaneously.
+Aaiye ek example par ghaur karte hain. Maan lein aap ek family celebration ki banayi hui
+video export kar rahe hain, ek aisa operation jo minutes se le kar hours tak le sakta hai.
+Video export jitni CPU aur GPU power available ho sakti hai utni use karega. Agar aapke paas
+sirf ek CPU core hota aur aapka operating system export ko complete hone tak pause na karta—
+yani, agar woh export ko *synchronously* execute karta— to aap us task ke run hone ke dauran
+apne computer par aur kuch nahi kar sakte. Yeh kaafi frustrating experience hota.
+Fortunately, aapke computer ka operating system export ko itni dafa aur itne frequently
+invisibly interrupt kar sakta hai, aur karta hai, ke aap simultaneously doosra kaam kar saken.
 
-Now say you’re downloading a video shared by someone else, which can also take
-a while but does not take up as much CPU time. In this case, the CPU has to
-wait for data to arrive from the network. While you can start reading the data
-once it starts to arrive, it might take some time for all of it to show up.
-Even once the data is all present, if the video is quite large, it could take
-at least a second or two to load it all. That might not sound like much, but
-it’s a very long time for a modern processor, which can perform billions of
-operations every second. Again, your operating system will invisibly interrupt
-your program to allow the CPU to perform other work while waiting for the
-network call to finish.
+Ab maan lein aap kisi doosre shakhs ki share ki hui video download kar rahe hain, jo bhi kuch
+waqt le sakti hai lekin utna CPU time nahi leti. Is case mein, CPU ko network se data
+arrive hone ka wait karna padta hai. Jab data arrive hona start hota hai to aap use read
+karna shuru kar sakte hain, lekin is ke tamam data ko appear hone mein kuch waqt lag sakta
+hai. Data tamam present hone ke baad bhi, agar video kaafi large hai, to usay poora load
+hone mein kam az kam ek ya do seconds lag sakte hain. Shayad yeh zyada waqt na lage, lekin
+modern processor ke liye yeh bohot lamba waqt hai, jo har second billions of operations
+perform kar sakta hai. Phir se, aapka operating system aapke program ko invisibly interrupt
+karega taake network call ke finish hone ka wait karte hue CPU doosra kaam perform kar sake.
 
-The video export is an example of a _CPU-bound_ or _compute-bound_ operation.
-It’s limited by the computer’s potential data processing speed within the CPU
-or GPU, and how much of that speed it can dedicate to the operation. The video
-download is an example of an _I/O-bound_ operation, because it’s limited by the
-speed of the computer’s _input and output_; it can only go as fast as the data
-can be sent across the network.
+Video export ek *CPU-bound* ya *compute-bound* operation ki example hai. Yeh CPU ya GPU ke
+andar computer ki potential data processing speed se, aur is baat se limited hai ke woh
+apni kitni speed is operation ke liye dedicate kar sakta hai. Video download ek
+*I/O-bound* operation ki example hai, kyun ke yeh computer ke *input and output* ki speed
+se limited hai; yeh sirf utni speed se chal sakta hai jitni speed se data network ke zariye
+send kiya ja sakta hai.
 
-In both of these examples, the operating system’s invisible interrupts provide
-a form of concurrency. That concurrency happens only at the level of the entire
-program, though: the operating system interrupts one program to let other
-programs get work done. In many cases, because we understand our programs at a
-much more granular level than the operating system does, we can spot
-opportunities for concurrency that the operating system can’t see.
+In dono examples mein, operating system ke invisible interrupts concurrency ki ek form
+provide karte hain. Yeh concurrency sirf poore program ke level par hoti hai, though:
+operating system ek program ko interrupt karta hai taake doosre programs apna kaam kar
+saken. Bohot se cases mein, kyun ke hum apne programs ko operating system ki nisbat bohot
+zyada granular level par samajhte hain, hum concurrency ke aise opportunities dekh sakte
+hain jinhein operating system nahi dekh sakta.
 
-For example, if we’re building a tool to manage file downloads, we should be
-able to write our program so that starting one download won’t lock up the UI,
-and users should be able to start multiple downloads at the same time. Many
-operating system APIs for interacting with the network are _blocking_, though;
-that is, they block the program’s progress until the data they’re processing is
-completely ready.
+Misal ke taur par, agar hum file downloads manage karne ke liye koi tool build kar rahe hain,
+to humein apna program is tarah likhne ke qabil hona chahiye ke ek download start karne se
+UI lock up na ho, aur users ek hi waqt mein multiple downloads start kar saken. Network ke
+saath interact karne wali bohot si operating system APIs, though, *blocking* hoti hain;
+yani, woh program ki progress ko us waqt tak block karti hain jab tak jis data ko woh process
+kar rahi hain woh completely ready na ho.
 
-> Note: This is how _most_ function calls work, if you think about it. However,
-> the term _blocking_ is usually reserved for function calls that interact with
-> files, the network, or other resources on the computer, because those are the
-> cases where an individual program would benefit from the operation being
-> _non_-blocking.
+> Note: Agar aap is baare mein sochein, to isi tarah *most* function calls kaam karti hain.
+> However, term *blocking* aam tor par un function calls ke liye reserved hota hai jo files,
+> network, ya computer par maujood doosre resources ke saath interact karti hain, kyun ke yeh
+> woh cases hain jahan ek individual program ko operation ke *non*-blocking hone se faida
+> ho sakta hai.
 
-We could avoid blocking our main thread by spawning a dedicated thread to
-download each file. However, the overhead of the system resources used by those
-threads would eventually become a problem. It would be preferable if the call
-didn’t block in the first place, and instead we could define a number of tasks
-that we’d like our program to complete and allow the runtime to choose the best
-order and manner in which to run them.
+Hum har file ko download karne ke liye ek dedicated thread spawn karke apne main thread ko
+blocking se bacha sakte hain. Lekin un threads ke use hone wale system resources ka
+overhead aakhirkar ek problem ban jayega. Behtar yeh hoga ke call pehle se block na kare,
+aur is ke bajaye hum kai tasks define kar saken jinhein hum apne program se complete karwana
+chahte hain aur runtime ko unhein run karne ka best order aur manner choose karne dein.
 
-That is exactly what Rust’s _async_ (short for _asynchronous_) abstraction
-gives us. In this chapter, you’ll learn all about async as we cover the
-following topics:
+Yahi exactly Rust ki *async* (*asynchronous* ka short form) abstraction humein deti hai. Is
+chapter mein, aap async ke baare mein sab kuch seekhenge jab hum following topics cover
+karengay:
 
-- How to use Rust’s `async` and `await` syntax and execute asynchronous
-  functions with a runtime
-- How to use the async model to solve some of the same challenges we looked at
-  in Chapter 16
-- How multithreading and async provide complementary solutions that you can
-  combine in many cases
+* Rust ki `async` aur `await` syntax ko kaise use karein aur asynchronous
+  functions ko runtime ke saath execute karein
+* Async model ko use karke Chapter 16 mein dekhe gaye kuch same challenges ko kaise solve karein
+* Multithreading aur async complementary solutions kaise provide karte hain jinhein aap
+  bohot se cases mein combine kar sakte hain
 
-Before we see how async works in practice, though, we need to take a short
-detour to discuss the differences between parallelism and concurrency.
+Lekin, is se pehle ke hum dekhein ke async practical taur par kaise kaam karta hai, humein
+parallelism aur concurrency ke darmiyan differences discuss karne ke liye ek short
+detour lena hoga.
 
 ## Parallelism and Concurrency
 
-We’ve treated parallelism and concurrency as mostly interchangeable so far. Now
-we need to distinguish between them more precisely, because the differences
-will show up as we start working.
+Ab tak humne parallelism aur concurrency ko zyada tar interchangeable terms ke taur par
+treat kiya hai. Ab humein inhein zyada precisely distinguish karna hoga, kyun ke jaise hi
+hum kaam karna shuru karenge, in dono ke differences saamne aayenge.
 
-Consider the different ways a team could split up work on a software project.
-You could assign a single member multiple tasks, assign each member one task,
-or use a mix of the two approaches.
+Ghaur karein ke ek team software project par kaam ko kis tarah different ways mein divide
+kar sakti hai. Aap ek single member ko multiple tasks assign kar sakte hain, har member ko
+ek task assign kar sakte hain, ya in dono approaches ka mix use kar sakte hain.
 
-When an individual works on several different tasks before any of them is
-complete, this is _concurrency_. One way to implement concurrency is similar to
-having two different projects checked out on your computer, and when you get
-bored or stuck on one project, you switch to the other. You’re just one person,
-so you can’t make progress on both tasks at the exact same time, but you can
-multitask, making progress on one at a time by switching between them (see
-Figure 17-1).
+Jab koi individual kai different tasks par kaam karta hai aur un mein se koi bhi abhi
+complete nahi hua hota, to yeh *concurrency* hai. Concurrency ko implement karne ka ek tareeqa
+kuch is tarah hai jaise aapke computer par do different projects checked out hon, aur jab aap
+ek project se bore ho jayein ya us mein stuck ho jayein, to doosre project par switch kar
+jayein. Aap sirf ek person hain, is liye aap dono tasks par exact same time par progress nahi
+kar sakte, lekin aap multitask kar sakte hain, yani ek waqt mein ek task par progress karte
+hue unke darmiyan switch kar sakte hain (Figure 17-1 dekhein).
 
 <figure>
 
@@ -114,9 +110,9 @@ Figure 17-1).
 
 </figure>
 
-When the team splits up a group of tasks by having each member take one task
-and work on it alone, this is _parallelism_. Each person on the team can make
-progress at the exact same time (see Figure 17-2).
+Jab team tasks ke ek group ko is tarah split karti hai ke har member ek task le aur us par
+akele kaam kare, to yeh *parallelism* hai. Team ka har person exact same time par progress
+kar sakta hai (Figure 17-2 dekhein).
 
 <figure>
 
@@ -126,12 +122,12 @@ progress at the exact same time (see Figure 17-2).
 
 </figure>
 
-In both of these workflows, you might have to coordinate between different
-tasks. Maybe you thought the task assigned to one person was totally
-independent from everyone else’s work, but it actually requires another person
-on the team to finish their task first. Some of the work could be done in
-parallel, but some of it was actually _serial_: it could only happen in a
-series, one task after the other, as in Figure 17-3.
+In dono workflows mein, aapko different tasks ke darmiyan coordinate karna par sakta hai.
+Ho sakta hai aapne socha ho ke ek person ko assign kiya gaya task baqi sab ke work se totally
+independent tha, lekin asal mein usay complete karne ke liye team ke kisi doosre person ko
+pehle apna task finish karna zaroori ho. Kuch work parallel mein kiya ja sakta hai, lekin
+kuch asal mein *serial* tha: woh sirf ek series mein, ek task ke baad doosra task karke hi
+ho sakta tha, jaisa ke Figure 17-3 mein hai.
 
 <figure>
 
@@ -141,27 +137,28 @@ series, one task after the other, as in Figure 17-3.
 
 </figure>
 
-Likewise, you might realize that one of your own tasks depends on another of
-your tasks. Now your concurrent work has also become serial.
+Isi tarah, aap realize kar sakte hain ke aapke apne tasks mein se koi ek task aapke kisi
+doosre task par depend karta hai. Ab aapka concurrent work bhi serial ban gaya hai.
 
-Parallelism and concurrency can intersect with each other, too. If you learn
-that a colleague is stuck until you finish one of your tasks, you’ll probably
-focus all your efforts on that task to “unblock” your colleague. You and your
-coworker are no longer able to work in parallel, and you’re also no longer able
-to work concurrently on your own tasks.
+Parallelism aur concurrency ek doosre ke saath intersect bhi kar sakte hain. Agar aapko pata
+chale ke koi colleague tab tak stuck hai jab tak aap apna ek task finish nahi kar lete, to
+aap shayad apni tamam efforts us task par focus karenge taake apne colleague ko “unblock”
+kar saken. Aap aur aapka coworker ab parallel mein kaam nahi kar sakte, aur aap apne tasks
+par concurrently kaam bhi nahi kar sakte.
 
-The same basic dynamics come into play with software and hardware. On a machine
-with a single CPU core, the CPU can perform only one operation at a time, but
-it can still work concurrently. Using tools such as threads, processes, and
-async, the computer can pause one activity and switch to others before
-eventually cycling back to that first activity again. On a machine with
-multiple CPU cores, it can also do work in parallel. One core can be performing
-one task while another core performs a completely unrelated one, and those
-operations actually happen at the same time.
+Software aur hardware mein bhi yahi basic dynamics apply hoti hain. Single CPU core wali
+machine par CPU ek waqt mein sirf ek operation perform kar sakta hai, lekin phir bhi woh
+concurrently kaam kar sakta hai. Threads, processes, aur async jaise tools ko use karke,
+computer ek activity ko pause kar sakta hai aur doosri activities par switch kar sakta hai,
+aur baad mein cycling karke dobara pehli activity par aa sakta hai. Multiple CPU cores wali
+machine par, yeh parallel mein bhi work kar sakti hai. Ek core ek task perform kar raha ho
+sakta hai jabke doosra core bilkul unrelated task perform kar raha ho, aur woh operations
+waqai same time par ho rahe hote hain.
 
-Running async code in Rust usually happens concurrently. Depending on the
-hardware, the operating system, and the async runtime we are using (more on
-async runtimes shortly), that concurrency may also use parallelism under the
-hood.
+Rust mein async code run karna aam tor par concurrently hota hai. Hardware, operating
+system, aur hum jo async runtime use kar rahe hain us ke mutabiq (async runtimes ke baare
+mein thori dair mein zyada baat hogi), yeh concurrency under the hood parallelism bhi use
+kar sakti hai.
 
-Now, let’s dive into how async programming in Rust actually works.
+Ab aaiye is baat mein dive karte hain ke Rust mein async programming asal mein kaise kaam
+karti hai.
