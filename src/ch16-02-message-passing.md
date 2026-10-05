@@ -4,37 +4,39 @@
 
 ## Transfer Data Between Threads with Message Passing
 
-One increasingly popular approach to ensuring safe concurrency is message
-passing, where threads or actors communicate by sending each other messages
-containing data. Here’s the idea in a slogan from [the Go language documentation](https://golang.org/doc/effective_go.html#concurrency):
-“Do not communicate by sharing memory; instead, share memory by communicating.”
+Safe concurrency ko ensure karne ke liye ek increasingly popular approach message
+passing hai, jahan threads ya actors ek doosre ko data-containing messages bhej kar
+communicate karte hain. Yahan idea [the Go language documentation](https://golang.org/doc/effective_go.html#concurrency) ke ek slogan mein diya gaya hai:
+“Memory share karke communicate na karein; is ke bajaye, communicate karke memory share karein.”
 
-To accomplish message-sending concurrency, Rust’s standard library provides an
-implementation of channels. A _channel_ is a general programming concept by
-which data is sent from one thread to another.
+Message-sending concurrency ko accomplish karne ke liye, Rust ki standard library
+channels ki implementation provide karti hai. Ek *channel* ek general programming
+concept hai jis ke zariye data ek thread se doosre thread ko bheja jata hai.
 
-You can imagine a channel in programming as being like a directional channel of
-water, such as a stream or a river. If you put something like a rubber duck
-into a river, it will travel downstream to the end of the waterway.
+Aap programming mein channel ko ek directional channel of water ki tarah imagine kar
+sakte hain, jaise koi stream ya river. Agar aap river mein rubber duck jaisi koi cheez
+dal dein, to woh pani ke flow ke saath downstream waterway ke end tak chali jayegi.
 
-A channel has two halves: a transmitter and a receiver. The transmitter half is
-the upstream location where you put the rubber duck into the river, and the
-receiver half is where the rubber duck ends up downstream. One part of your
-code calls methods on the transmitter with the data you want to send, and
-another part checks the receiving end for arriving messages. A channel is said
-to be _closed_ if either the transmitter or receiver half is dropped.
+Ek channel ke do halves hote hain: ek transmitter aur ek receiver. Transmitter half
+upstream location hota hai jahan aap rubber duck ko river mein daalte hain, aur receiver
+half woh jagah hoti hai jahan rubber duck downstream ja kar pohanchti hai. Aapke code
+ka ek hissa transmitter par methods ko us data ke saath call karta hai jo aap send karna
+chahte hain, aur doosra hissa receiving end ko aane wale messages ke liye check karta
+hai. Channel ko *closed* kaha jata hai agar transmitter ya receiver half mein se koi
+ek drop ho jaye.
 
-Here, we’ll work up to a program that has one thread to generate values and
-send them down a channel, and another thread that will receive the values and
-print them out. We’ll be sending simple values between threads using a channel
-to illustrate the feature. Once you’re familiar with the technique, you could
-use channels for any threads that need to communicate with each other, such as
-a chat system or a system where many threads perform parts of a calculation and
-send the parts to one thread that aggregates the results.
+Yahan hum dheere dheere ek aisa program banayenge jismein ek thread values generate
+karke unhein channel ke zariye send karega, aur doosra thread un values ko receive
+karke print karega. Feature ko illustrate karne ke liye hum channel use karte hue
+threads ke darmiyan simple values send karenge. Jab aap is technique se familiar ho
+jayenge, to aap channels ko un tamam threads ke liye use kar sakte hain jinhein ek
+doosre ke saath communicate karna ho, jaise ek chat system ya aisa system jahan bohot
+se threads calculation ke different parts perform karein aur un parts ko ek thread
+ko bhejein jo results ko aggregate kare.
 
-First, in Listing 16-6, we’ll create a channel but not do anything with it.
-Note that this won’t compile yet because Rust can’t tell what type of values we
-want to send over the channel.
+Sab se pehle, Listing 16-6 mein hum ek channel create karenge lekin us ke saath kuch
+nahi karenge. Note karein ke yeh abhi compile nahi hoga kyun ke Rust yeh nahi bata
+sakta ke hum channel ke zariye kis type ki values send karna chahte hain.
 
 <Listing number="16-6" file-name="src/main.rs" caption="Creating a channel and assigning the two halves to `tx` and `rx`">
 
@@ -44,29 +46,30 @@ want to send over the channel.
 
 </Listing>
 
-We create a new channel using the `mpsc::channel` function; `mpsc` stands for
-_multiple producer, single consumer_. In short, the way Rust’s standard library
-implements channels means a channel can have multiple _sending_ ends that
-produce values but only one _receiving_ end that consumes those values. Imagine
-multiple streams flowing together into one big river: Everything sent down any
-of the streams will end up in one river at the end. We’ll start with a single
-producer for now, but we’ll add multiple producers when we get this example
-working.
+Hum `mpsc::channel` function ko use karke ek naya channel create karte hain; `mpsc` ka
+matlab *multiple producer, single consumer* hai. Mukhtasar taur par, Rust ki standard
+library jis tarah channels implement karti hai us ka matlab hai ke ek channel ke paas
+multiple *sending* ends ho sakte hain jo values produce karte hain, lekin sirf ek
+*receiving* end hota hai jo un values ko consume karta hai. Multiple streams ko ek
+bari river mein milte hue imagine karein: Kisi bhi stream se bheji gayi har cheez akhir
+mein ek hi river mein pohanchegi. Filhaal hum ek single producer se shuru karenge,
+lekin jab yeh example kaam karne lagega to hum multiple producers add karenge.
 
-The `mpsc::channel` function returns a tuple, the first element of which is the
-sending end—the transmitter—and the second element of which is the receiving
-end—the receiver. The abbreviations `tx` and `rx` are traditionally used in
-many fields for _transmitter_ and _receiver_, respectively, so we name our
-variables as such to indicate each end. We’re using a `let` statement with a
-pattern that destructures the tuples; we’ll discuss the use of patterns in
-`let` statements and destructuring in Chapter 19. For now, know that using a
-`let` statement in this way is a convenient approach to extract the pieces of
-the tuple returned by `mpsc::channel`.
+`mpsc::channel` function ek tuple return karta hai, jis ka pehla element sending
+end—the transmitter—aur doosra element receiving end—the receiver hota hai.
+Bohot se fields mein abbreviations `tx` aur `rx` traditionally *transmitter* aur
+*receiver* ke liye respectively use hoti hain, is liye hum apne variables ko isi
+tarah name karte hain taake har end ko indicate kiya ja sake. Hum `let` statement
+ko ek aise pattern ke saath use kar rahe hain jo tuples ko destructure karta hai;
+hum `let` statements mein patterns ke use aur destructuring ke baare mein Chapter 19
+mein discuss karenge. Filhaal itna samajh lein ke is tarah `let` statement use karna
+`mpsc::channel` se return hone wale tuple ke pieces ko extract karne ka ek convenient
+approach hai.
 
-Let’s move the transmitting end into a spawned thread and have it send one
-string so that the spawned thread is communicating with the main thread, as
-shown in Listing 16-7. This is like putting a rubber duck in the river upstream
-or sending a chat message from one thread to another.
+Ab transmitting end ko ek spawned thread mein move karte hain aur us se ek string
+send karwate hain taake spawned thread main thread ke saath communicate kar raha ho,
+jaisa ke Listing 16-7 mein dikhaya gaya hai. Yeh bilkul aisa hai jaise upstream river
+mein rubber duck dalna ya ek thread se doosre thread ko chat message bhejna.
 
 <Listing number="16-7" file-name="src/main.rs" caption='Moving `tx` to a spawned thread and sending `"hi"`'>
 
@@ -76,21 +79,22 @@ or sending a chat message from one thread to another.
 
 </Listing>
 
-Again, we’re using `thread::spawn` to create a new thread and then using `move`
-to move `tx` into the closure so that the spawned thread owns `tx`. The spawned
-thread needs to own the transmitter to be able to send messages through the
-channel.
+Dobara, hum naya thread create karne ke liye `thread::spawn` use kar rahe hain aur
+phir `move` ko use karke `tx` ko closure mein move kar rahe hain taake spawned thread
+`tx` ka owner ho. Spawned thread ke liye transmitter ki ownership hona zaroori hai
+taake woh channel ke zariye messages send kar sake.
 
-The transmitter has a `send` method that takes the value we want to send. The
-`send` method returns a `Result<T, E>` type, so if the receiver has already
-been dropped and there’s nowhere to send a value, the send operation will
-return an error. In this example, we’re calling `unwrap` to panic in case of an
-error. But in a real application, we would handle it properly: Return to
-Chapter 9 to review strategies for proper error handling.
+Transmitter ke paas ek `send` method hai jo woh value leta hai jo hum send karna
+chahte hain. `send` method `Result<T, E>` type return karta hai, is liye agar receiver
+pehle hi drop ho chuka ho aur value send karne ke liye koi jagah na ho, to send
+operation ek error return karega. Is example mein, hum error ki surat mein panic
+karne ke liye `unwrap` call kar rahe hain. Lekin real application mein, hum isay
+properly handle karenge: Proper error handling ki strategies review karne ke liye
+Chapter 9 par wapas jayein.
 
-In Listing 16-8, we’ll get the value from the receiver in the main thread. This
-is like retrieving the rubber duck from the water at the end of the river or
-receiving a chat message.
+Listing 16-8 mein, hum main thread mein receiver se value hasil karenge. Yeh bilkul
+aisa hai jaise river ke end par pani se rubber duck nikalna ya chat message receive
+karna.
 
 <Listing number="16-8" file-name="src/main.rs" caption='Receiving the value `"hi"` in the main thread and printing it'>
 
@@ -100,26 +104,27 @@ receiving a chat message.
 
 </Listing>
 
-The receiver has two useful methods: `recv` and `try_recv`. We’re using `recv`,
-short for _receive_, which will block the main thread’s execution and wait
-until a value is sent down the channel. Once a value is sent, `recv` will
-return it in a `Result<T, E>`. When the transmitter closes, `recv` will return
-an error to signal that no more values will be coming.
+Receiver ke paas do useful methods hain: `recv` aur `try_recv`. Hum `recv` use kar
+rahe hain, jo *receive* ka short form hai, aur yeh main thread ki execution ko block
+karega aur tab tak wait karega jab tak channel ke zariye koi value send nahi hoti.
+Jab koi value send ho jati hai, `recv` use `Result<T, E>` mein return karega. Jab
+transmitter close ho jata hai, `recv` ek error return karega jo signal karta hai ke
+ab koi aur values nahi aayengi.
 
-The `try_recv` method doesn’t block, but will instead return a `Result<T, E>`
-immediately: an `Ok` value holding a message if one is available and an `Err`
-value if there aren’t any messages this time. Using `try_recv` is useful if
-this thread has other work to do while waiting for messages: We could write a
-loop that calls `try_recv` every so often, handles a message if one is
-available, and otherwise does other work for a little while until checking
-again.
+`try_recv` method block nahi karta, balki foran `Result<T, E>` return karta hai:
+agar koi message available ho to message ko hold karne wali `Ok` value, aur agar is
+waqt koi messages available na hon to `Err` value. `try_recv` use karna us waqt
+useful hai jab is thread ko messages ka wait karte hue koi doosra work bhi karna ho:
+hum ek loop likh sakte hain jo har kuch der baad `try_recv` call kare, agar koi
+message available ho to use handle kare, aur warna dobara check karne tak thori der
+ke liye doosra work kare.
 
-We’ve used `recv` in this example for simplicity; we don’t have any other work
-for the main thread to do other than wait for messages, so blocking the main
-thread is appropriate.
+Humne is example mein simplicity ke liye `recv` use kiya hai; main thread ke paas
+messages ka wait karne ke ilawa koi aur work nahi hai, is liye main thread ko block
+karna appropriate hai.
 
-When we run the code in Listing 16-8, we’ll see the value printed from the main
-thread:
+Jab hum Listing 16-8 ka code run karenge, to humein main thread se printed value
+nazar aayegi:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -137,37 +142,40 @@ Perfect!
 
 ### Transferring Ownership Through Channels
 
-The ownership rules play a vital role in message sending because they help you
-write safe, concurrent code. Preventing errors in concurrent programming is the
-advantage of thinking about ownership throughout your Rust programs. Let’s do
-an experiment to show how channels and ownership work together to prevent
-problems: We’ll try to use a `val` value in the spawned thread _after_ we’ve
-sent it down the channel. Try compiling the code in Listing 16-9 to see why
-this code isn’t allowed.
+Ownership rules message sending mein vital role play karte hain kyun ke yeh aapko
+safe, concurrent code likhne mein help karte hain. Concurrent programming mein
+errors ko prevent karna Rust ke tamam programs mein ownership ke baare mein sochne
+ka ek faida hai. Aaiye ek experiment karte hain taake dekhein ke channels aur
+ownership problems ko prevent karne ke liye kis tarah mil kar kaam karte hain:
+hum spawned thread mein `val` value ko channel ke zariye send karne ke *baad*
+use karne ki koshish karenge. Listing 16-9 ke code ko compile karne ki koshish
+karein taake dekhein ke yeh code allowed kyun nahi hai.
 
 <Listing number="16-9" file-name="src/main.rs" caption="Attempting to use `val` after we’ve sent it down the channel">
 
-```rust,ignore,does_not_compile
+```rust,ignore,does_not_compile id="r8w2hx"
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-09/src/main.rs}}
 ```
 
 </Listing>
 
-Here, we try to print `val` after we’ve sent it down the channel via `tx.send`.
-Allowing this would be a bad idea: Once the value has been sent to another
-thread, that thread could modify or drop it before we try to use the value
-again. Potentially, the other thread’s modifications could cause errors or
-unexpected results due to inconsistent or nonexistent data. However, Rust gives
-us an error if we try to compile the code in Listing 16-9:
+Yahan hum `tx.send` ke zariye `val` ko channel ke through send karne ke baad
+use print karne ki koshish karte hain. Is ki permission dena ek bad idea hoga:
+jab value kisi doosre thread ko send ho jati hai, to woh thread humare dobara
+value ko use karne ki koshish karne se pehle usay modify ya drop kar sakta hai.
+Mumkin hai ke doosre thread ki modifications inconsistent ya nonexistent data
+ki wajah se errors ya unexpected results cause karein. Lekin Rust humein error
+deta hai agar hum Listing 16-9 ke code ko compile karne ki koshish karein:
 
-```console
+```console id="s3v5xe"
 {{#include ../listings/ch16-fearless-concurrency/listing-16-09/output.txt}}
 ```
 
-Our concurrency mistake has caused a compile-time error. The `send` function
-takes ownership of its parameter, and when the value is moved the receiver
-takes ownership of it. This stops us from accidentally using the value again
-after sending it; the ownership system checks that everything is okay.
+Hamari concurrency mistake ne compile-time error paida kar diya hai. `send` function
+apne parameter ki ownership le leta hai, aur jab value move hoti hai to receiver
+us ki ownership le leta hai. Is se hum value ko send karne ke baad accidentally
+dobara use karne se ruk jate hain; ownership system check karta hai ke sab kuch
+theek hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -175,12 +183,12 @@ after sending it; the ownership system checks that everything is okay.
 
 ### Sending Multiple Values
 
-The code in Listing 16-8 compiled and ran, but it didn’t clearly show us that
-two separate threads were talking to each other over the channel.
+Listing 16-8 ka code compile aur run hua, lekin is ne humein clearly yeh nahi dikhaya ke
+do separate threads channel ke zariye ek doosre se baat kar rahe the.
 
-In Listing 16-10, we’ve made some modifications that will prove the code in
-Listing 16-8 is running concurrently: The spawned thread will now send multiple
-messages and pause for a second between each message.
+Listing 16-10 mein humne kuch modifications ki hain jo prove karengi ke Listing 16-8 ka code
+concurrently run ho raha hai: Ab spawned thread multiple messages send karega aur har message
+ke darmiyan ek second ke liye pause karega.
 
 <Listing number="16-10" file-name="src/main.rs" caption="Sending multiple messages and pausing between each one">
 
@@ -190,17 +198,17 @@ messages and pause for a second between each message.
 
 </Listing>
 
-This time, the spawned thread has a vector of strings that we want to send to
-the main thread. We iterate over them, sending each individually, and pause
-between each by calling the `thread::sleep` function with a `Duration` value of
-one second.
+Is baar, spawned thread ke paas strings ka ek vector hai jise hum main thread ko send karna
+chahte hain. Hum in par iterate karte hain, har ek ko individually send karte hain, aur
+`thread::sleep` function ko one second ki `Duration` value ke saath call karke har message
+ke darmiyan pause karte hain.
 
-In the main thread, we’re not calling the `recv` function explicitly anymore:
-Instead, we’re treating `rx` as an iterator. For each value received, we’re
-printing it. When the channel is closed, iteration will end.
+Main thread mein, hum ab `recv` function ko explicitly call nahi kar rahe:
+Is ke bajaye, hum `rx` ko ek iterator ki tarah treat kar rahe hain. Har received value ke
+liye, hum use print kar rahe hain. Jab channel close ho jata hai, to iteration end ho jayegi.
 
-When running the code in Listing 16-10, you should see the following output
-with a one-second pause in between each line:
+Listing 16-10 ka code run karte waqt, aapko har line ke darmiyan one-second pause ke saath
+following output nazar aana chahiye:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -213,9 +221,8 @@ Got: the
 Got: thread
 ```
 
-Because we don’t have any code that pauses or delays in the `for` loop in the
-main thread, we can tell that the main thread is waiting to receive values from
-the spawned thread.
+Kyun ke main thread ke `for` loop mein aisa koi code nahi hai jo pause ya delay karta ho,
+hum bata sakte hain ke main thread spawned thread se values receive karne ka wait kar raha hai.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -223,10 +230,10 @@ the spawned thread.
 
 ### Creating Multiple Producers
 
-Earlier we mentioned that `mpsc` was an acronym for _multiple producer, single
-consumer_. Let’s put `mpsc` to use and expand the code in Listing 16-10 to
-create multiple threads that all send values to the same receiver. We can do so
-by cloning the transmitter, as shown in Listing 16-11.
+Pehle humne mention kiya tha ke `mpsc`, *multiple producer, single consumer* ka acronym
+hai. Ab `mpsc` ko use karte hain aur Listing 16-10 ke code ko expand karke multiple
+threads create karte hain jo sab ek hi receiver ko values send karte hain. Hum yeh
+transmitter ko clone karke kar sakte hain, jaisa ke Listing 16-11 mein dikhaya gaya hai.
 
 <Listing number="16-11" file-name="src/main.rs" caption="Sending multiple messages from multiple producers">
 
@@ -236,12 +243,13 @@ by cloning the transmitter, as shown in Listing 16-11.
 
 </Listing>
 
-This time, before we create the first spawned thread, we call `clone` on the
-transmitter. This will give us a new transmitter we can pass to the first
-spawned thread. We pass the original transmitter to a second spawned thread.
-This gives us two threads, each sending different messages to the one receiver.
+Is baar, pehla spawned thread create karne se pehle, hum transmitter par `clone` call
+karte hain. Is se humein ek naya transmitter milega jise hum pehle spawned thread ko
+pass kar sakte hain. Hum original transmitter ko doosre spawned thread ko pass karte hain.
+Is se humare paas do threads ho jate hain, jin mein se har ek different messages ek hi
+receiver ko send karta hai.
 
-When you run the code, your output should look something like this:
+Jab aap code run karenge, to aapka output kuch is tarah nazar aana chahiye:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -258,10 +266,11 @@ Got: thread
 Got: you
 ```
 
-You might see the values in another order, depending on your system. This is
-what makes concurrency interesting as well as difficult. If you experiment with
-`thread::sleep`, giving it various values in the different threads, each run
-will be more nondeterministic and create different output each time.
+Aapko values kisi doosre order mein bhi nazar aa sakti hain, jo aapke system par depend
+karta hai. Yehi cheez concurrency ko interesting hone ke saath saath difficult bhi
+banati hai. Agar aap `thread::sleep` ke saath experiment karein aur different threads
+mein ise mukhtalif values dein, to har run zyada nondeterministic hoga aur har baar
+different output create karega.
 
-Now that we’ve looked at how channels work, let’s look at a different method of
-concurrency.
+Ab jab humne dekh liya hai ke channels kis tarah kaam karte hain, to chaliye concurrency
+ke ek different method ko dekhte hain.

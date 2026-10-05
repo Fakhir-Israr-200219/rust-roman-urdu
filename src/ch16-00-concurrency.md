@@ -1,49 +1,47 @@
 # Fearless Concurrency
 
-Handling concurrent programming safely and efficiently is another of Rust’s
-major goals. _Concurrent programming_, in which different parts of a program
-execute independently, and _parallel programming_, in which different parts of
-a program execute at the same time, are becoming increasingly important as more
-computers take advantage of their multiple processors. Historically,
-programming in these contexts has been difficult and error-prone. Rust hopes to
-change that.
+Concurrent programming ko safely aur efficiently handle karna Rust ke major goals mein se
+ek aur hai. *Concurrent programming*, jismein program ke different parts independently
+execute hote hain, aur *parallel programming*, jismein program ke different parts
+ek hi waqt mein execute hote hain, increasingly important hoti ja rahi hain kyun ke zyada
+computers apne multiple processors ka faida utha rahe hain. Historically, in contexts mein
+programming karna mushkil aur errors ka sabab raha hai. Rust is situation ko badalna chahta hai.
 
-Initially, the Rust team thought that ensuring memory safety and preventing
-concurrency problems were two separate challenges to be solved with different
-methods. Over time, the team discovered that the ownership and type systems are
-a powerful set of tools to help manage memory safety _and_ concurrency
-problems! By leveraging ownership and type checking, many concurrency errors
-are compile-time errors in Rust rather than runtime errors. Therefore, rather
-than making you spend lots of time trying to reproduce the exact circumstances
-under which a runtime concurrency bug occurs, incorrect code will refuse to
-compile and present an error explaining the problem. As a result, you can fix
-your code while you’re working on it rather than potentially after it has been
-shipped to production. We’ve nicknamed this aspect of Rust _fearless
-concurrency_. Fearless concurrency allows you to write code that is free of
-subtle bugs and is easy to refactor without introducing new bugs.
+Shuru mein, Rust team ka khayal tha ke memory safety ensure karna aur concurrency problems
+ko prevent karna do separate challenges hain jinhein different methods se solve karna hoga.
+Waqt ke saath, team ne discover kiya ke ownership aur type systems memory safety *aur*
+concurrency problems ko manage karne ke liye powerful set of tools hain! Ownership aur type
+checking ka faida uthate hue, Rust mein bohot si concurrency errors runtime errors ke bajaye
+compile-time errors hoti hain. Is liye, runtime concurrency bug jis exact situation mein
+occur hota hai use reproduce karne ki koshish mein bohot waqt lagane ke bajaye, incorrect code
+compile hone se inkaar kar dega aur ek error present karega jo problem explain karega. Is ke
+result mein, aap apne code ko us waqt fix kar sakte hain jab aap us par kaam kar rahe hon,
+bajaye is ke ke mumkin hai production mein ship hone ke baad fix karna pade. Humne Rust ke
+is aspect ko *fearless concurrency* ka nickname diya hai. Fearless concurrency aapko aisa
+code likhne deti hai jo subtle bugs se free ho aur jise naye bugs introduce kiye baghair
+refactor karna easy ho.
 
-> Note: For simplicity’s sake, we’ll refer to many of the problems as
-> _concurrent_ rather than being more precise by saying _concurrent and/or
-> parallel_. For this chapter, please mentally substitute _concurrent and/or
-> parallel_ whenever we use _concurrent_. In the next chapter, where the
-> distinction matters more, we’ll be more specific.
+> Note: Simplicity ke liye, hum bohot se problems ko zyada precise tareeqe se
+> *concurrent* kehne ke bajaye *concurrent* kahenge, jab ke asal mein hum
+> *concurrent and/or parallel* keh sakte hain. Is chapter ke liye, jab bhi hum
+> *concurrent* use karein to zehni taur par *concurrent and/or parallel* samajh lein.
+> Agle chapter mein, jahan yeh distinction zyada important hogi, hum zyada specific honge.
 
-Many languages are dogmatic about the solutions they offer for handling
-concurrent problems. For example, Erlang has elegant functionality for
-message-passing concurrency but has only obscure ways to share state between
-threads. Supporting only a subset of possible solutions is a reasonable
-strategy for higher-level languages because a higher-level language promises
-benefits from giving up some control to gain abstractions. However, lower-level
-languages are expected to provide the solution with the best performance in any
-given situation and have fewer abstractions over the hardware. Therefore, Rust
-offers a variety of tools for modeling problems in whatever way is appropriate
-for your situation and requirements.
+Bohot si languages concurrent problems handle karne ke liye jo solutions offer karti hain
+un ke baare mein dogmatic hoti hain. Misal ke taur par, Erlang ke paas message-passing
+concurrency ke liye elegant functionality hai lekin threads ke darmiyan state share karne
+ke sirf obscure tareeqe hain. Possible solutions mein se sirf ek subset ko support karna
+higher-level languages ke liye ek reasonable strategy hai kyun ke higher-level language
+kuch control chhor kar abstractions hasil karne ke benefits ka promise karti hai. Lekin
+lower-level languages se expect kiya jata hai ke woh kisi bhi given situation mein best
+performance wali solution provide karein aur hardware ke upar kam abstractions rakhein.
+Is liye, Rust problems ko model karne ke liye variety of tools offer karta hai taake aapki
+situation aur requirements ke mutabiq jo tareeqa appropriate ho use kiya ja sake.
 
-Here are the topics we’ll cover in this chapter:
+Yeh woh topics hain jinhein hum is chapter mein cover karenge:
 
-- How to create threads to run multiple pieces of code at the same time
-- _Message-passing_ concurrency, where channels send messages between threads
-- _Shared-state_ concurrency, where multiple threads have access to some piece
-  of data
-- The `Sync` and `Send` traits, which extend Rust’s concurrency guarantees to
-  user-defined types as well as types provided by the standard library
+* Multiple pieces of code ko ek hi waqt mein run karne ke liye threads kaise create karein
+* *Message-passing* concurrency, jahan channels threads ke darmiyan messages send karte hain
+* *Shared-state* concurrency, jahan multiple threads ko data ke kisi piece tak access hota hai
+* `Sync` aur `Send` traits, jo Rust ki concurrency guarantees ko user-defined types ke saath
+  saath standard library ki provide ki gayi types tak bhi extend karte hain

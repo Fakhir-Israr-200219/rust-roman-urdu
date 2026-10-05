@@ -1,22 +1,23 @@
 ## Shared-State Concurrency
 
-Message passing is a fine way to handle concurrency, but it’s not the only way.
-Another method would be for multiple threads to access the same shared data.
-Consider this part of the slogan from the Go language documentation again: “Do
-not communicate by sharing memory.”
+Message passing concurrency handle karne ka ek acha tareeqa hai, lekin yeh akela tareeqa
+nahi hai. Ek aur method yeh ho sakta hai ke multiple threads ek hi shared data ko access
+karein. Go language documentation ke slogan ke is hissa ko dobara dekhein: “Memory share
+karke communicate na karein.”
 
-What would communicating by sharing memory look like? In addition, why would
-message-passing enthusiasts caution not to use memory sharing?
+Memory share karke communicate karna kaisa hoga? Is ke ilawa, message-passing ke
+enthusiasts memory sharing ko use na karne ki caution kyun denge?
 
-In a way, channels in any programming language are similar to single ownership
-because once you transfer a value down a channel, you should no longer use that
-value. Shared-memory concurrency is like multiple ownership: Multiple threads
-can access the same memory location at the same time. As you saw in Chapter 15,
-where smart pointers made multiple ownership possible, multiple ownership can
-add complexity because these different owners need managing. Rust’s type system
-and ownership rules greatly assist in getting this management correct. For an
-example, let’s look at mutexes, one of the more common concurrency primitives
-for shared memory.
+Ek tarah se, kisi bhi programming language mein channels single ownership ke similar hote
+hain kyun ke jab aap kisi value ko channel ke zariye transfer kar dete hain, to aapko us
+value ko dobara use nahi karna chahiye. Shared-memory concurrency multiple ownership ki
+tarah hai: Multiple threads ek hi waqt mein same memory location ko access kar sakte hain.
+Jaisa ke aapne Chapter 15 mein dekha, jahan smart pointers ne multiple ownership ko
+possible banaya, multiple ownership complexity add kar sakti hai kyun ke in different
+owners ko manage karna zaroori hota hai. Rust ka type system aur ownership rules is
+management ko correctly karne mein bohot madad karte hain. Ek example ke liye, aaiye
+mutexes ko dekhte hain, jo shared memory ke liye zyada common concurrency primitives
+mein se ek hain.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -24,37 +25,36 @@ for shared memory.
 
 ### Controlling Access with Mutexes
 
-_Mutex_ is an abbreviation for _mutual exclusion_, as in a mutex allows only
-one thread to access some data at any given time. To access the data in a
-mutex, a thread must first signal that it wants access by asking to acquire the
-mutex’s lock. The _lock_ is a data structure that is part of the mutex that
-keeps track of who currently has exclusive access to the data. Therefore, the
-mutex is described as _guarding_ the data it holds via the locking system.
+*Mutex* *mutual exclusion* ka abbreviation hai, yani mutex kisi bhi given time par sirf
+ek thread ko kisi data tak access karne deta hai. Mutex mein data ko access karne ke liye,
+thread ko pehle mutex ka lock acquire karne ki request karke signal karna hota hai ke woh
+access chahta hai. *Lock* ek data structure hai jo mutex ka hissa hota hai aur yeh track
+karta hai ke is waqt data tak exclusive access kis ke paas hai. Is liye, mutex ko locking
+system ke zariye apne andar maujood data ko *guarding* karne wala describe kiya jata hai.
 
-Mutexes have a reputation for being difficult to use because you have to
-remember two rules:
+Mutexes ka difficult to use hone ka reputation hai kyun ke aapko do rules yaad rakhne hote hain:
 
-1. You must attempt to acquire the lock before using the data.
-2. When you’re done with the data that the mutex guards, you must unlock the
-   data so that other threads can acquire the lock.
+1. Data ko use karne se pehle aapko lock acquire karne ki koshish karni zaroori hai.
+2. Jab aap mutex ke guard kiye hue data ke saath done ho jayein, to aapko data ko unlock karna
+   zaroori hai taake doosre threads lock acquire kar sakein.
 
-For a real-world metaphor for a mutex, imagine a panel discussion at a
-conference with only one microphone. Before a panelist can speak, they have to
-ask or signal that they want to use the microphone. When they get the
-microphone, they can talk for as long as they want to and then hand the
-microphone to the next panelist who requests to speak. If a panelist forgets to
-hand the microphone off when they’re finished with it, no one else is able to
-speak. If management of the shared microphone goes wrong, the panel won’t work
-as planned!
+Mutex ki ek real-world metaphor ke liye, ek conference mein panel discussion imagine karein
+jahan sirf ek microphone ho. Kisi panelist ke bolne se pehle, usay microphone use karne ke
+liye request ya signal karna hota hai. Jab usay microphone mil jata hai, to woh jitni der
+chahe baat kar sakta hai aur phir microphone us next panelist ko de deta hai jo bolne ki
+request karta hai. Agar koi panelist microphone use karne ke baad use hand off karna bhool
+jaye, to koi aur bol nahi sakta. Agar shared microphone ki management ghalat ho jaye, to
+panel planned tareeqe se kaam nahi karega!
 
-Management of mutexes can be incredibly tricky to get right, which is why so
-many people are enthusiastic about channels. However, thanks to Rust’s type
-system and ownership rules, you can’t get locking and unlocking wrong.
+Mutexes ki management ko correctly karna incredibly tricky ho sakta hai, isi liye bohot se
+log channels ke baare mein enthusiastic hote hain. Lekin Rust ke type system aur ownership
+rules ki wajah se, aap locking aur unlocking ko ghalat nahi kar sakte.
 
 #### The API of `Mutex<T>`
 
-As an example of how to use a mutex, let’s start by using a mutex in a
-single-threaded context, as shown in Listing 16-12.
+Mutex ko use karne ka example dekhne ke liye, aaiye simplicity ke liye pehle ek
+single-threaded context mein mutex use karte hain, jaisa ke Listing 16-12 mein dikhaya
+gaya hai.
 
 <Listing number="16-12" file-name="src/main.rs" caption="Exploring the API of `Mutex<T>` in a single-threaded context for simplicity">
 
@@ -64,32 +64,32 @@ single-threaded context, as shown in Listing 16-12.
 
 </Listing>
 
-As with many types, we create a `Mutex<T>` using the associated function `new`.
-To access the data inside the mutex, we use the `lock` method to acquire the
-lock. This call will block the current thread so that it can’t do any work
-until it’s our turn to have the lock.
+Bohot si types ki tarah, hum associated function `new` ko use karke ek `Mutex<T>` create
+karte hain. Mutex ke andar data ko access karne ke liye, hum lock acquire karne ke liye
+`lock` method use karte hain. Yeh call current thread ko block karegi taake jab tak lock
+lene ki hamari turn na aaye, woh koi work perform na kar sake.
 
-The call to `lock` would fail if another thread holding the lock panicked. In
-that case, no one would ever be able to get the lock, so we’ve chosen to
-`unwrap` and have this thread panic if we’re in that situation.
+Agar lock hold karne wala koi doosra thread panic kar jaye to `lock` ki call fail ho sakti
+hai. Is situation mein koi bhi kabhi lock hasil nahi kar sakega, is liye humne `unwrap`
+choose kiya hai aur agar hum is situation mein hon to is thread ko panic karne denge.
 
-After we’ve acquired the lock, we can treat the return value, named `num` in
-this case, as a mutable reference to the data inside. The type system ensures
-that we acquire a lock before using the value in `m`. The type of `m` is
-`Mutex<i32>`, not `i32`, so we _must_ call `lock` to be able to use the `i32`
-value. We can’t forget; the type system won’t let us access the inner `i32`
-otherwise.
+Lock acquire karne ke baad, hum return value ko, jo is case mein `num` naam ki hai, andar
+maujood data ke mutable reference ki tarah treat kar sakte hain. Type system ensure karta
+hai ke `m` mein value ko use karne se pehle hum lock acquire karein. `m` ki type `i32`
+nahi balki `Mutex<i32>` hai, is liye `i32` value ko use karne ke qabil hone ke liye humein
+`lock` call karna *must* hai. Hum bhool nahi sakte; type system humein inner `i32` ko
+otherwise access nahi karne dega.
 
-The call to `lock` returns a type called `MutexGuard`, wrapped in a
-`LockResult` that we handled with the call to `unwrap`. The `MutexGuard` type
-implements `Deref` to point at our inner data; the type also has a `Drop`
-implementation that releases the lock automatically when a `MutexGuard` goes
-out of scope, which happens at the end of the inner scope. As a result, we
-don’t risk forgetting to release the lock and blocking the mutex from being
-used by other threads because the lock release happens automatically.
+`lock` ki call `MutexGuard` naam ki ek type return karti hai, jo `LockResult` mein wrapped
+hoti hai aur humne ise `unwrap` ki call ke saath handle kiya hai. `MutexGuard` type inner
+data ko point karne ke liye `Deref` implement karti hai; is type ke paas `Drop` implementation
+bhi hai jo lock ko automatically release karti hai jab `MutexGuard` scope se bahar chala
+jata hai, jo inner scope ke end par hota hai. Is ke result mein, humein lock release karna
+bhool jane aur mutex ko doosre threads ke use ke liye block karne ka risk nahi hota kyun ke
+lock release automatically hota hai.
 
-After dropping the lock, we can print the mutex value and see that we were able
-to change the inner `i32` to `6`.
+Lock ko drop karne ke baad, hum mutex ki value print kar sakte hain aur dekh sakte hain ke
+hum inner `i32` ko `6` mein change karne mein kamyab rahe.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -97,11 +97,12 @@ to change the inner `i32` to `6`.
 
 #### Shared Access to `Mutex<T>`
 
-Now let’s try to share a value between multiple threads using `Mutex<T>`. We’ll
-spin up 10 threads and have them each increment a counter value by 1, so the
-counter goes from 0 to 10. The example in Listing 16-13 will have a compiler
-error, and we’ll use that error to learn more about using `Mutex<T>` and how
-Rust helps us use it correctly.
+Ab aaiye `Mutex<T>` ko use karke ek value ko multiple threads ke darmiyan share karne ki
+koshish karte hain. Hum 10 threads start karenge aur har thread se counter ki value mein 1
+increment karwayenge, taake counter 0 se 10 tak chala jaye. Listing 16-13 mein diya gaya
+example compiler error dega, aur hum is error ko use karke `Mutex<T>` ko use karne ke baare
+mein aur seekhenge aur yeh samjhenge ke Rust humein ise correctly use karne mein kaise
+madad karta hai.
 
 <Listing number="16-13" file-name="src/main.rs" caption="Ten threads, each incrementing a counter guarded by a `Mutex<T>`">
 
@@ -111,36 +112,37 @@ Rust helps us use it correctly.
 
 </Listing>
 
-We create a `counter` variable to hold an `i32` inside a `Mutex<T>`, as we did
-in Listing 16-12. Next, we create 10 threads by iterating over a range of
-numbers. We use `thread::spawn` and give all the threads the same closure: one
-that moves the counter into the thread, acquires a lock on the `Mutex<T>` by
-calling the `lock` method, and then adds 1 to the value in the mutex. When a
-thread finishes running its closure, `num` will go out of scope and release the
-lock so that another thread can acquire it.
+Hum ek `counter` variable create karte hain jo `Mutex<T>` ke andar ek `i32` hold karta hai,
+jaisa ke humne Listing 16-12 mein kiya tha. Is ke baad, hum numbers ki ek range par iterate
+karke 10 threads create karte hain. Hum `thread::spawn` use karte hain aur tamam threads ko
+same closure dete hain: ek aisi closure jo `counter` ko thread mein move karti hai,
+`lock` method ko call karke `Mutex<T>` par lock acquire karti hai, aur phir mutex mein
+maujood value mein 1 add karti hai. Jab koi thread apni closure run karna finish karta hai,
+to `num` scope se bahar chala jayega aur lock release kar dega taake koi doosra thread ise
+acquire kar sake.
 
-In the main thread, we collect all the join handles. Then, as we did in Listing
-16-2, we call `join` on each handle to make sure all the threads finish. At
-that point, the main thread will acquire the lock and print the result of this
-program.
+Main thread mein, hum tamam join handles collect karte hain. Phir, jaisa ke humne Listing
+16-2 mein kiya tha, hum har handle par `join` call karte hain taake ensure ho ke tamam
+threads finish ho jayein. Is point par, main thread lock acquire karega aur is program ka
+result print karega.
 
-We hinted that this example wouldn’t compile. Now let’s find out why!
+Humne hint diya tha ke yeh example compile nahi hoga. Ab aaiye pata lagate hain ke kyun!
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-13/output.txt}}
 ```
 
-The error message states that the `counter` value was moved in the previous
-iteration of the loop. Rust is telling us that we can’t move the ownership of
-lock `counter` into multiple threads. Let’s fix the compiler error with the
-multiple-ownership method we discussed in Chapter 15.
+Error message batata hai ke `counter` value loop ki previous iteration mein move ho gayi
+thi. Rust humein bata raha hai ke hum `counter` lock ki ownership ko multiple threads mein
+move nahi kar sakte. Aaiye Chapter 15 mein discuss kiye gaye multiple-ownership method ko
+use karke compiler error fix karte hain.
 
 #### Multiple Ownership with Multiple Threads
 
-In Chapter 15, we gave a value to multiple owners by using the smart pointer
-`Rc<T>` to create a reference-counted value. Let’s do the same here and see
-what happens. We’ll wrap the `Mutex<T>` in `Rc<T>` in Listing 16-14 and clone
-the `Rc<T>` before moving ownership to the thread.
+Chapter 15 mein, humne smart pointer `Rc<T>` ko use karke ek reference-counted value create
+ki aur ek value ko multiple owners diya. Aaiye yahan bhi yahi karte hain aur dekhte hain
+ke kya hota hai. Listing 16-14 mein hum `Mutex<T>` ko `Rc<T>` mein wrap karenge aur thread
+ko ownership move karne se pehle `Rc<T>` ko clone karenge.
 
 <Listing number="16-14" file-name="src/main.rs" caption="Attempting to use `Rc<T>` to allow multiple threads to own the `Mutex<T>`">
 
@@ -150,49 +152,49 @@ the `Rc<T>` before moving ownership to the thread.
 
 </Listing>
 
-Once again, we compile and get... different errors! The compiler is teaching us
-a lot:
+Ek baar phir, hum compile karte hain aur humein... different errors milte hain! Compiler
+humein bohot kuch sikha raha hai:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-14/output.txt}}
 ```
 
-Wow, that error message is very wordy! Here’s the important part to focus on:
-`` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. The compiler is
-also telling us the reason why: `` the trait `Send` is not implemented for
-`Rc<Mutex<i32>>` ``. We’ll talk about `Send` in the next section: It’s one of
-the traits that ensures that the types we use with threads are meant for use in
-concurrent situations.
+Wow, yeh error message bohot zyada wordy hai! Yahan focus karne ke liye important hissa yeh
+hai: `` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. Compiler humein yeh bhi
+bata raha hai ke kyun: `` the trait `Send` is not implemented for `Rc<Mutex<i32>>` ``.
+Hum next section mein `Send` ke baare mein baat karenge: yeh un traits mein se ek hai jo
+ensure karta hai ke threads ke saath hum jo types use karte hain woh concurrent situations
+mein use ke liye meant hain.
 
-Unfortunately, `Rc<T>` is not safe to share across threads. When `Rc<T>`
-manages the reference count, it adds to the count for each call to `clone` and
-subtracts from the count when each clone is dropped. But it doesn’t use any
-concurrency primitives to make sure that changes to the count can’t be
-interrupted by another thread. This could lead to wrong counts—subtle bugs that
-could in turn lead to memory leaks or a value being dropped before we’re done
-with it. What we need is a type that is exactly like `Rc<T>`, but that makes
-changes to the reference count in a thread-safe way.
+Unfortunately, `Rc<T>` ko threads ke darmiyan share karna safe nahi hai. Jab `Rc<T>` reference
+count ko manage karta hai, to har `clone` ki call par count mein add karta hai aur jab har
+clone drop hota hai to count mein se subtract karta hai. Lekin yeh koi concurrency primitives
+use nahi karta jo ensure karein ke count mein hone wali changes ko kisi doosre thread ke zariye
+interrupt na kiya ja sake. Is se wrong counts ho sakte hain—subtle bugs jo aage chal kar
+memory leaks ka sabab ban sakte hain ya value ko us waqt drop karwa sakte hain jab hum abhi
+us ke saath done na hue hon. Humein aisi type ki zaroorat hai jo bilkul `Rc<T>` ki tarah ho,
+lekin reference count mein changes ko thread-safe tareeqe se kare.
 
 #### Atomic Reference Counting with `Arc<T>`
 
-Fortunately, `Arc<T>` _is_ a type like `Rc<T>` that is safe to use in
-concurrent situations. The _a_ stands for _atomic_, meaning it’s an _atomically
-reference-counted_ type. Atomics are an additional kind of concurrency
-primitive that we won’t cover in detail here: See the standard library
-documentation for [`std::sync::atomic`][atomic]<!-- ignore --> for more
-details. At this point, you just need to know that atomics work like primitive
-types but are safe to share across threads.
+Fortunately, `Arc<T>` ek aisi type hai jo `Rc<T>` ki tarah hai aur concurrent situations mein
+use karna safe hai. *A* ka matlab *atomic* hai, yani yeh ek *atomically reference-counted*
+type hai. Atomics ek additional kind ka concurrency primitive hain jinhein hum yahan detail
+mein cover nahi karenge: zyada details ke liye standard library documentation mein
+[`std::sync::atomic`][atomic]<!-- ignore --> dekhein. Is point par, aapko sirf yeh jaanna
+zaroori hai ke atomics primitive types ki tarah kaam karte hain lekin threads ke darmiyan
+share karna safe hota hai.
 
-You might then wonder why all primitive types aren’t atomic and why standard
-library types aren’t implemented to use `Arc<T>` by default. The reason is that
-thread safety comes with a performance penalty that you only want to pay when
-you really need to. If you’re just performing operations on values within a
-single thread, your code can run faster if it doesn’t have to enforce the
-guarantees atomics provide.
+Aap phir soch sakte hain ke tamam primitive types atomic kyun nahi hain aur standard library
+types ko default taur par `Arc<T>` use karne ke liye implement kyun nahi kiya gaya. Is ki
+wajah yeh hai ke thread safety ke saath performance penalty aati hai jo aap sirf us waqt
+pay karna chahte hain jab aapko waqai is ki zaroorat ho. Agar aap sirf ek single thread ke
+andar values par operations perform kar rahe hain, to aapka code zyada fast run kar sakta
+hai agar use atomics ki taraf se provide ki jane wali guarantees enforce na karni parhein.
 
-Let’s return to our example: `Arc<T>` and `Rc<T>` have the same API, so we fix
-our program by changing the `use` line, the call to `new`, and the call to
-`clone`. The code in Listing 16-15 will finally compile and run.
+Aaiye apne example par wapas aate hain: `Arc<T>` aur `Rc<T>` ka API same hai, is liye hum
+`use` line, `new` ki call, aur `clone` ki call ko change karke apne program ko fix karte hain.
+Listing 16-15 mein code finally compile aur run hoga.
 
 <Listing number="16-15" file-name="src/main.rs" caption="Using an `Arc<T>` to wrap the `Mutex<T>` to be able to share ownership across multiple threads">
 
@@ -202,7 +204,7 @@ our program by changing the `use` line, the call to `new`, and the call to
 
 </Listing>
 
-This code will print the following:
+Yeh code following output print karega:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -212,18 +214,19 @@ changes in the compiler -->
 Result: 10
 ```
 
-We did it! We counted from 0 to 10, which may not seem very impressive, but it
-did teach us a lot about `Mutex<T>` and thread safety. You could also use this
-program’s structure to do more complicated operations than just incrementing a
-counter. Using this strategy, you can divide a calculation into independent
-parts, split those parts across threads, and then use a `Mutex<T>` to have each
-thread update the final result with its part.
+Humne kar liya! Humne 0 se 10 tak count kiya, jo shayad bohot impressive na lage, lekin is
+ne humein `Mutex<T>` aur thread safety ke baare mein bohot kuch sikhaya. Aap is program ki
+structure ko sirf counter increment karne se zyada complicated operations perform karne ke
+liye bhi use kar sakte hain. Is strategy ko use karke, aap ek calculation ko independent
+parts mein divide kar sakte hain, un parts ko threads ke darmiyan split kar sakte hain, aur
+phir `Mutex<T>` ko use karke har thread ko apne part ke saath final result ko update karne
+de sakte hain.
 
-Note that if you are doing simple numerical operations, there are types simpler
-than `Mutex<T>` types provided by the [`std::sync::atomic` module of the
-standard library][atomic]<!-- ignore -->. These types provide safe, concurrent,
-atomic access to primitive types. We chose to use `Mutex<T>` with a primitive
-type for this example so that we could concentrate on how `Mutex<T>` works.
+Note karein ke agar aap simple numerical operations kar rahe hain, to `Mutex<T>` types se
+simpler types bhi hain jo standard library ke [`std::sync::atomic` module][atomic]<!-- ignore -->
+mein provide kiye gaye hain. Yeh types primitive types ko safe, concurrent, atomic access
+provide karte hain. Humne is example ke liye primitive type ke saath `Mutex<T>` use karna
+choose kiya taake hum `Mutex<T>` ke kaam karne ke tareeqe par concentrate kar sakein.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -231,25 +234,27 @@ type for this example so that we could concentrate on how `Mutex<T>` works.
 
 ### Comparing `RefCell<T>`/`Rc<T>` and `Mutex<T>`/`Arc<T>`
 
-You might have noticed that `counter` is immutable but that we could get a
-mutable reference to the value inside it; this means `Mutex<T>` provides
-interior mutability, as the `Cell` family does. In the same way we used
-`RefCell<T>` in Chapter 15 to allow us to mutate contents inside an `Rc<T>`, we
-use `Mutex<T>` to mutate contents inside an `Arc<T>`.
+Aap ne shayad notice kiya ho ke `counter` immutable hai lekin hum is ke andar ki value ka
+mutable reference hasil kar sakte hain; iska matlab hai ke `Mutex<T>` interior mutability
+provide karta hai, bilkul `Cell` family ki tarah. Jis tarah humne Chapter 15 mein
+`RefCell<T>` ko use karke `Rc<T>` ke andar maujood contents ko mutate karne ki ijazat hasil
+ki thi, usi tarah hum `Mutex<T>` ko use karke `Arc<T>` ke andar maujood contents ko mutate
+karte hain.
 
-Another detail to note is that Rust can’t protect you from all kinds of logic
-errors when you use `Mutex<T>`. Recall from Chapter 15 that using `Rc<T>` came
-with the risk of creating reference cycles, where two `Rc<T>` values refer to
-each other, causing memory leaks. Similarly, `Mutex<T>` comes with the risk of
-creating _deadlocks_. These occur when an operation needs to lock two resources
-and two threads have each acquired one of the locks, causing them to wait for
-each other forever. If you’re interested in deadlocks, try creating a Rust
-program that has a deadlock; then, research deadlock mitigation strategies for
-mutexes in any language and have a go at implementing them in Rust. The
-standard library API documentation for `Mutex<T>` and `MutexGuard` offers
-useful information.
+Ek aur detail note karne wali yeh hai ke jab aap `Mutex<T>` use karte hain to Rust aapko har
+tarah ke logic errors se protect nahi kar sakta. Chapter 15 se yaad karein ke `Rc<T>` ko
+use karne ke saath reference cycles create hone ka risk tha, jahan do `Rc<T>` values ek
+doosre ko refer karti hain, jis ki wajah se memory leaks hotay hain. Isi tarah, `Mutex<T>`
+ke saath *deadlocks* create hone ka risk hota hai. Yeh tab occur hotay hain jab kisi
+operation ko do resources ko lock karne ki zaroorat ho aur do threads mein se har ek ne
+ek lock acquire kar liya ho, jis ki wajah se dono hamesha ke liye ek doosre ka wait karte
+rehte hain. Agar aap deadlocks mein interested hain, to aisa Rust program create karne ki
+koshish karein jis mein deadlock ho; phir kisi bhi language mein mutexes ke liye deadlock
+mitigation strategies ko research karein aur unhein Rust mein implement karne ki koshish
+karein. `Mutex<T>` aur `MutexGuard` ke liye standard library API documentation useful
+information provide karti hai.
 
-We’ll round out this chapter by talking about the `Send` and `Sync` traits and
-how we can use them with custom types.
+Hum is chapter ko `Send` aur `Sync` traits ke baare mein baat karke aur yeh samajh kar
+complete karenge ke hum inhein custom types ke saath kaise use kar sakte hain.
 
 [atomic]: ../std/sync/atomic/index.html

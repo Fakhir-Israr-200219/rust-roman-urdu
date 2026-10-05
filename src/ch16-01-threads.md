@@ -1,44 +1,47 @@
 ## Using Threads to Run Code Simultaneously
 
-In most current operating systems, an executed program’s code is run in a
-_process_, and the operating system will manage multiple processes at once.
-Within a program, you can also have independent parts that run simultaneously.
-The features that run these independent parts are called _threads_. For
-example, a web server could have multiple threads so that it can respond to
-more than one request at the same time.
+Zyada tar current operating systems mein, execute hone wale program ka code ek
+*process* mein run hota hai, aur operating system ek hi waqt mein multiple
+processes ko manage karta hai. Ek program ke andar bhi aap independent parts rakh
+sakte hain jo simultaneously run hote hain. Woh features jo in independent parts ko
+run karte hain *threads* kehlate hain. Misal ke taur par, ek web server ke paas
+multiple threads ho sakte hain taake woh ek hi waqt mein ek se zyada requests ka
+response de sake.
 
-Splitting the computation in your program into multiple threads to run multiple
-tasks at the same time can improve performance, but it also adds complexity.
-Because threads can run simultaneously, there’s no inherent guarantee about the
-order in which parts of your code on different threads will run. This can lead
-to problems, such as:
+Apne program ki computation ko multiple threads mein split karna taake multiple
+tasks ek hi waqt mein run hon, performance ko improve kar sakta hai, lekin is se
+complexity bhi add hoti hai. Kyun ke threads simultaneously run ho sakte hain,
+is liye is baat ki koi inherent guarantee nahi hoti ke different threads par aapke
+code ke parts kis order mein run honge. Is se problems paida ho sakti hain, jaise:
 
-- Race conditions, in which threads are accessing data or resources in an
-  inconsistent order
-- Deadlocks, in which two threads are waiting for each other, preventing both
-  threads from continuing
-- Bugs that only happen in certain situations and are hard to reproduce and fix
-  reliably
+* Race conditions, jismein threads data ya resources ko ek inconsistent order mein
+  access kar rahe hote hain
+* Deadlocks, jismein do threads ek doosre ka wait kar rahe hote hain, jis ki wajah se dono
+  threads continue nahi kar pate
+* Aise bugs jo sirf kuch situations mein hote hain aur jinhein reliably reproduce
+  aur fix karna mushkil hota hai
 
-Rust attempts to mitigate the negative effects of using threads, but
-programming in a multithreaded context still takes careful thought and requires
-a code structure that is different from that in programs running in a single
-thread.
+Rust threads use karne ke negative effects ko kam karne ki koshish karta hai, lekin
+multithreaded context mein programming ke liye phir bhi careful thought ki zarurat
+hoti hai aur code structure aise programs se different hota hai jo ek single
+thread mein run karte hain.
 
-Programming languages implement threads in a few different ways, and many
-operating systems provide an API the programming language can call for creating
-new threads. The Rust standard library uses a _1:1_ model of thread
-implementation, whereby a program uses one operating system thread per one
-language thread. There are crates that implement other models of threading that
-make different trade-offs to the 1:1 model. (Rust’s async system, which we will
-see in the next chapter, provides another approach to concurrency as well.)
+Programming languages threads ko kuch different ways mein implement karti hain, aur bohot
+se operating systems ek API provide karte hain jise programming language new
+threads create karne ke liye call kar sakti hai. Rust standard library threads ki
+*1:1* model of thread implementation use karti hai, jismein ek program har ek
+language thread ke liye ek operating system thread use karta hai. Aise crates bhi
+maujood hain jo threading ke doosre models implement karte hain aur 1:1 model ke
+muqable mein different trade-offs offer karte hain. (Rust ka async system, jise hum
+next chapter mein dekhenge, concurrency ke liye ek aur approach provide karta hai.)
 
 ### Creating a New Thread with `spawn`
 
-To create a new thread, we call the `thread::spawn` function and pass it a
-closure (we talked about closures in Chapter 13) containing the code we want to
-run in the new thread. The example in Listing 16-1 prints some text from a main
-thread and other text from a new thread.
+Ek naya thread create karne ke liye, hum `thread::spawn` function ko call karte hain aur
+use ek closure pass karte hain (humne Chapter 13 mein closures ke baare mein baat ki thi)
+jismein woh code hota hai jo hum naye thread mein run karna chahte hain. Listing 16-1 mein
+di gayi example ek main thread se kuch text print karti hai aur ek naye thread se doosra
+text print karti hai.
 
 <Listing number="16-1" file-name="src/main.rs" caption="Creating a new thread to print one thing while the main thread prints something else">
 
@@ -48,10 +51,9 @@ thread and other text from a new thread.
 
 </Listing>
 
-Note that when the main thread of a Rust program completes, all spawned threads
-are shut down, whether or not they have finished running. The output from this
-program might be a little different every time, but it will look similar to the
-following:
+Note karein ke jab Rust program ka main thread complete ho jata hai, to saare spawned threads
+shutdown ho jate hain, chahe unhon ne running complete ki ho ya nahi. Is program ka output
+har baar thora different ho sakta hai, lekin yeh kuch is tarah nazar aayega:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -69,17 +71,17 @@ hi number 4 from the spawned thread!
 hi number 5 from the spawned thread!
 ```
 
-The calls to `thread::sleep` force a thread to stop its execution for a short
-duration, allowing a different thread to run. The threads will probably take
-turns, but that isn’t guaranteed: It depends on how your operating system
-schedules the threads. In this run, the main thread printed first, even though
-the print statement from the spawned thread appears first in the code. And even
-though we told the spawned thread to print until `i` is `9`, it only got to `5`
-before the main thread shut down.
+`thread::sleep` ko call karna thread ko thori der ke liye apni execution rokne par majboor karta
+hai, jis se kisi doosre thread ko run karne ka mauqa milta hai. Threads shayad bari bari run
+karein, lekin is ki guarantee nahi hai: Yeh is baat par depend karta hai ke aapka operating system
+threads ko kis tarah schedule karta hai. Is run mein, main thread ne pehle print kiya, halaan ke
+spawned thread ka print statement code mein pehle nazar aata hai. Aur halaan ke humne spawned
+thread ko `i` ke `9` tak print karne ke liye kaha tha, woh main thread ke shutdown hone se pehle
+sirf `5` tak hi pohanch saka.
 
-If you run this code and only see output from the main thread, or don’t see any
-overlap, try increasing the numbers in the ranges to create more opportunities
-for the operating system to switch between the threads.
+Agar aap yeh code run karein aur sirf main thread ka output dekhein, ya koi overlap nazar na aaye,
+to ranges mein numbers ko barhane ki koshish karein taake operating system ko threads ke darmiyan
+switch karne ke zyada opportunities mil sakein.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -87,18 +89,16 @@ for the operating system to switch between the threads.
 
 ### Waiting for All Threads to Finish
 
-The code in Listing 16-1 not only stops the spawned thread prematurely most of
-the time due to the main thread ending, but because there is no guarantee on
-the order in which threads run, we also can’t guarantee that the spawned thread
-will get to run at all!
+Listing 16-1 ka code aksar main thread ke end hone ki wajah se spawned thread ko waqt se pehle
+na sirf rok deta hai, balki kyun ke threads kis order mein run honge is ki koi guarantee nahi,
+hum yeh bhi guarantee nahi kar sakte ke spawned thread ko run karne ka mauqa milega bhi ya nahi!
 
-We can fix the problem of the spawned thread not running or of it ending
-prematurely by saving the return value of `thread::spawn` in a variable. The
-return type of `thread::spawn` is `JoinHandle<T>`. A `JoinHandle<T>` is an
-owned value that, when we call the `join` method on it, will wait for its
-thread to finish. Listing 16-2 shows how to use the `JoinHandle<T>` of the
-thread we created in Listing 16-1 and how to call `join` to make sure the
-spawned thread finishes before `main` exits.
+Hum spawned thread ke run na karne ya waqt se pehle end ho jane ki problem ko `thread::spawn`
+ki return value ko ek variable mein save karke fix kar sakte hain. `thread::spawn` ka return type
+`JoinHandle<T>` hai. Ek `JoinHandle<T>` ek owned value hai jo, jab hum is par `join` method
+call karte hain, to apne thread ke finish hone ka wait karegi. Listing 16-2 dikhati hai ke
+Listing 16-1 mein create kiye gaye thread ke `JoinHandle<T>` ko kaise use karein aur `join`
+ko kaise call karein taake `main` exit hone se pehle spawned thread finish ho jaye.
 
 <Listing number="16-2" file-name="src/main.rs" caption="Saving a `JoinHandle<T>` from `thread::spawn` to guarantee the thread is run to completion">
 
@@ -108,11 +108,10 @@ spawned thread finishes before `main` exits.
 
 </Listing>
 
-Calling `join` on the handle blocks the thread currently running until the
-thread represented by the handle terminates. _Blocking_ a thread means that
-thread is prevented from performing work or exiting. Because we’ve put the call
-to `join` after the main thread’s `for` loop, running Listing 16-2 should
-produce output similar to this:
+Handle par `join` call karna currently running thread ko us waqt tak block kar deta hai jab tak
+handle se represented thread terminate nahi ho jata. *Blocking* ka matlab hai ke us thread ko
+work perform karne ya exit hone se rok diya jata hai. Kyun ke humne `join` ki call main thread ke
+`for` loop ke baad rakhi hai, Listing 16-2 ko run karne par output kuch is tarah hona chahiye:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -134,11 +133,11 @@ hi number 8 from the spawned thread!
 hi number 9 from the spawned thread!
 ```
 
-The two threads continue alternating, but the main thread waits because of the
-call to `handle.join()` and does not end until the spawned thread is finished.
+Dono threads bari bari continue karte rehte hain, lekin main thread `handle.join()` ki call ki
+wajah se wait karta hai aur tab tak end nahi hota jab tak spawned thread finish na ho jaye.
 
-But let’s see what happens when we instead move `handle.join()` before the
-`for` loop in `main`, like this:
+Lekin ab dekhte hain ke agar hum `main` ke `for` loop se pehle `handle.join()` ko move kar dein,
+jaise ke yahan hai:
 
 <Listing file-name="src/main.rs">
 
@@ -148,8 +147,8 @@ But let’s see what happens when we instead move `handle.join()` before the
 
 </Listing>
 
-The main thread will wait for the spawned thread to finish and then run its
-`for` loop, so the output won’t be interleaved anymore, as shown here:
+Main thread spawned thread ke finish hone ka wait karega aur us ke baad apna `for` loop run karega,
+is liye output ab interleaved nahi hoga, jaisa ke yahan dikhaya gaya hai:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -171,24 +170,24 @@ hi number 3 from the main thread!
 hi number 4 from the main thread!
 ```
 
-Small details, such as where `join` is called, can affect whether or not your
-threads run at the same time.
+Choti choti details, jaise ke `join` ko kahan call kiya jata hai, is baat par asar daal sakti hain
+ke aapke threads ek hi waqt mein run karte hain ya nahi.
 
 ### Using `move` Closures with Threads
 
-We’ll often use the `move` keyword with closures passed to `thread::spawn`
-because the closure will then take ownership of the values it uses from the
-environment, thus transferring ownership of those values from one thread to
-another. In [“Capturing References or Moving Ownership”][capture]<!-- ignore
---> in Chapter 13, we discussed `move` in the context of closures. Now we’ll
-concentrate more on the interaction between `move` and `thread::spawn`.
+Hum aksar `thread::spawn` ko pass kiye jane wale closures ke saath `move` keyword use
+karenge kyun ke phir closure environment se un values ki ownership le lega jinhein woh
+use karta hai, aur is tarah un values ki ownership ek thread se doosre thread ko transfer
+ho jayegi. Chapter 13 mein [“Capturing References or Moving Ownership”][capture]<!-- ignore
+--> ke context mein humne closures ke hawale se `move` discuss kiya tha. Ab hum
+`move` aur `thread::spawn` ke darmiyan interaction par zyada focus karenge.
 
-Notice in Listing 16-1 that the closure we pass to `thread::spawn` takes no
-arguments: We’re not using any data from the main thread in the spawned
-thread’s code. To use data from the main thread in the spawned thread, the
-spawned thread’s closure must capture the values it needs. Listing 16-3 shows
-an attempt to create a vector in the main thread and use it in the spawned
-thread. However, this won’t work yet, as you’ll see in a moment.
+Listing 16-1 mein note karein ke jo closure hum `thread::spawn` ko pass karte hain woh koi
+arguments nahi leta: Hum spawned thread ke code mein main thread ka koi data use nahi kar
+rahe. Main thread se data ko spawned thread mein use karne ke liye, spawned thread ke closure
+ko un values ko capture karna hoga jin ki use usay zarurat hai. Listing 16-3 main thread mein
+ek vector create karne aur use spawned thread mein use karne ki koshish dikhati hai. Lekin,
+jaisa ke aap ek lamhe mein dekhenge, yeh abhi kaam nahi karega.
 
 <Listing number="16-3" file-name="src/main.rs" caption="Attempting to use a vector created by the main thread in another thread">
 
@@ -198,22 +197,22 @@ thread. However, this won’t work yet, as you’ll see in a moment.
 
 </Listing>
 
-The closure uses `v`, so it will capture `v` and make it part of the closure’s
-environment. Because `thread::spawn` runs this closure in a new thread, we
-should be able to access `v` inside that new thread. But when we compile this
-example, we get the following error:
+Closure `v` ko use karta hai, is liye woh `v` ko capture karega aur use closure ke
+environment ka hissa bana dega. Kyun ke `thread::spawn` is closure ko ek naye thread mein
+run karta hai, humein `v` ko us naye thread ke andar access kar sakna chahiye. Lekin jab hum
+is example ko compile karte hain, to humein yeh error milta hai:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-03/output.txt}}
 ```
 
-Rust _infers_ how to capture `v`, and because `println!` only needs a reference
-to `v`, the closure tries to borrow `v`. However, there’s a problem: Rust can’t
-tell how long the spawned thread will run, so it doesn’t know whether the
-reference to `v` will always be valid.
+Rust *infer* karta hai ke `v` ko kis tarah capture karna hai, aur kyun ke `println!` ko sirf
+`v` ke reference ki zarurat hai, closure `v` ko borrow karne ki koshish karta hai. Lekin yahan
+ek problem hai: Rust yeh nahi bata sakta ke spawned thread kitni der tak run karega, is liye
+use yeh maloom nahi ke `v` ka reference hamesha valid rahega ya nahi.
 
-Listing 16-4 provides a scenario that’s more likely to have a reference to `v`
-that won’t be valid.
+Listing 16-4 ek aisi situation provide karti hai jahan `v` ka reference valid na rehne ka
+imkaan zyada hai.
 
 <Listing number="16-4" file-name="src/main.rs" caption="A thread with a closure that attempts to capture a reference to `v` from a main thread that drops `v`">
 
@@ -223,15 +222,14 @@ that won’t be valid.
 
 </Listing>
 
-If Rust allowed us to run this code, there’s a possibility that the spawned
-thread would be immediately put in the background without running at all. The
-spawned thread has a reference to `v` inside, but the main thread immediately
-drops `v`, using the `drop` function we discussed in Chapter 15. Then, when the
-spawned thread starts to execute, `v` is no longer valid, so a reference to it
-is also invalid. Oh no!
+Agar Rust humein yeh code run karne deta, to ek possibility yeh hoti ke spawned thread ko
+foran background mein bhej diya jata aur woh bilkul run hi na karta. Spawned thread ke andar
+`v` ka reference hai, lekin main thread foran `v` ko drop kar deta hai, `drop` function ko use
+karte hue jis par humne Chapter 15 mein baat ki thi. Phir, jab spawned thread execute karna
+shuru karta hai, `v` ab valid nahi rehta, is liye us ka reference bhi invalid hota hai. Oh no!
 
-To fix the compiler error in Listing 16-3, we can use the error message’s
-advice:
+Listing 16-3 mein compiler error ko fix karne ke liye, hum error message ke mashware ko use
+kar sakte hain:
 
 <!-- manual-regeneration
 after automatic regeneration, look at listings/ch16-fearless-concurrency/listing-16-03/output.txt and copy the relevant part
@@ -244,10 +242,10 @@ help: to force the closure to take ownership of `v` (and any other referenced va
   |                                ++++
 ```
 
-By adding the `move` keyword before the closure, we force the closure to take
-ownership of the values it’s using rather than allowing Rust to infer that it
-should borrow the values. The modification to Listing 16-3 shown in Listing
-16-5 will compile and run as we intend.
+Closure se pehle `move` keyword add karke, hum closure ko un values ki ownership lene par majboor
+karte hain jinhein woh use kar raha hai, bajaye is ke ke Rust khud infer kare ke use values ko
+borrow karna chahiye. Listing 16-3 mein Listing 16-5 ke mutabiq ki gayi yeh modification compile
+aur run hogi, jaisa hum chahte hain.
 
 <Listing number="16-5" file-name="src/main.rs" caption="Using the `move` keyword to force a closure to take ownership of the values it uses">
 
@@ -257,28 +255,27 @@ should borrow the values. The modification to Listing 16-3 shown in Listing
 
 </Listing>
 
-We might be tempted to try the same thing to fix the code in Listing 16-4 where
-the main thread called `drop` by using a `move` closure. However, this fix will
-not work because what Listing 16-4 is trying to do is disallowed for a
-different reason. If we added `move` to the closure, we would move `v` into the
-closure’s environment, and we could no longer call `drop` on it in the main
-thread. We would get this compiler error instead:
+Humein yeh khayal aa sakta hai ke Listing 16-4 ke code ko bhi isi tarah fix karne ki koshish
+karein, jahan main thread ne `drop` call kiya tha, aur `move` closure use karein. Lekin yeh fix
+kaam nahi karega kyun ke Listing 16-4 jo karne ki koshish kar rahi hai woh ek different reason
+ki wajah se disallowed hai. Agar hum closure mein `move` add kar dein, to hum `v` ko closure ke
+environment mein move kar denge, aur phir hum main thread mein us par `drop` call nahi kar
+sakeinge. Is ke bajaye humein yeh compiler error milega:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/output-only-01-move-drop/output.txt}}
 ```
 
-Rust’s ownership rules have saved us again! We got an error from the code in
-Listing 16-3 because Rust was being conservative and only borrowing `v` for the
-thread, which meant the main thread could theoretically invalidate the spawned
-thread’s reference. By telling Rust to move ownership of `v` to the spawned
-thread, we’re guaranteeing to Rust that the main thread won’t use `v` anymore.
-If we change Listing 16-4 in the same way, we’re then violating the ownership
-rules when we try to use `v` in the main thread. The `move` keyword overrides
-Rust’s conservative default of borrowing; it doesn’t let us violate the
-ownership rules.
+Rust ke ownership rules ne humein ek baar phir bacha liya! Listing 16-3 ke code se humein
+error is liye mila kyun ke Rust conservative ho kar sirf thread ke liye `v` ko borrow kar raha
+tha, jis ka matlab tha ke main thread theoretically spawned thread ke reference ko invalid
+kar sakta tha. Rust ko yeh batakar ke `v` ki ownership spawned thread ko move karni hai, hum
+Rust ko guarantee kar rahe hain ke main thread ab `v` ko use nahi karega. Agar hum Listing 16-4
+ko bhi isi tarah change karte hain, to phir main thread mein `v` ko use karne ki koshish par hum
+ownership rules ki violation kar rahe honge. `move` keyword Rust ke conservative default of
+borrowing ko override karta hai; yeh humein ownership rules ki violation karne nahi deta.
 
-Now that we’ve covered what threads are and the methods supplied by the thread
-API, let’s look at some situations in which we can use threads.
+Ab jab humne cover kar liya hai ke threads kya hain aur thread API ke provide kiye gaye methods
+kya hain, to chaliye kuch aisi situations dekhte hain jahan hum threads ko use kar sakte hain.
 
 [capture]: ch13-01-closures.html#capturing-references-or-moving-ownership
