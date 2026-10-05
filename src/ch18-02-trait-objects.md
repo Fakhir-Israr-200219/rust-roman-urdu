@@ -4,68 +4,21 @@
 
 ## Using Trait Objects to Abstract over Shared Behavior
 
-In Chapter 8, we mentioned that one limitation of vectors is that they can
-store elements of only one type. We created a workaround in Listing 8-9 where
-we defined a `SpreadsheetCell` enum that had variants to hold integers, floats,
-and text. This meant we could store different types of data in each cell and
-still have a vector that represented a row of cells. This is a perfectly good
-solution when our interchangeable items are a fixed set of types that we know
-when our code is compiled.
+Chapter 8 mein humne mention kiya tha ke vectors ki ek limitation yeh hai ke woh sirf ek hi type ke elements store kar sakte hain. Humne Listing 8-9 mein ek workaround create kiya tha jahan humne ek `SpreadsheetCell` enum define kiya tha jis mein integers, floats, aur text ko hold karne ke liye variants thay. Is ka matlab tha ke hum har cell mein different types ka data store kar sakte thay aur phir bhi hamare paas cells ki ek row ko represent karne wala vector hota. Jab hamare interchangeable items fixed types ka set hon jinhein hum code compile hone ke waqt jaante hon, to yeh bilkul theek solution hai.
 
-However, sometimes we want our library user to be able to extend the set of
-types that are valid in a particular situation. To show how we might achieve
-this, we’ll create an example graphical user interface (GUI) tool that iterates
-through a list of items, calling a `draw` method on each one to draw it to the
-screen—a common technique for GUI tools. We’ll create a library crate called
-`gui` that contains the structure of a GUI library. This crate might include
-some types for people to use, such as `Button` or `TextField`. In addition,
-`gui` users will want to create their own types that can be drawn: For
-instance, one programmer might add an `Image`, and another might add a
-`SelectBox`.
+Lekin kabhi kabhi hum chahte hain ke hamari library ka user un types ke set ko extend kar sake jo kisi particular situation mein valid hain. Yeh dikhane ke liye ke hum yeh kaise achieve kar sakte hain, hum ek example graphical user interface (GUI) tool create karenge jo items ki ek list ke through iterate karta hai, aur har item par `draw` method call karke use screen par draw karta hai—aam tor par GUI tools mein use hone wali technique. Hum `gui` naam ka ek library crate create karenge jo GUI library ka structure contain karega. Is crate mein logon ke use ke liye kuch types shamil ho sakti hain, jaise `Button` ya `TextField`. Is ke ilawa, `gui` users apne khud ke aise types create karna chahenge jinhein draw kiya ja sake: Misal ke taur par, ek programmer `Image` add kar sakta hai, aur doosra `SelectBox` add kar sakta hai.
 
-At the time of writing the library, we can’t know and define all the types
-other programmers might want to create. But we do know that `gui` needs to keep
-track of many values of different types, and it needs to call a `draw` method
-on each of these differently typed values. It doesn’t need to know exactly what
-will happen when we call the `draw` method, just that the value will have that
-method available for us to call.
+Library likhte waqt, hum tamam un types ko nahi jaan sakte aur define nahi kar sakte jo doosre programmers create karna chahenge. Lekin hum yeh jaante hain ke `gui` ko different types ki bohot si values ka record rakhna hoga, aur in differently typed values mein se har ek par `draw` method call karna hoga. Isay yeh jaanne ki zaroorat nahi hai ke jab hum `draw` method call karenge to exactly kya hoga, bas itna pata hona chahiye ke value par woh method available hoga jise hum call kar sakte hain.
 
-To do this in a language with inheritance, we might define a class named
-`Component` that has a method named `draw` on it. The other classes, such as
-`Button`, `Image`, and `SelectBox`, would inherit from `Component` and thus
-inherit the `draw` method. They could each override the `draw` method to define
-their custom behavior, but the framework could treat all of the types as if
-they were `Component` instances and call `draw` on them. But because Rust
-doesn’t have inheritance, we need another way to structure the `gui` library to
-allow users to create new types compatible with the library.
+Inheritance wali language mein aisa karne ke liye, hum `Component` naam ki ek class define kar sakte thay jis par `draw` naam ka method hota. Doosri classes, jaise `Button`, `Image`, aur `SelectBox`, `Component` se inherit kartin aur is tarah `draw` method bhi inherit kar letin. Woh har ek `draw` method ko override karke apna custom behavior define kar sakti thin, lekin framework tamam types ko `Component` instances ke taur par treat kar sakta tha aur un par `draw` call kar sakta tha. Lekin kyun ke Rust mein inheritance nahi hai, humein `gui` library ko structure karne ke liye koi doosra tareeqa chahiye jo users ko library ke saath compatible naye types create karne ki ijazat de.
 
 ### Defining a Trait for Common Behavior
 
-To implement the behavior that we want `gui` to have, we’ll define a trait
-named `Draw` that will have one method named `draw`. Then, we can define a
-vector that takes a trait object. A _trait object_ points to both an instance
-of a type implementing our specified trait and a table used to look up trait
-methods on that type at runtime. We create a trait object by specifying some
-sort of pointer, such as a reference or a `Box<T>` smart pointer, then the
-`dyn` keyword, and then specifying the relevant trait. (We’ll talk about the
-reason trait objects must use a pointer in [“Dynamically Sized Types and the
-`Sized` Trait”][dynamically-sized]<!-- ignore --> in Chapter 20.) We can use
-trait objects in place of a generic or concrete type. Wherever we use a trait
-object, Rust’s type system will ensure at compile time that any value used in
-that context will implement the trait object’s trait. Consequently, we don’t
-need to know all the possible types at compile time.
+`gui` mein jo behavior hum chahte hain usay implement karne ke liye, hum `Draw` naam ka ek trait define karenge jis mein `draw` naam ka ek method hoga. Phir, hum ek aisa vector define kar sakte hain jo ek trait object leta hai. Ek *trait object* ek taraf us type ke instance ki taraf point karta hai jo hamare specified trait ko implement karta hai aur doosri taraf ek aisi table ki taraf jo runtime par us type ke trait methods ko lookup karne ke liye use hoti hai. Hum trait object ko kisi qisam ka pointer, jaise reference ya `Box<T>` smart pointer, phir `dyn` keyword, aur us ke baad relevant trait specify karke create karte hain. (Hum is baat ki wajah ke trait objects ko pointer use karna kyun zaroori hai, [“Dynamically Sized Types and the `Sized` Trait”][dynamically-sized]<!-- ignore --> mein Chapter 20 mein discuss karenge.) Hum generic ya concrete type ki jagah trait objects ko use kar sakte hain. Jahan bhi hum trait object use karte hain, Rust ka type system compile time par ensure karega ke us context mein use hone wali koi bhi value trait object ke trait ko implement karti ho. Natijatan, humein compile time par tamam possible types ko jaanne ki zaroorat nahi hoti.
 
-We’ve mentioned that, in Rust, we refrain from calling structs and enums
-“objects” to distinguish them from other languages’ objects. In a struct or
-enum, the data in the struct fields and the behavior in `impl` blocks are
-separated, whereas in other languages, the data and behavior combined into one
-concept is often labeled an object. Trait objects differ from objects in other
-languages in that we can’t add data to a trait object. Trait objects aren’t as
-generally useful as objects in other languages: Their specific purpose is to
-allow abstraction across common behavior.
+Humne mention kiya hai ke Rust mein hum structs aur enums ko “objects” kehne se parhez karte hain taake unhein doosri languages ke objects se distinguish kiya ja sake. Ek struct ya enum mein, struct fields ka data aur `impl` blocks mein behavior alag alag hote hain, jabke doosri languages mein data aur behavior ko mila kar ek concept banaya jata hai jise aksar object kaha jata hai. Trait objects doosri languages ke objects se is liye different hain ke hum trait object mein data add nahi kar sakte. Trait objects doosri languages ke objects ki tarah generally useful nahi hote: Un ka specific purpose common behavior ke across abstraction allow karna hai.
 
-Listing 18-3 shows how to define a trait named `Draw` with one method named
-`draw`.
+Listing 18-3 dikhati hai ke ek `Draw` trait ko ek `draw` method ke saath kis tarah define kiya jata hai.
 
 <Listing number="18-3" file-name="src/lib.rs" caption="Definition of the `Draw` trait">
 
@@ -75,11 +28,7 @@ Listing 18-3 shows how to define a trait named `Draw` with one method named
 
 </Listing>
 
-This syntax should look familiar from our discussions on how to define traits
-in Chapter 10. Next comes some new syntax: Listing 18-4 defines a struct named
-`Screen` that holds a vector named `components`. This vector is of type
-`Box<dyn Draw>`, which is a trait object; it’s a stand-in for any type inside a
-`Box` that implements the `Draw` trait.
+Yeh syntax Chapter 10 mein traits define karne ke hawale se hamari discussions se familiar lagna chahiye. Is ke baad kuch naya syntax aata hai: Listing 18-4 `Screen` naam ka ek struct define karti hai jo `components` naam ka ek vector hold karta hai. Yeh vector `Box<dyn Draw>` type ka hai, jo ek trait object hai; yeh `Box` ke andar kisi bhi aise type ke liye stand-in hai jo `Draw` trait ko implement karta hai.
 
 <Listing number="18-4" file-name="src/lib.rs" caption="Definition of the `Screen` struct with a `components` field holding a vector of trait objects that implement the `Draw` trait">
 
@@ -89,8 +38,7 @@ in Chapter 10. Next comes some new syntax: Listing 18-4 defines a struct named
 
 </Listing>
 
-On the `Screen` struct, we’ll define a method named `run` that will call the
-`draw` method on each of its `components`, as shown in Listing 18-5.
+`Screen` struct par, hum `run` naam ka ek method define karenge jo apne har `components` par `draw` method call karega, jaisa ke Listing 18-5 mein dikhaya gaya hai.
 
 <Listing number="18-5" file-name="src/lib.rs" caption="A `run` method on `Screen` that calls the `draw` method on each component">
 
@@ -100,12 +48,7 @@ On the `Screen` struct, we’ll define a method named `run` that will call the
 
 </Listing>
 
-This works differently from defining a struct that uses a generic type
-parameter with trait bounds. A generic type parameter can be substituted with
-only one concrete type at a time, whereas trait objects allow for multiple
-concrete types to fill in for the trait object at runtime. For example, we
-could have defined the `Screen` struct using a generic type and a trait bound,
-as in Listing 18-6.
+Yeh us struct ko define karne se different tareeqe se kaam karta hai jo trait bounds ke saath ek generic type parameter use karta hai. Generic type parameter ko ek waqt mein sirf ek concrete type se substitute kiya ja sakta hai, jabke trait objects runtime par multiple concrete types ko trait object ke liye fill in karne ki ijazat dete hain. Misal ke taur par, hum `Screen` struct ko generic type aur trait bound ke saath define kar sakte thay, jaisa ke Listing 18-6 mein hai.
 
 <Listing number="18-6" file-name="src/lib.rs" caption="An alternate implementation of the `Screen` struct and its `run` method using generics and trait bounds">
 
@@ -115,23 +58,13 @@ as in Listing 18-6.
 
 </Listing>
 
-This restricts us to a `Screen` instance that has a list of components all of
-type `Button` or all of type `TextField`. If you’ll only ever have homogeneous
-collections, using generics and trait bounds is preferable because the
-definitions will be monomorphized at compile time to use the concrete types.
+Yeh humein ek aise `Screen` instance tak restrict karta hai jis mein tamam components ki list ya to `Button` type ki ho ya tamam `TextField` type ki. Agar aapke paas hamesha homogeneous collections hi hon gi, to generics aur trait bounds use karna preferable hai kyun ke definitions ko compile time par concrete types ko use karne ke liye monomorphized kiya jayega.
 
-On the other hand, with the method using trait objects, one `Screen` instance
-can hold a `Vec<T>` that contains a `Box<Button>` as well as a
-`Box<TextField>`. Let’s look at how this works, and then we’ll talk about the
-runtime performance implications.
+Doosri taraf, trait objects use karne wale method ke saath, ek `Screen` instance aisa `Vec<T>` hold kar sakta hai jis mein `Box<Button>` ke saath `Box<TextField>` bhi ho. Aaiye dekhein ke yeh kis tarah kaam karta hai, aur phir hum runtime performance par is ke implications par baat karenge.
 
 ### Implementing the Trait
 
-Now we’ll add some types that implement the `Draw` trait. We’ll provide the
-`Button` type. Again, actually implementing a GUI library is beyond the scope
-of this book, so the `draw` method won’t have any useful implementation in its
-body. To imagine what the implementation might look like, a `Button` struct
-might have fields for `width`, `height`, and `label`, as shown in Listing 18-7.
+Ab hum kuch aise types add karenge jo `Draw` trait ko implement karte hain. Hum `Button` type provide karenge. Dobara, asal mein GUI library implement karna is book ke scope se bahar hai, is liye `draw` method ke body mein koi useful implementation nahi hogi. Yeh imagine karne ke liye ke implementation kaisi nazar aa sakti hai, ek `Button` struct mein `width`, `height`, aur `label` ke liye fields ho sakti hain, jaisa ke Listing 18-7 mein dikhaya gaya hai.
 
 <Listing number="18-7" file-name="src/lib.rs" caption="A `Button` struct that implements the `Draw` trait">
 
@@ -141,19 +74,9 @@ might have fields for `width`, `height`, and `label`, as shown in Listing 18-7.
 
 </Listing>
 
-The `width`, `height`, and `label` fields on `Button` will differ from the
-fields on other components; for example, a `TextField` type might have those
-same fields plus a `placeholder` field. Each of the types we want to draw on
-the screen will implement the `Draw` trait but will use different code in the
-`draw` method to define how to draw that particular type, as `Button` has here
-(without the actual GUI code, as mentioned). The `Button` type, for instance,
-might have an additional `impl` block containing methods related to what
-happens when a user clicks the button. These kinds of methods won’t apply to
-types like `TextField`.
+`Button` par `width`, `height`, aur `label` fields doosre components ki fields se different hongi; misal ke taur par, ek `TextField` type mein wohi fields aur ek `placeholder` field bhi ho sakti hai. Har woh type jise hum screen par draw karna chahte hain `Draw` trait ko implement karega, lekin particular type ko kis tarah draw karna hai yeh define karne ke liye `draw` method mein different code use karega, jaisa ke yahan `Button` mein hai (jaisa ke mention kiya gaya hai, actual GUI code ke baghair). Misal ke taur par, `Button` type mein ek additional `impl` block ho sakta hai jis mein user ke button par click karne par hone wale behavior se related methods hon. Is qisam ke methods `TextField` jaise types par apply nahi honge.
 
-If someone using our library decides to implement a `SelectBox` struct that has
-`width`, `height`, and `options` fields, they would implement the `Draw` trait
-on the `SelectBox` type as well, as shown in Listing 18-8.
+Agar hamari library use karne wala koi shakhs `SelectBox` struct implement karne ka faisla karta hai jis mein `width`, `height`, aur `options` fields hon, to woh `SelectBox` type par bhi `Draw` trait implement karega, jaisa ke Listing 18-8 mein dikhaya gaya hai.
 
 <Listing number="18-8" file-name="src/main.rs" caption="Another crate using `gui` and implementing the `Draw` trait on a `SelectBox` struct">
 
@@ -163,11 +86,7 @@ on the `SelectBox` type as well, as shown in Listing 18-8.
 
 </Listing>
 
-Our library’s user can now write their `main` function to create a `Screen`
-instance. To the `Screen` instance, they can add a `SelectBox` and a `Button`
-by putting each in a `Box<T>` to become a trait object. They can then call the
-`run` method on the `Screen` instance, which will call `draw` on each of the
-components. Listing 18-9 shows this implementation.
+Hamari library ka user ab apna `main` function likh sakta hai taake ek `Screen` instance create kare. `Screen` instance mein woh ek `SelectBox` aur ek `Button` add kar sakta hai, har ek ko `Box<T>` mein rakh kar trait object bana sakta hai. Phir woh `Screen` instance par `run` method call kar sakta hai, jo har component par `draw` call karega. Listing 18-9 is implementation ko dikhati hai.
 
 <Listing number="18-9" file-name="src/main.rs" caption="Using trait objects to store values of different types that implement the same trait">
 
@@ -177,30 +96,13 @@ components. Listing 18-9 shows this implementation.
 
 </Listing>
 
-When we wrote the library, we didn’t know that someone might add the
-`SelectBox` type, but our `Screen` implementation was able to operate on the
-new type and draw it because `SelectBox` implements the `Draw` trait, which
-means it implements the `draw` method.
+Jab humne library likhi thi, humein yeh nahi pata tha ke koi `SelectBox` type add kar sakta hai, lekin hamari `Screen` implementation naye type ke saath bhi operate kar saki aur use draw kar saki kyun ke `SelectBox` `Draw` trait ko implement karta hai, jis ka matlab hai ke woh `draw` method ko implement karta hai.
 
-This concept—of being concerned only with the messages a value responds to
-rather than the value’s concrete type—is similar to the concept of _duck
-typing_ in dynamically typed languages: If it walks like a duck and quacks like
-a duck, then it must be a duck! In the implementation of `run` on `Screen` in
-Listing 18-5, `run` doesn’t need to know what the concrete type of each
-component is. It doesn’t check whether a component is an instance of a `Button`
-or a `SelectBox`, it just calls the `draw` method on the component. By
-specifying `Box<dyn Draw>` as the type of the values in the `components`
-vector, we’ve defined `Screen` to need values that we can call the `draw`
-method on.
+Yeh concept—ke kisi value ki concrete type ke bajaye sirf is baat se concerned hona ke woh kin messages ka response deti hai—dynamically typed languages mein *duck typing* ke concept se milta julta hai: Agar woh duck ki tarah chalta hai aur duck ki tarah awaaz nikalta hai, to woh duck hi hona chahiye! Listing 18-5 mein `Screen` ke `run` ki implementation mein, `run` ko yeh jaanne ki zaroorat nahi ke har component ki concrete type kya hai. Yeh check nahi karta ke component `Button` ya `SelectBox` ka instance hai; yeh bas component par `draw` method call karta hai. `components` vector mein values ki type ke taur par `Box<dyn Draw>` specify karke, humne `Screen` ko is tarah define kiya hai ke use aisi values chahiye jin par hum `draw` method call kar sakte hain.
 
-The advantage of using trait objects and Rust’s type system to write code
-similar to code using duck typing is that we never have to check whether a
-value implements a particular method at runtime or worry about getting errors
-if a value doesn’t implement a method but we call it anyway. Rust won’t compile
-our code if the values don’t implement the traits that the trait objects need.
+Trait objects aur Rust ke type system ko use karke duck typing ke similar code likhne ka faida yeh hai ke humein runtime par kabhi check nahi karna padta ke koi value particular method ko implement karti hai ya nahi, aur na hi is baat ki fikr karni padti hai ke agar koi value method implement na karti ho aur hum phir bhi usay call karein to errors milenge. Agar values un traits ko implement nahi kartin jin ki trait objects ko zaroorat hai, to Rust hamare code ko compile nahi karega.
 
-For example, Listing 18-10 shows what happens if we try to create a `Screen`
-with a `String` as a component.
+Misal ke taur par, Listing 18-10 dikhati hai ke agar hum `String` ko component ke taur par use karke ek `Screen` create karne ki koshish karein to kya hota hai.
 
 <Listing number="18-10" file-name="src/main.rs" caption="Attempting to use a type that doesn’t implement the trait object’s trait">
 
@@ -210,15 +112,13 @@ with a `String` as a component.
 
 </Listing>
 
-We’ll get this error because `String` doesn’t implement the `Draw` trait:
+Humein yeh error milega kyun ke `String` `Draw` trait ko implement nahi karta:
 
 ```console
 {{#include ../listings/ch18-oop/listing-18-10/output.txt}}
 ```
 
-This error lets us know that either we’re passing something to `Screen` that we
-didn’t mean to pass and so should pass a different type, or we should implement
-`Draw` on `String` so that `Screen` is able to call `draw` on it.
+Yeh error humein batata hai ke ya to hum `Screen` ko koi aisi cheez pass kar rahe hain jo hum pass nahi karna chahte thay aur is liye humein koi different type pass karni chahiye, ya phir humein `String` par `Draw` implement karna chahiye taake `Screen` us par `draw` call kar sake.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -226,29 +126,33 @@ didn’t mean to pass and so should pass a different type, or we should implemen
 
 ### Performing Dynamic Dispatch
 
-Recall in [“Performance of Code Using
-Generics”][performance-of-code-using-generics]<!-- ignore --> in Chapter 10 our
-discussion on the monomorphization process performed on generics by the
-compiler: The compiler generates nongeneric implementations of functions and
-methods for each concrete type that we use in place of a generic type
-parameter. The code that results from monomorphization is doing _static
-dispatch_, which is when the compiler knows what method you’re calling at
-compile time. This is opposed to _dynamic dispatch_, which is when the compiler
-can’t tell at compile time which method you’re calling. In dynamic dispatch
-cases, the compiler emits code that at runtime will know which method to call.
+Chapter 10 mein [“Performance of Code Using
+Generics”][performance-of-code-using-generics]<!-- ignore --> mein generics par
+compiler ke zariye perform kiye jane wale monomorphization process ke hawale se
+hamari discussion yaad karein: Compiler har concrete type ke liye functions aur
+methods ki nongeneric implementations generate karta hai jise hum generic type
+parameter ki jagah use karte hain. Monomorphization se resulting code *static
+dispatch* kar raha hota hai, jo us waqt hota hai jab compiler compile time par
+jaanta hai ke aap kaunsa method call kar rahe hain. Yeh *dynamic dispatch* ke
+baraks hai, jahan compiler compile time par yeh nahi bata sakta ke aap kaunsa
+method call kar rahe hain. Dynamic dispatch ke cases mein compiler aisa code
+emit karta hai jo runtime par yeh jaanta hoga ke kaunsa method call karna hai.
 
-When we use trait objects, Rust must use dynamic dispatch. The compiler doesn’t
-know all the types that might be used with the code that’s using trait objects,
-so it doesn’t know which method implemented on which type to call. Instead, at
-runtime, Rust uses the pointers inside the trait object to know which method to
-call. This lookup incurs a runtime cost that doesn’t occur with static dispatch.
-Dynamic dispatch also prevents the compiler from choosing to inline a method’s
-code, which in turn prevents some optimizations, and Rust has some rules about
-where you can and cannot use dynamic dispatch, called _dyn compatibility_. Those
-rules are beyond the scope of this discussion, but you can read more about them
-[in the reference][dyn-compatibility]<!-- ignore -->. However, we did get extra
-flexibility in the code that we wrote in Listing 18-5 and were able to support
-in Listing 18-9, so it’s a trade-off to consider.
+Jab hum trait objects use karte hain, Rust ko dynamic dispatch use karna padta
+hai. Compiler un tamam types ko nahi jaanta jo trait objects ko use karne wale
+code ke saath use kiye ja sakte hain, is liye use yeh nahi pata hota ke kis type
+par implement kiye gaye kaun se method ko call karna hai. Is ke bajaye, runtime
+par Rust trait object ke andar maujood pointers ko use karta hai taake yeh pata
+chal sake ke kaunsa method call karna hai. Yeh lookup ek runtime cost incur
+karta hai jo static dispatch ke saath nahi hoti. Dynamic dispatch compiler ko
+method ke code ko inline karne ka option bhi nahi deta, jo baaz optimizations ko
+bhi prevent karta hai, aur Rust ke paas kuch rules hain ke aap dynamic dispatch
+ko kahan use kar sakte hain aur kahan nahi, jinhein *dyn compatibility* kaha
+jata hai. Yeh rules is discussion ke scope se bahar hain, lekin aap
+[in the reference][dyn-compatibility]<!-- ignore --> mein in ke bare mein mazeed
+parh sakte hain. Lekin humein Listing 18-5 mein likhe gaye code mein extra
+flexibility mili aur hum Listing 18-9 mein is flexibility ko support karne mein
+able hue, is liye yeh ek trade-off hai jis par ghour karna chahiye.
 
 [performance-of-code-using-generics]: ch10-01-syntax.html#performance-of-code-using-generics
 [dynamically-sized]: ch20-03-advanced-types.html#dynamically-sized-types-and-the-sized-trait
