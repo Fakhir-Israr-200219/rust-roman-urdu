@@ -1,0 +1,19 @@
+/* Upstream ke <Listing> tags ke liye basic styling */
+Listing {
+  display: block;
+  margin: 1.4em 0;
+}
+
+span.caption {
+  display: block;
+  font-size: 0.9em;
+  font-style: italic;
+  opacity: 0.75;
+  margin-top: -0.5em;
+  margin-bottom: 1.4em;
+}
+
+img.center {
+  display: block;
+  margin: 1.2em auto;
+}

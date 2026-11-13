@@ -28,3 +28,18 @@ Ye text [No Starch Press][nsprust] se paperback aur ebook format mein bhi availa
 > **🚨 Zyada interactive learning experience chahte hain? Rust Book ka ek different version try karein, jisme quizzes, highlighting, visualizations aur mazeed features shamil hain:**
 >
 > https://rust-book.cs.brown.edu
+
+---
+
+## Copyright aur License
+
+Ye kitab **"The Rust Programming Language"** ka Roman Urdu tarjuma hai.
+
+**Original authors:** Steve Klabnik, Carol Nichols, Chris Krycho, aur Rust Community ke contributors.
+**Original source:** [rust-lang/book](https://github.com/rust-lang/book)
+**Roman Urdu tarjuma:** Fakhir Israr
+
+Original kitab aur ye tarjuma **MIT** ya **Apache-2.0** license ke tehat hai (aap ki marzi).
+Poori license text: [LICENSE-MIT](https://github.com/Fakhir-Israr-200219/rust-roman-urdu/blob/main/LICENSE-MIT) · [LICENSE-APACHE](https://github.com/Fakhir-Israr-200219/rust-roman-urdu/blob/main/LICENSE-APACHE)
+
+Ye tarjuma official Rust Book ka **replacement nahi** hai. Official reference English version hi hai.

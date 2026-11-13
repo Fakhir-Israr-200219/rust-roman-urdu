@@ -1,13 +1,26 @@
 [book]
-title = "The Rust Programming Language - Roman Urdu"
-authors = ["Fakhir Israr"]
-language = "en"
-
-[output.html]
-git-repository-url = "https://github.com/Fakhir-Israr-200219/rust-roman-urdu"
-
-[output.html.search]
-use-boolean-and = true
+title = "The Rust Programming Language — Roman Urdu"
+authors = ["Steve Klabnik", "Carol Nichols", "Chris Krycho", "Roman Urdu tarjuma: Fakhir Israr"]
+description = "The Rust Programming Language kitab ka mukammal Roman Urdu tarjuma"
+language = "ur-Latn"
+src = "src"
 
 [rust]
 edition = "2024"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+smart-punctuation = true
+site-url = "/rust-roman-urdu/"
+git-repository-url = "https://github.com/Fakhir-Israr-200219/rust-roman-urdu"
+edit-url-template = "https://github.com/Fakhir-Israr-200219/rust-roman-urdu/edit/main/{path}"
+additional-css = ["theme/custom.css"]
+
+[output.html.search]
+enable = true
+use-boolean-and = true
