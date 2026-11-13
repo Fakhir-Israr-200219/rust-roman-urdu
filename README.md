@@ -75,8 +75,14 @@ Ye translation **official Rust Book ka replacement nahi** hai. Original English 
 
 ## License
 
-Ye project Rust Book ke upstream source aur uski licensing requirements ko follow karta hai.
+Ye kitab [rust-lang/book](https://github.com/rust-lang/book) ka Roman Urdu tarjuma hai,
+aur upstream ki licensing requirements ko follow karti hai.
 
-Original source:
+Licensed under either of [Apache License 2.0](LICENSE-APACHE) or
+[MIT license](LICENSE-MIT) at your option.
 
-[rust-lang/book](https://github.com/rust-lang/book?utm_source=chatgpt.com)
+- **Original work** © Steve Klabnik, Carol Nichols, Chris Krycho, and the Rust Community
+- **Roman Urdu translation** © Fakhir Israr
+
+Ye tarjuma official Rust Book ka replacement nahi hai. Official reference
+[English version](https://doc.rust-lang.org/book/) hi hai.
